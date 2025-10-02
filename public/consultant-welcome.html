@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Welcome to the Project - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-background border-b border-footer-border/20 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path clip-rule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fill-rule="evenodd"></path>
+                </svg>
+                <h1 class="text-xl font-bold text-text-color">Olumba</h1>
+            </div>
+            <a href="/dashboard.html" class="text-sm text-primary hover:text-primary/80 font-medium">
+                Go to Dashboard →
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center p-8">
+        <div class="w-full max-w-4xl">
+            <!-- Welcome Message -->
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 bg-accent-1/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span class="material-symbols-outlined text-6xl text-accent-1">check_circle</span>
+                </div>
+                <h1 class="text-4xl font-bold text-text-color mb-3">Welcome to the Team! 🎉</h1>
+                <p class="text-xl text-text-color/70" id="welcomeMessage">You've successfully joined the project</p>
+            </div>
+
+            <!-- Project Overview -->
+            <div class="bg-background rounded-xl shadow-lg p-8 border border-footer-border/10 mb-6">
+                <h2 class="text-2xl font-bold text-text-color mb-6" id="projectName">Loading project...</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center p-4 bg-background-alt rounded-lg">
+                        <p class="text-sm text-text-color/60 mb-1">Tasks</p>
+                        <p class="text-3xl font-bold text-text-color" id="taskCount">0</p>
+                    </div>
+                    <div class="text-center p-4 bg-background-alt rounded-lg">
+                        <p class="text-sm text-text-color/60 mb-1">Documents</p>
+                        <p class="text-3xl font-bold text-text-color" id="docCount">0</p>
+                    </div>
+                    <div class="text-center p-4 bg-background-alt rounded-lg">
+                        <p class="text-sm text-text-color/60 mb-1">Team Members</p>
+                        <p class="text-3xl font-bold text-text-color" id="teamCount">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-primary/5 border border-primary/20 rounded-lg p-6" id="projectInfo">
+                    <p class="text-sm text-text-color/80 mb-3" id="projectDescription">Loading...</p>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-text-color/60">Status</p>
+                            <p class="font-semibold text-text-color" id="projectStatus">-</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Deadline</p>
+                            <p class="font-semibold text-text-color" id="projectDeadline">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/project-detail.html?id=" id="viewProjectLink" class="block p-6 bg-background rounded-xl shadow-sm border border-footer-border/10 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-2xl text-primary">folder</span>
+                    </div>
+                    <h3 class="font-bold text-text-color mb-2">View Project</h3>
+                    <p class="text-sm text-text-color/60">Access project details, tasks, and documents</p>
+                </a>
+
+                <a href="/tasks.html" class="block p-6 bg-background rounded-xl shadow-sm border border-footer-border/10 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-accent-2/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-2xl text-accent-2">task_alt</span>
+                    </div>
+                    <h3 class="font-bold text-text-color mb-2">View Tasks</h3>
+                    <p class="text-sm text-text-color/60">See tasks assigned to you</p>
+                </a>
+
+                <a href="/communication-hub.html" class="block p-6 bg-background rounded-xl shadow-sm border border-footer-border/10 hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 bg-accent-1/10 rounded-full flex items-center justify-center mb-4">
+                        <span class="material-symbols-outlined text-2xl text-accent-1">forum</span>
+                    </div>
+                    <h3 class="font-bold text-text-color mb-2">Communication</h3>
+                    <p class="text-sm text-text-color/60">Collaborate with the team</p>
+                </a>
+            </div>
+
+            <!-- Getting Started -->
+            <div class="mt-8 text-center">
+                <p class="text-text-color/60 mb-4">Ready to get started?</p>
+                <a href="/dashboard.html" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const projectId = urlParams.get('project');
+
+if (!requireAuth()) {
+    throw new Error('Not authenticated');
+}
+
+const currentUser = getCurrentUser();
+
+if (!projectId) {
+    // No specific project, go to dashboard
+    window.location.href = '/dashboard.html';
+}
+
+document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.full_name}! You've successfully joined the project.`;
+
+// Load project details
+async function loadProjectSummary() {
+    try {
+        const project = await projects.getById(projectId);
+        
+        document.getElementById('projectName').textContent = project.name;
+        document.getElementById('projectDescription').textContent = project.description || 'No description available';
+        document.getElementById('projectStatus').textContent = project.status.replace('_', ' ');
+        document.getElementById('projectDeadline').textContent = project.deadline || 'Not set';
+        
+        document.getElementById('taskCount').textContent = project.total_tasks || 0;
+        document.getElementById('docCount').textContent = project.document_count || 0;
+        document.getElementById('teamCount').textContent = project.members?.length || 0;
+        
+        // Update project link
+        document.getElementById('viewProjectLink').href = `/project-detail.html?id=${projectId}`;
+    } catch (error) {
+        console.error('Failed to load project:', error);
+    }
+}
+
+loadProjectSummary();
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thank You - Olumba</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", background: "#FFFFFF", "background-alt": "#F3F4F6", text: "#22223B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display">
+<div class="flex items-center justify-center min-h-screen">
+<div class="w-full max-w-md p-8 space-y-6 text-center bg-background rounded-xl shadow-lg border border-gray-200 mx-4">
+<div class="flex justify-center">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+<div class="w-14 h-14 bg-primary/20 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-4xl">mark_email_read</span>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<h1 class="text-3xl font-bold text-text">Thank you for signing up!</h1>
+<p class="text-gray-600">
+We've received your request to join the beta program. You'll receive an email invitation shortly with instructions on how to get started. We're excited to have you on board!
+</p>
+<p class="text-sm text-gray-500 mt-4" id="emailDisplay"></p>
+</div>
+<div class="pt-4">
+<a class="inline-flex items-center justify-center w-full px-6 py-3 font-medium text-white transition-colors rounded-lg bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" href="/">
+Back to Homepage
+</a>
+</div>
+</div>
+</div>
+<script>
+const betaEmail = localStorage.getItem('beta_email');
+if (betaEmail) {
+    document.getElementById('emailDisplay').textContent = `We'll contact you at: ${betaEmail}`;
+}
+</script>
+</body>
+</html>

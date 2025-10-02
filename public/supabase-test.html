@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test - Olumba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/supabaseClient.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h1 class="text-2xl font-bold mb-6 text-center">Supabase Connection Test</h1>
+        
+        <div id="status" class="mb-4 p-4 rounded-lg text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="mt-2">Testing connection...</p>
+        </div>
+        
+        <div id="details" class="space-y-2 text-sm"></div>
+        
+        <div class="mt-6 space-y-4">
+            <h3 class="font-semibold">Test User Registration:</h3>
+            <div class="space-y-2">
+                <input type="email" id="testEmail" placeholder="test@example.com" class="w-full px-3 py-2 border rounded-lg">
+                <input type="password" id="testPassword" placeholder="password123" class="w-full px-3 py-2 border rounded-lg">
+                <input type="text" id="testName" placeholder="Test User" class="w-full px-3 py-2 border rounded-lg">
+                <button onclick="testRegistration()" class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
+                    Test Registration
+                </button>
+            </div>
+            <div id="regResult" class="text-sm"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testSupabaseConnection() {
+            const statusDiv = document.getElementById('status');
+            const detailsDiv = document.getElementById('details');
+            
+            try {
+                // Test 1: Check if Supabase client is initialized
+                if (!window.supabaseClient) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                detailsDiv.innerHTML += '<div class="text-green-600">✅ Supabase client initialized</div>';
+                
+                // Test 2: Check configuration
+                const config = window.APP_CONFIG;
+                detailsDiv.innerHTML += `<div class="text-green-600">✅ Configuration loaded</div>`;
+                detailsDiv.innerHTML += `<div class="text-gray-600">URL: ${window.SUPABASE_URL}</div>`;
+                detailsDiv.innerHTML += `<div class="text-gray-600">Anon Key: ${window.SUPABASE_ANON_KEY.substring(0, 20)}...</div>`;
+                
+                // Test 3: Test API connection
+                const response = await fetch('/api/health');
+                const health = await response.json();
+                detailsDiv.innerHTML += '<div class="text-green-600">✅ API server responding</div>';
+                detailsDiv.innerHTML += `<div class="text-gray-600">Server time: ${health.timestamp}</div>`;
+                
+                // Test 4: Test Supabase auth connection
+                const { data: { session }, error } = await window.supabaseClient.client.auth.getSession();
+                if (error) {
+                    detailsDiv.innerHTML += `<div class="text-yellow-600">⚠️ Auth check: ${error.message}</div>`;
+                } else {
+                    detailsDiv.innerHTML += '<div class="text-green-600">✅ Supabase auth connection working</div>';
+                    if (session) {
+                        detailsDiv.innerHTML += '<div class="text-blue-600">ℹ️ User is logged in</div>';
+                    } else {
+                        detailsDiv.innerHTML += '<div class="text-gray-600">ℹ️ No active session</div>';
+                    }
+                }
+                
+                statusDiv.innerHTML = '<div class="bg-green-100 text-green-800 p-4 rounded-lg"><strong>✅ Connection Successful!</strong><br>Supabase is properly connected.</div>';
+                
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                statusDiv.innerHTML = `<div class="bg-red-100 text-red-800 p-4 rounded-lg"><strong>❌ Connection Failed</strong><br>${error.message}</div>`;
+                detailsDiv.innerHTML += `<div class="text-red-600">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testRegistration() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            const fullName = document.getElementById('testName').value;
+            const resultDiv = document.getElementById('regResult');
+            
+            if (!email || !password || !fullName) {
+                resultDiv.innerHTML = '<div class="text-red-600">Please fill in all fields</div>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<div class="text-blue-600">Testing registration...</div>';
+                
+                const result = await window.supabaseClient.signUp(email, password, {
+                    full_name: fullName,
+                    company_name: 'Test Company'
+                });
+                
+                resultDiv.innerHTML = '<div class="text-green-600">✅ Registration test successful! Check your email for verification.</div>';
+                console.log('Registration result:', result);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-600">❌ Registration failed: ${error.message}</div>`;
+                console.error('Registration error:', error);
+            }
+        }
+        
+        // Run connection test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(testSupabaseConnection, 1000);
+        });
+    </script>
+</body>
+</html>

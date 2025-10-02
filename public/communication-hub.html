@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Communication Hub - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+initNav('communication');
+
+const mainContent = document.getElementById('mainContent');
+const currentUser = getCurrentUser();
+
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-text-color">Communication & Activity Hub</h1>
+            <p class="text-text-color/60 mt-1">Stay connected with your team and track project activity</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-footer-border/20">
+            <nav class="flex gap-8">
+                <button class="hub-tab active pb-3 px-1 text-sm font-semibold border-b-2 border-primary text-primary" data-tab="messages">
+                    Messages
+                </button>
+                <button class="hub-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60" data-tab="activity">
+                    Activity Log
+                </button>
+            </nav>
+        </div>
+
+        <!-- Project Selector -->
+        <div class="mb-6">
+            <select id="projectSelector" class="w-full max-w-md px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                <option value="">Select a project to view discussion...</option>
+            </select>
+        </div>
+
+        <!-- Messages Tab -->
+        <div id="messagesTab" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h2 class="text-xl font-semibold text-text-color mb-4">Project Discussion</h2>
+                    
+                    <!-- Messages List -->
+                    <div id="messagesList" class="space-y-6 mb-6 max-h-[500px] overflow-y-auto">
+                        <div class="text-center py-8 text-text-color/60">
+                            <span class="material-symbols-outlined text-4xl mb-2">forum</span>
+                            <p>Select a project to view discussion</p>
+                        </div>
+                    </div>
+
+                    <!-- Message Input -->
+                    <div id="messageInput" class="hidden">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <span class="text-primary font-bold">${currentUser.full_name.charAt(0)}</span>
+                            </div>
+                            <div class="flex-1">
+                                <textarea id="newMessage" rows="3" placeholder="Write a comment... use @ to mention someone" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary resize-none"></textarea>
+                                <div class="flex justify-end mt-2">
+                                    <button onclick="postMessage()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                                        Post Comment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h3 class="text-lg font-semibold text-text-color mb-4">Team Members</h3>
+                    <div id="teamMembersList" class="space-y-2 text-sm">
+                        <p class="text-text-color/60 text-center">Select a project</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Tab -->
+        <div id="activityTab" class="hidden">
+            <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                <h2 class="text-xl font-semibold text-text-color mb-6">Activity Log</h2>
+                <div id="activityList" class="space-y-4">
+                    <div class="text-center py-8 text-text-color/60">
+                        <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                        <p>Select a project to view activity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+let currentProjectId = null;
+
+// Load projects for selector
+async function loadProjects() {
+    try {
+        const projectsData = await projects.getAll();
+        const selector = document.getElementById('projectSelector');
+        selector.innerHTML = '<option value="">Select a project to view discussion...</option>' +
+            projectsData.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    } catch (error) {
+        console.error('Failed to load projects:', error);
+    }
+}
+
+// Project selector change
+document.getElementById('projectSelector').addEventListener('change', async (e) => {
+    currentProjectId = e.target.value;
+    if (currentProjectId) {
+        await loadMessages();
+        await loadTeamMembers();
+        document.getElementById('messageInput').classList.remove('hidden');
+    } else {
+        document.getElementById('messageInput').classList.add('hidden');
+    }
+});
+
+// Load messages
+async function loadMessages() {
+    try {
+        const messagesData = await messages.getByProject(currentProjectId);
+        renderMessages(messagesData);
+    } catch (error) {
+        console.error('Failed to load messages:', error);
+    }
+}
+
+function renderMessages(messagesData) {
+    const messagesList = document.getElementById('messagesList');
+    
+    if (messagesData.length === 0) {
+        messagesList.innerHTML = `
+            <div class="text-center py-8 text-text-color/60">
+                <span class="material-symbols-outlined text-4xl mb-2">chat_bubble_outline</span>
+                <p>No messages yet. Start the conversation!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    messagesList.innerHTML = messagesData.map(msg => `
+        <div class="flex gap-4">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <span class="text-primary font-bold">${msg.sender_name.charAt(0)}</span>
+            </div>
+            <div class="flex-1">
+                <div class="bg-background-alt rounded-lg p-4">
+                    <p class="text-sm font-medium text-text-color mb-1">${msg.sender_name}</p>
+                    <p class="text-sm text-text-color/80">${formatMessageContent(msg.content)}</p>
+                </div>
+                <p class="text-xs text-text-color/60 mt-1">${formatTime(msg.created_at)}</p>
+                
+                ${msg.replies && msg.replies.length > 0 ? `
+                    <div class="ml-6 mt-3 space-y-3">
+                        ${msg.replies.map(reply => `
+                            <div class="flex gap-3">
+                                <div class="w-8 h-8 rounded-full bg-accent-1/10 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-accent-1 font-bold text-xs">${reply.sender_name.charAt(0)}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-background-alt rounded-lg p-3">
+                                        <p class="text-xs font-medium text-text-color mb-1">${reply.sender_name}</p>
+                                        <p class="text-xs text-text-color/80">${formatMessageContent(reply.content)}</p>
+                                    </div>
+                                    <p class="text-xs text-text-color/60 mt-1">${formatTime(reply.created_at)}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+async function loadTeamMembers() {
+    try {
+        const project = await projects.getById(currentProjectId);
+        const teamMembersList = document.getElementById('teamMembersList');
+        
+        if (!project.members || project.members.length === 0) {
+            teamMembersList.innerHTML = '<p class="text-text-color/60 text-center">No team members</p>';
+            return;
+        }
+        
+        teamMembersList.innerHTML = project.members.map(member => `
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="text-primary font-bold text-xs">${member.full_name.charAt(0)}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium truncate">${member.full_name}</p>
+                    <p class="text-xs text-text-color/60">${member.role}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load team members:', error);
+    }
+}
+
+// Load activity
+async function loadActivity() {
+    try {
+        const activityData = await messages.getActivity(currentProjectId);
+        renderActivity(activityData);
+    } catch (error) {
+        console.error('Failed to load activity:', error);
+    }
+}
+
+function renderActivity(activityData) {
+    const activityList = document.getElementById('activityList');
+    
+    if (activityData.length === 0) {
+        activityList.innerHTML = `
+            <div class="text-center py-8 text-text-color/60">
+                <span class="material-symbols-outlined text-4xl mb-2">timeline</span>
+                <p>No activity yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    activityList.innerHTML = activityData.map((activity, index) => `
+        <div class="relative ${index < activityData.length - 1 ? 'pb-8' : ''}">
+            ${index < activityData.length - 1 ? '<span class="absolute left-4 top-8 -ml-px h-full w-0.5 bg-footer-border/20"></span>' : ''}
+            <div class="relative flex space-x-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full ${getActivityColor(activity.action)} ring-8 ring-background">
+                    <span class="material-symbols-outlined text-base text-white">${getActivityIcon(activity.action)}</span>
+                </div>
+                <div class="min-w-0 flex-1 pt-1">
+                    <p class="text-sm text-text-color/80">
+                        <span class="font-medium text-text-color">${activity.user_name || 'System'}</span> ${getActivityText(activity)}
+                    </p>
+                    <p class="text-xs text-text-color/60 mt-1">${formatTime(activity.created_at)}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getActivityColor(action) {
+    const colors = {
+        'create': 'bg-accent-1',
+        'update': 'bg-primary',
+        'delete': 'bg-red-500',
+        'upload': 'bg-accent-1',
+        'complete': 'bg-accent-1'
+    };
+    return colors[action] || 'bg-gray-400';
+}
+
+function getActivityIcon(action) {
+    const icons = {
+        'create': 'add_circle',
+        'update': 'edit',
+        'delete': 'delete',
+        'upload': 'upload_file',
+        'complete': 'check_circle'
+    };
+    return icons[action] || 'info';
+}
+
+function getActivityText(activity) {
+    const texts = {
+        'create': `created ${activity.entity_type}`,
+        'update': `updated ${activity.entity_type}`,
+        'delete': `deleted ${activity.entity_type}`,
+        'upload': `uploaded a document`,
+        'complete': `completed ${activity.entity_type}`
+    };
+    return texts[activity.action] || activity.action;
+}
+
+function formatMessageContent(content) {
+    // Replace @mentions with highlighted spans
+    return content.replace(/@(\w+)/g, '<span class="text-primary font-medium">@$1</span>');
+}
+
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return date.toLocaleDateString();
+}
+
+// Post message
+window.postMessage = async function() {
+    const content = document.getElementById('newMessage').value.trim();
+    
+    if (!content) return;
+    
+    try {
+        // Extract mentions
+        const mentions = content.match(/@\w+/g);
+        
+        await messages.post({
+            project_id: currentProjectId,
+            content,
+            mentions: mentions ? JSON.stringify(mentions) : null
+        });
+        
+        document.getElementById('newMessage').value = '';
+        await loadMessages();
+    } catch (error) {
+        alert('Failed to post message: ' + error.message);
+    }
+};
+
+// Tab switching
+document.querySelectorAll('.hub-tab').forEach(tab => {
+    tab.addEventListener('click', async () => {
+        document.querySelectorAll('.hub-tab').forEach(t => {
+            t.classList.remove('active', 'border-primary', 'text-primary');
+            t.classList.add('border-transparent', 'text-text-color/60');
+        });
+        
+        tab.classList.add('active', 'border-primary', 'text-primary');
+        
+        const tabName = tab.dataset.tab;
+        
+        if (tabName === 'messages') {
+            document.getElementById('messagesTab').classList.remove('hidden');
+            document.getElementById('activityTab').classList.add('hidden');
+            if (currentProjectId) await loadMessages();
+        } else {
+            document.getElementById('messagesTab').classList.add('hidden');
+            document.getElementById('activityTab').classList.remove('hidden');
+            if (currentProjectId) await loadActivity();
+        }
+    });
+});
+
+loadProjects();
+</script>
+</body>
+</html>

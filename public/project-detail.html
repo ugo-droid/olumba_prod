@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Details - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<!-- Edit Project Modal -->
+<div id="editProjectModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4 my-8">
+        <h2 class="text-2xl font-bold text-text-color mb-4">Edit Project</h2>
+        <form id="editProjectForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Project Name *</label>
+                    <input type="text" id="editProjectName" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Description</label>
+                    <textarea id="editProjectDescription" rows="3" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Status</label>
+                        <select id="editProjectStatus" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="planning">Planning</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Discipline</label>
+                        <input type="text" id="editProjectDiscipline" placeholder="e.g., Architecture" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Start Date</label>
+                        <input type="date" id="editProjectStartDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Deadline</label>
+                        <input type="date" id="editProjectDeadline" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Budget ($)</label>
+                    <input type="number" id="editProjectBudget" placeholder="e.g., 5000000" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Address</label>
+                    <input type="text" id="editProjectAddress" placeholder="Project location" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelEditProjectBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div id="addTaskModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4">
+        <h2 class="text-2xl font-bold text-text-color mb-4">Create Task</h2>
+        <form id="addTaskForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Task Name *</label>
+                    <input type="text" id="taskName" required placeholder="e.g., Review structural drawings" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Description</label>
+                    <textarea id="taskDescription" rows="3" placeholder="Task details..." class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Assign To</label>
+                        <select id="taskAssignee" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="">Unassigned</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Priority</label>
+                        <select id="taskPriority" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Due Date</label>
+                    <input type="date" id="taskDueDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelTaskBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Create Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div id="addMemberModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold text-text-color mb-4">Add Team Member</h2>
+        <form id="addMemberForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Team Member *</label>
+                    <select id="memberUser" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Select user</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Role *</label>
+                    <select id="memberRole" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Select role</option>
+                        <option value="manager">Project Manager</option>
+                        <option value="architect">Architect</option>
+                        <option value="engineer">Engineer</option>
+                        <option value="consultant">Consultant</option>
+                        <option value="client">Client</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelMemberBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Add Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Invite Consultant Modal -->
+<div id="inviteConsultantModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-lg w-full mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-text-color">Invite Consultant via Email</h2>
+            <span class="material-symbols-outlined text-accent-1 text-3xl">mail</span>
+        </div>
+        <p class="text-sm text-text-color/70 mb-6">Send a secure invitation link to a consultant. They'll receive an email with project details and instructions to sign up or log in.</p>
+        
+        <form id="inviteConsultantForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Consultant Email *</label>
+                    <input type="email" id="consultantEmail" required placeholder="consultant@example.com" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    <p class="text-xs text-text-color/60 mt-1">They'll receive an email invitation to join this project</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Personal Message (Optional)</label>
+                    <textarea id="consultantMessage" rows="3" placeholder="Add a personal message to the invitation email..." class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+
+                <div class="bg-accent-1/10 border border-accent-1/30 rounded-lg p-4">
+                    <p class="text-sm text-accent-1 flex items-start gap-2">
+                        <span class="material-symbols-outlined text-lg">info</span>
+                        <span>The consultant will automatically get access to project files and be added to the team when they accept the invitation.</span>
+                    </p>
+                </div>
+
+                <div id="inviteSuccessMessage" class="hidden bg-accent-1/10 border border-accent-1/30 text-accent-1 px-4 py-3 rounded" role="alert">
+                    <p class="font-medium mb-2">✅ Invitation Sent Successfully!</p>
+                    <p class="text-sm">An email has been sent to <span id="sentToEmail"></span></p>
+                    <div class="mt-3 p-3 bg-background rounded text-xs break-all">
+                        <p class="font-medium mb-1">Share this link directly:</p>
+                        <p id="inviteLinkDisplay" class="text-primary"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelConsultantBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-accent-1 text-white rounded-lg hover:bg-accent-1/90 flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">send</span>
+                    Send Invitation
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div id="uploadDocModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-lg w-full mx-4">
+        <h2 class="text-2xl font-bold text-text-color mb-4">Upload Document</h2>
+        <form id="uploadDocForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Document Name *</label>
+                    <input type="text" id="docName" required placeholder="e.g., Architectural_Plans_Main.pdf" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Discipline *</label>
+                    <select id="docDiscipline" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Select discipline</option>
+                        <option value="Architectural">Architectural</option>
+                        <option value="Structural">Structural</option>
+                        <option value="MEP">MEP</option>
+                        <option value="Civil">Civil</option>
+                        <option value="Landscape">Landscape</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">File Type *</label>
+                    <select id="docFileType" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Select type</option>
+                        <option value="pdf">PDF</option>
+                        <option value="dwg">DWG (AutoCAD)</option>
+                        <option value="rvt">RVT (Revit)</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="bg-background-alt rounded-lg p-4">
+                    <p class="text-xs text-text-color/60"><strong>Note:</strong> File upload functionality requires file system integration. This demo simulates document creation.</p>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelUploadBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Upload Document</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('projects');
+
+// Get project ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const projectId = urlParams.get('id');
+
+if (!projectId) {
+    alert('No project specified');
+    window.location.href = '/projects.html';
+}
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+let currentProject = null;
+
+// Render project detail content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 text-sm text-text-color/60 mb-4">
+                <a href="/projects.html" class="hover:text-primary">Projects</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="font-medium text-text-color" id="projectBreadcrumb">Project</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-3xl font-bold text-text-color" id="projectName">Loading...</h1>
+                    <span id="projectStatus" class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">Status</span>
+                </div>
+                <button onclick="editProject()" class="flex items-center gap-2 px-4 py-2 border border-primary/50 bg-primary/10 text-primary rounded-lg hover:bg-primary/20">
+                    <span class="material-symbols-outlined">edit</span>
+                    Edit Project
+                </button>
+            </div>
+            <p class="text-text-color/60 mt-2" id="projectDescription">Loading description...</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-background rounded-xl p-4 shadow-sm border border-footer-border/10">
+                <p class="text-sm text-text-color/60">Total Tasks</p>
+                <p class="text-2xl font-bold text-text-color mt-1" id="totalTasks">0</p>
+            </div>
+            <div class="bg-background rounded-xl p-4 shadow-sm border border-footer-border/10">
+                <p class="text-sm text-text-color/60">Completed</p>
+                <p class="text-2xl font-bold text-accent-1 mt-1" id="completedTasks">0</p>
+            </div>
+            <div class="bg-background rounded-xl p-4 shadow-sm border border-footer-border/10">
+                <p class="text-sm text-text-color/60">Documents</p>
+                <p class="text-2xl font-bold text-text-color mt-1" id="documentCount">0</p>
+            </div>
+            <div class="bg-background rounded-xl p-4 shadow-sm border border-footer-border/10">
+                <p class="text-sm text-text-color/60">Team Members</p>
+                <p class="text-2xl font-bold text-text-color mt-1" id="memberCount">0</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Tasks -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+                    <div class="p-6 border-b border-footer-border/10 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-text-color">Project Tasks</h2>
+                        <button onclick="createTask()" class="text-sm text-primary hover:text-primary/80 font-medium">+ Add Task</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="border-b border-primary bg-primary">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Task Name</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Assigned To</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Due Date</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasksList" class="divide-y divide-footer-border/10">
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-center text-text-color/60 text-sm">Loading tasks...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+                    <div class="p-6 border-b border-footer-border/10 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-text-color">Document Management</h2>
+                        <button onclick="showUploadDocModal()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                            <span class="material-symbols-outlined">upload_file</span>
+                            Upload Document
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="border-b border-primary bg-primary">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">File Name</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Discipline</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Version</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Last Updated</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentsList" class="divide-y divide-footer-border/10">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-text-color/60 text-sm">Loading documents...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- City Submittals & Approvals -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+                    <div class="p-6 border-b border-footer-border/10 flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-text-color">City Submittals & Approvals</h2>
+                        <a href="/city-approvals.html" class="text-sm text-primary hover:text-primary/80 font-medium">View All →</a>
+                    </div>
+                    <div id="submittalsList">
+                        <div class="p-6 text-center text-text-color/60 text-sm">Loading submittals...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Project Info -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h3 class="text-lg font-semibold text-text-color mb-4">Project Information</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <p class="text-text-color/60">Address</p>
+                            <p class="font-medium text-text-color" id="projectAddress">-</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Discipline</p>
+                            <p class="font-medium text-text-color" id="projectDiscipline">-</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Start Date</p>
+                            <p class="font-medium text-text-color" id="projectStartDate">-</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Deadline</p>
+                            <p class="font-medium text-text-color" id="projectDeadline">-</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Budget</p>
+                            <p class="font-medium text-text-color" id="projectBudget">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Members -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-text-color">Project Team</h3>
+                        <div class="flex gap-2">
+                            <button onclick="inviteConsultant()" class="text-sm text-accent-1 hover:text-accent-1/80 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">mail</span>
+                                Invite Consultant
+                            </button>
+                            <button onclick="addMember()" class="text-sm text-primary hover:text-primary/80">+ Add Member</button>
+                        </div>
+                    </div>
+                    <div id="membersList" class="space-y-3">
+                        <p class="text-sm text-text-color/60 text-center py-2">Loading team...</p>
+                    </div>
+                </div>
+
+                <!-- Client/Consultant View Toggle -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h3 class="text-lg font-semibold text-text-color mb-4">External View Settings</h3>
+                    <div class="p-4 rounded-lg bg-primary/10">
+                        <div class="flex items-center justify-between">
+                            <p class="font-medium text-sm text-primary">Show Only Latest Versions</p>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input id="latestOnlyToggle" checked class="sr-only peer" type="checkbox"/>
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                        <p class="text-xs text-text-color/60 mt-2">When enabled, clients & consultants see only the latest version of documents.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const uploadDocModal = document.getElementById('uploadDocModal');
+const uploadDocForm = document.getElementById('uploadDocForm');
+const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+
+async function loadProjectDetails() {
+    try {
+        currentProject = await projects.getById(projectId);
+        
+        // Header
+        document.getElementById('projectBreadcrumb').textContent = currentProject.name;
+        document.getElementById('projectName').textContent = currentProject.name;
+        document.getElementById('projectDescription').textContent = currentProject.description || 'No description';
+        document.getElementById('projectStatus').textContent = currentProject.status.replace('_', ' ');
+        document.getElementById('projectStatus').className = `inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(currentProject.status)}`;
+        
+        // Stats
+        document.getElementById('totalTasks').textContent = currentProject.total_tasks || 0;
+        document.getElementById('completedTasks').textContent = currentProject.completed_tasks || 0;
+        document.getElementById('documentCount').textContent = currentProject.document_count || 0;
+        document.getElementById('memberCount').textContent = currentProject.members?.length || 0;
+        
+        // Project Info
+        document.getElementById('projectAddress').textContent = currentProject.address || 'Not specified';
+        document.getElementById('projectDiscipline').textContent = currentProject.discipline || 'Not specified';
+        document.getElementById('projectStartDate').textContent = currentProject.start_date || 'Not set';
+        document.getElementById('projectDeadline').textContent = currentProject.deadline || 'Not set';
+        document.getElementById('projectBudget').textContent = currentProject.budget ? '$' + currentProject.budget.toLocaleString() : 'Not set';
+        
+        // Load tasks
+        await loadProjectTasks();
+        
+        // Load documents
+        await loadProjectDocuments();
+        
+        // Load submittals
+        await loadProjectSubmittals();
+        
+        // Render team members
+        renderTeamMembers(currentProject.members || []);
+        
+    } catch (error) {
+        console.error('Failed to load project:', error);
+        alert('Failed to load project details');
+        window.location.href = '/projects.html';
+    }
+}
+
+async function loadProjectTasks() {
+    try {
+        const tasksData = await tasks.getByProject(projectId);
+        renderTasks(tasksData);
+    } catch (error) {
+        console.error('Failed to load tasks:', error);
+        document.getElementById('tasksList').innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-500 text-sm">Failed to load tasks</td></tr>';
+    }
+}
+
+async function loadProjectDocuments() {
+    try {
+        const docsData = await documents.getByProject(projectId, false);
+        renderDocuments(docsData);
+    } catch (error) {
+        console.error('Failed to load documents:', error);
+        document.getElementById('documentsList').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500 text-sm">Failed to load documents</td></tr>';
+    }
+}
+
+function renderTasks(tasksData) {
+    const tbody = document.getElementById('tasksList');
+    
+    if (tasksData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-text-color/60 text-sm">No tasks yet. Create one above!</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = tasksData.map(task => `
+        <tr class="text-sm hover:bg-background-alt/50 cursor-pointer" onclick="window.location.href='/task-detail.html?id=${task.id}'">
+            <td class="px-6 py-4 font-medium text-text-color">${task.name}</td>
+            <td class="px-6 py-4 text-text-color/60">${task.assigned_to_name || 'Unassigned'}</td>
+            <td class="px-6 py-4 text-text-color/60">${task.due_date || 'Not set'}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getTaskStatusColor(task.status)}">
+                    ${task.status.replace('_', ' ')}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderDocuments(docsData) {
+    const tbody = document.getElementById('documentsList');
+    
+    if (docsData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-text-color/60 text-sm">No documents yet. Upload one above!</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = docsData.map(doc => `
+        <tr class="text-sm hover:bg-background-alt/50">
+            <td class="px-6 py-4 font-medium text-text-color flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg ${getFileIcon(doc.file_type).color}">${getFileIcon(doc.file_type).icon}</span>
+                ${doc.name}
+            </td>
+            <td class="px-6 py-4 text-text-color/60">${doc.discipline || 'General'}</td>
+            <td class="px-6 py-4 text-text-color/60">
+                v${doc.version} ${doc.is_latest ? '<span class="text-accent-1 text-xs">(Latest)</span>' : ''}
+            </td>
+            <td class="px-6 py-4 text-text-color/60">${formatDate(doc.created_at)}</td>
+            <td class="px-6 py-4">
+                <a href="/document-history.html?id=${doc.id}" class="text-primary hover:underline">View History</a>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderTeamMembers(members) {
+    const membersList = document.getElementById('membersList');
+    
+    if (members.length === 0) {
+        membersList.innerHTML = '<p class="text-sm text-text-color/60 text-center py-2">No team members assigned</p>';
+        return;
+    }
+    
+    membersList.innerHTML = members.map(member => `
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="text-primary font-semibold text-sm">${member.full_name.charAt(0)}</span>
+                </div>
+                <div>
+                    <p class="font-medium text-sm text-text-color">${member.full_name}</p>
+                    <p class="text-xs text-text-color/60">${member.role}</p>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'planning': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-primary/20 text-primary',
+        'on_hold': 'bg-accent-2/20 text-accent-2',
+        'completed': 'bg-accent-1/20 text-accent-1'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+function getTaskStatusColor(status) {
+    const colors = {
+        'pending': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-accent-2/20 text-accent-2',
+        'overdue': 'bg-red-100 text-red-800',
+        'completed': 'bg-accent-1/20 text-accent-1'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+function getFileIcon(fileType) {
+    const icons = {
+        'pdf': { icon: 'picture_as_pdf', color: 'text-red-500' },
+        'dwg': { icon: 'architecture', color: 'text-blue-500' },
+        'rvt': { icon: 'domain', color: 'text-accent-1' }
+    };
+    return icons[fileType] || { icon: 'description', color: 'text-text-color/40' };
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Yesterday';
+    if (diff < 7) return `${diff} days ago`;
+    return date.toLocaleDateString();
+}
+
+// Upload document modal
+window.showUploadDocModal = function() {
+    uploadDocModal.classList.remove('hidden');
+};
+
+cancelUploadBtn.addEventListener('click', () => {
+    uploadDocModal.classList.add('hidden');
+});
+
+uploadDocForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+    
+    try {
+        await documents.create({
+            project_id: projectId,
+            name: document.getElementById('docName').value,
+            file_type: document.getElementById('docFileType').value,
+            discipline: document.getElementById('docDiscipline').value
+        });
+        
+        uploadDocModal.classList.add('hidden');
+        uploadDocForm.reset();
+        await loadProjectDocuments();
+        alert('Document uploaded successfully!');
+    } catch (error) {
+        alert('Failed to upload document: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Upload Document';
+    }
+});
+
+// Load project submittals
+async function loadProjectSubmittals() {
+    try {
+        const allSubmittals = await cityApprovals.getAll();
+        const projectSubmittals = allSubmittals.filter(s => s.project_id === projectId);
+        renderSubmittals(projectSubmittals);
+    } catch (error) {
+        console.error('Failed to load submittals:', error);
+        document.getElementById('submittalsList').innerHTML = '<div class="p-6 text-center text-text-color/60 text-sm">No submittals found</div>';
+    }
+}
+
+function renderSubmittals(submittalsData) {
+    const submittalsList = document.getElementById('submittalsList');
+    
+    if (submittalsData.length === 0) {
+        submittalsList.innerHTML = '<div class="p-6 text-center text-text-color/60 text-sm">No city submittals yet</div>';
+        return;
+    }
+    
+    submittalsList.innerHTML = `
+        <div class="p-6 space-y-3">
+            ${submittalsData.map(s => `
+                <div class="flex items-center justify-between p-4 bg-background-alt rounded-lg">
+                    <div class="flex-1">
+                        <h4 class="font-medium text-text-color">${s.submittal_name}</h4>
+                        <div class="flex items-center gap-4 mt-1 text-xs text-text-color/60">
+                            ${s.city_jurisdiction ? `<span>🏛️ ${s.city_jurisdiction}</span>` : ''}
+                            ${s.plan_check_number ? `<span>📋 ${s.plan_check_number}</span>` : ''}
+                            <span>📅 ${s.submission_date || 'Not set'}</span>
+                        </div>
+                        ${s.pending_corrections > 0 ? `<p class="text-xs text-red-500 mt-1">${s.pending_corrections} pending corrections</p>` : ''}
+                    </div>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getSubmittalStatusColor(s.status)}">
+                        ${s.status.replace('_', ' ')}
+                    </span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getSubmittalStatusColor(status) {
+    const colors = {
+        'submitted': 'bg-blue-100 text-blue-800',
+        'under_review': 'bg-yellow-100 text-yellow-800',
+        'corrections_required': 'bg-accent-2/20 text-accent-2',
+        'approved': 'bg-accent-1/20 text-accent-1',
+        'rejected': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+// Modal handlers
+const editProjectModal = document.getElementById('editProjectModal');
+const addTaskModal = document.getElementById('addTaskModal');
+const addMemberModal = document.getElementById('addMemberModal');
+
+window.editProject = function() {
+    // Populate form with current values
+    document.getElementById('editProjectName').value = currentProject.name;
+    document.getElementById('editProjectDescription').value = currentProject.description || '';
+    document.getElementById('editProjectStatus').value = currentProject.status;
+    document.getElementById('editProjectDiscipline').value = currentProject.discipline || '';
+    document.getElementById('editProjectStartDate').value = currentProject.start_date || '';
+    document.getElementById('editProjectDeadline').value = currentProject.deadline || '';
+    document.getElementById('editProjectBudget').value = currentProject.budget || '';
+    document.getElementById('editProjectAddress').value = currentProject.address || '';
+    
+    editProjectModal.classList.remove('hidden');
+};
+
+document.getElementById('cancelEditProjectBtn').addEventListener('click', () => {
+    editProjectModal.classList.add('hidden');
+});
+
+document.getElementById('editProjectForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    try {
+        await projects.update(projectId, {
+            name: document.getElementById('editProjectName').value,
+            description: document.getElementById('editProjectDescription').value,
+            status: document.getElementById('editProjectStatus').value,
+            discipline: document.getElementById('editProjectDiscipline').value,
+            start_date: document.getElementById('editProjectStartDate').value || null,
+            deadline: document.getElementById('editProjectDeadline').value || null,
+            budget: document.getElementById('editProjectBudget').value || null,
+            address: document.getElementById('editProjectAddress').value || null
+        });
+        
+        editProjectModal.classList.add('hidden');
+        loadProjectDetails();
+    } catch (error) {
+        alert('Failed to update project: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+    }
+});
+
+window.createTask = async function() {
+    // Load team members for assignee dropdown
+    if (currentProject && currentProject.members) {
+        const assigneeSelect = document.getElementById('taskAssignee');
+        assigneeSelect.innerHTML = '<option value="">Unassigned</option>' +
+            currentProject.members.map(m => `<option value="${m.user_id}">${m.full_name}</option>`).join('');
+    }
+    
+    addTaskModal.classList.remove('hidden');
+};
+
+document.getElementById('cancelTaskBtn').addEventListener('click', () => {
+    addTaskModal.classList.add('hidden');
+});
+
+document.getElementById('addTaskForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating...';
+    
+    try {
+        await tasks.create({
+            project_id: projectId,
+            name: document.getElementById('taskName').value,
+            description: document.getElementById('taskDescription').value,
+            assigned_to: document.getElementById('taskAssignee').value || null,
+            priority: document.getElementById('taskPriority').value,
+            due_date: document.getElementById('taskDueDate').value || null
+        });
+        
+        addTaskModal.classList.add('hidden');
+        document.getElementById('addTaskForm').reset();
+        await loadProjectTasks();
+        await loadProjectDetails();
+    } catch (error) {
+        alert('Failed to create task: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Task';
+    }
+});
+
+window.addMember = async function() {
+    // Load company users for member dropdown
+    try {
+        const companyUsers = await users.getAll();
+        const memberSelect = document.getElementById('memberUser');
+        
+        // Filter out users already in project
+        const existingUserIds = currentProject.members?.map(m => m.user_id) || [];
+        const availableUsers = companyUsers.filter(u => !existingUserIds.includes(u.id));
+        
+        if (availableUsers.length === 0) {
+            alert('All company users are already assigned to this project');
+            return;
+        }
+        
+        memberSelect.innerHTML = '<option value="">Select user</option>' +
+            availableUsers.map(u => `<option value="${u.id}">${u.full_name} (${u.email})</option>`).join('');
+        
+        addMemberModal.classList.remove('hidden');
+    } catch (error) {
+        console.error('Failed to load users:', error);
+        alert('Failed to load users. Admin only feature.');
+    }
+};
+
+document.getElementById('cancelMemberBtn').addEventListener('click', () => {
+    addMemberModal.classList.add('hidden');
+});
+
+document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Adding...';
+    
+    try {
+        await projects.addMember(
+            projectId,
+            document.getElementById('memberUser').value,
+            document.getElementById('memberRole').value
+        );
+        
+        addMemberModal.classList.add('hidden');
+        document.getElementById('addMemberForm').reset();
+        loadProjectDetails();
+    } catch (error) {
+        alert('Failed to add member: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add Member';
+    }
+});
+
+// Invite Consultant Modal
+const inviteConsultantModal = document.getElementById('inviteConsultantModal');
+const inviteConsultantForm = document.getElementById('inviteConsultantForm');
+const cancelConsultantBtn = document.getElementById('cancelConsultantBtn');
+const inviteSuccessMessage = document.getElementById('inviteSuccessMessage');
+
+window.inviteConsultant = function() {
+    // Reset form
+    inviteConsultantForm.reset();
+    inviteSuccessMessage.classList.add('hidden');
+    inviteConsultantModal.classList.remove('hidden');
+};
+
+cancelConsultantBtn.addEventListener('click', () => {
+    inviteConsultantModal.classList.add('hidden');
+});
+
+inviteConsultantForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalHTML = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Sending...';
+    
+    try {
+        const email = document.getElementById('consultantEmail').value;
+        const message = document.getElementById('consultantMessage').value;
+        
+        const result = await users.inviteConsultant(email, projectId, message);
+        
+        // Show success message
+        document.getElementById('sentToEmail').textContent = email;
+        document.getElementById('inviteLinkDisplay').textContent = result.invitationLink;
+        inviteSuccessMessage.classList.remove('hidden');
+        
+        // Log to console for development
+        console.log('📧 Consultant invitation sent!');
+        console.log('Email:', email);
+        console.log('Link:', result.invitationLink);
+        
+        // Reset form but keep modal open to show success
+        inviteConsultantForm.reset();
+        
+        setTimeout(() => {
+            inviteConsultantModal.classList.add('hidden');
+            inviteSuccessMessage.classList.add('hidden');
+        }, 10000); // Close after 10 seconds
+        
+    } catch (error) {
+        alert('Failed to send invitation: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+    }
+});
+
+loadProjectDetails();
+</script>
+</body>
+</html>

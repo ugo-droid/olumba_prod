@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Projects - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<!-- New Project Modal -->
+<div id="newProjectModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4">
+        <h2 class="text-2xl font-bold text-text-color mb-4">Create New Project</h2>
+        <form id="newProjectForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Project Name *</label>
+                    <input type="text" id="projectName" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Description</label>
+                    <textarea id="projectDescription" rows="3" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Start Date</label>
+                        <input type="date" id="projectStartDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Deadline</label>
+                        <input type="date" id="projectDeadline" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelProjectBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Create Project</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('projects');
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render projects content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-text-color">Projects</h1>
+                <p class="text-text-color/60 mt-1">Manage and track all your projects</p>
+            </div>
+            <button id="newProjectBtn" class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90">
+                <span class="material-symbols-outlined">add</span>
+                New Project
+            </button>
+        </div>
+
+        <!-- Projects Grid -->
+        <div id="projectsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-text-color/30">folder_open</span>
+                <p class="text-text-color/60 mt-4">Loading projects...</p>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const newProjectBtn = document.getElementById('newProjectBtn');
+const newProjectModal = document.getElementById('newProjectModal');
+const cancelProjectBtn = document.getElementById('cancelProjectBtn');
+const newProjectForm = document.getElementById('newProjectForm');
+const projectsContainer = document.getElementById('projectsContainer');
+
+// Load projects
+async function loadProjects() {
+    try {
+        const projectsData = await projects.getAll();
+        renderProjects(projectsData);
+    } catch (error) {
+        console.error('Failed to load projects:', error);
+        projectsContainer.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Failed to load projects</div>';
+    }
+}
+
+function renderProjects(projectsData) {
+    if (projectsData.length === 0) {
+        projectsContainer.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-text-color/30">folder_open</span>
+                <p class="text-text-color/60 mt-4">No projects yet. Create your first project!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    projectsContainer.innerHTML = projectsData.map(project => `
+        <div class="bg-background rounded-xl shadow-sm p-6 border border-footer-border/10 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='/project-detail.html?id=${project.id}'">
+            <div class="flex items-start justify-between mb-4">
+                <h3 class="text-lg font-bold text-text-color">${project.name}</h3>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(project.status)}">
+                    ${project.status.replace('_', ' ')}
+                </span>
+            </div>
+            <p class="text-sm text-text-color/60 mb-4 line-clamp-2">${project.description || 'No description'}</p>
+            <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-text-color/40 text-sm">group</span>
+                    <span class="text-text-color/60">${project.member_count || 0} members</span>
+                </div>
+                ${project.overdue_tasks > 0 ? `
+                    <div class="flex items-center gap-1 text-red-500">
+                        <span class="material-symbols-outlined text-sm">warning</span>
+                        <span>${project.overdue_tasks} overdue</span>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'planning': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-primary/20 text-primary',
+        'on_hold': 'bg-accent-2/20 text-accent-2',
+        'completed': 'bg-accent-1/20 text-accent-1'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+// Modal controls
+newProjectBtn.addEventListener('click', () => {
+    newProjectModal.classList.remove('hidden');
+});
+
+cancelProjectBtn.addEventListener('click', () => {
+    newProjectModal.classList.add('hidden');
+});
+
+// Create project
+newProjectForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Creating...';
+    
+    try {
+        const projectData = {
+            name: document.getElementById('projectName').value,
+            description: document.getElementById('projectDescription').value,
+            start_date: document.getElementById('projectStartDate').value || null,
+            deadline: document.getElementById('projectDeadline').value || null
+        };
+        
+        await projects.create(projectData);
+        
+        newProjectModal.classList.add('hidden');
+        newProjectForm.reset();
+        loadProjects();
+    } catch (error) {
+        alert('Failed to create project: ' + error.message);
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Create Project';
+    }
+});
+
+loadProjects();
+</script>
+</body>
+</html>

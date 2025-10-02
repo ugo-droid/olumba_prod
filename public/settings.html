@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('settings');
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+const currentUser = getCurrentUser();
+
+// Render settings content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-text-color">Settings</h1>
+            <p class="text-text-color/60 mt-1">Manage your account and preferences</p>
+        </div>
+
+        <!-- Profile Section -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 mb-6">
+            <div class="p-6 border-b border-footer-border/10">
+                <h2 class="text-lg font-semibold text-text-color">Profile Information</h2>
+            </div>
+            <div class="p-6">
+                <form id="profileForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Full Name</label>
+                        <input type="text" id="fullName" value="${currentUser.full_name || ''}" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Job Title</label>
+                            <input type="text" id="jobTitle" value="${currentUser.job_title || ''}" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Discipline</label>
+                            <select id="discipline" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="">Select discipline</option>
+                                <option value="Architecture" ${currentUser.discipline === 'Architecture' ? 'selected' : ''}>Architecture</option>
+                                <option value="Structural Engineering" ${currentUser.discipline === 'Structural Engineering' ? 'selected' : ''}>Structural Engineering</option>
+                                <option value="MEP Engineering" ${currentUser.discipline === 'MEP Engineering' ? 'selected' : ''}>MEP Engineering</option>
+                                <option value="Construction Management" ${currentUser.discipline === 'Construction Management' ? 'selected' : ''}>Construction Management</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Email</label>
+                        <input type="email" value="${currentUser.email}" disabled class="w-full px-4 py-2 border border-footer-border/20 rounded-lg bg-background-alt/50 text-text-color/50 cursor-not-allowed"/>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Notification Preferences -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 mb-6">
+            <div class="p-6 border-b border-footer-border/10">
+                <h2 class="text-lg font-semibold text-text-color">Notification Preferences</h2>
+            </div>
+            <div class="p-6">
+                <form id="notificationPrefsForm" class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-text-color">Email Notifications</p>
+                            <p class="text-sm text-text-color/60">Receive updates via email</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="emailEnabled" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-text-color">In-App Notifications</p>
+                            <p class="text-sm text-text-color/60">Show notifications in the app</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="inAppEnabled" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="font-medium text-text-color">Task Assignments</p>
+                            <p class="text-sm text-text-color/60">Get notified when assigned to tasks</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="taskAssigned" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90">
+                            Save Preferences
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="p-6 border-b border-footer-border/10">
+                <h2 class="text-lg font-semibold text-text-color">Security</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-text-color">Multi-Factor Authentication</p>
+                        <p class="text-sm text-text-color/60">Add an extra layer of security</p>
+                    </div>
+                    <button class="text-sm text-primary hover:text-primary/80 font-medium">
+                        Set Up MFA
+                    </button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-text-color">Change Password</p>
+                        <p class="text-sm text-text-color/60">Update your account password</p>
+                    </div>
+                    <button class="text-sm text-primary hover:text-primary/80 font-medium">
+                        Change
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help & Support -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="p-6 border-b border-footer-border/10">
+                <h2 class="text-lg font-semibold text-text-color">Help & Support</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-medium text-text-color">Show Walkthrough Again</p>
+                        <p class="text-sm text-text-color/60">Replay the onboarding tour</p>
+                    </div>
+                    <button onclick="restartOnboarding()" class="text-sm text-primary hover:text-primary/80 font-medium">
+                        Start Tour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+// Profile form handler
+document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    try {
+        await users.updateProfile({
+            full_name: document.getElementById('fullName').value,
+            job_title: document.getElementById('jobTitle').value,
+            discipline: document.getElementById('discipline').value
+        });
+        
+        // Update local user data
+        const updatedUser = await auth.getMe();
+        setCurrentUser(updatedUser);
+        
+        alert('Profile updated successfully!');
+    } catch (error) {
+        alert('Failed to update profile: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+    }
+});
+
+// Notification preferences handler
+document.getElementById('notificationPrefsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    try {
+        await users.updateNotificationPreferences({
+            email_enabled: document.getElementById('emailEnabled').checked,
+            in_app_enabled: document.getElementById('inAppEnabled').checked,
+            task_assigned: document.getElementById('taskAssigned').checked
+        });
+        
+        alert('Notification preferences updated!');
+    } catch (error) {
+        alert('Failed to update preferences: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Preferences';
+    }
+});
+
+// Restart onboarding
+window.restartOnboarding = function() {
+    localStorage.removeItem('onboarding_completed');
+    window.location.href = '/onboarding.html';
+};
+</script>
+</body>
+</html>

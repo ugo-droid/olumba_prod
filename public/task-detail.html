@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Task Details - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('tasks');
+
+// Get task ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const taskId = urlParams.get('id');
+
+if (!taskId) {
+    alert('No task specified');
+    window.location.href = '/tasks.html';
+}
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render task detail content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 text-sm text-text-color/60">
+                <a href="/projects.html" class="hover:text-primary">Projects</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <a href="/tasks.html" class="hover:text-primary">Tasks</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="font-medium text-text-color" id="taskBreadcrumb">Task</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Task Details -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <h1 class="text-3xl font-bold text-text-color" id="taskName">Loading...</h1>
+                        <span id="taskStatus" class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">Status</span>
+                    </div>
+                    
+                    <p class="text-text-color/70 mb-6" id="taskDescription">Loading description...</p>
+                    
+                    <!-- Task Form -->
+                    <form id="taskForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Task Name</label>
+                                <input type="text" id="editTaskName" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Status</label>
+                                <select id="editStatus" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                                    <option value="pending">Pending</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Due Date</label>
+                                <input type="date" id="editDueDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Priority</label>
+                                <select id="editPriority" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Description</label>
+                            <textarea id="editDescription" rows="4" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" onclick="window.location.href='/tasks.html'" class="px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Subtasks -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-text-color">Subtasks</h2>
+                        <button onclick="showAddSubtaskForm()" class="text-sm text-primary hover:text-primary/80 font-medium">
+                            + Add Subtask
+                        </button>
+                    </div>
+                    
+                    <div id="addSubtaskForm" class="hidden mb-4 p-4 bg-background-alt rounded-lg">
+                        <div class="flex gap-2">
+                            <input type="text" id="newSubtaskName" placeholder="Subtask name..." class="flex-1 px-3 py-2 text-sm border border-footer-border/20 rounded-lg"/>
+                            <input type="date" id="newSubtaskDate" class="px-3 py-2 text-sm border border-footer-border/20 rounded-lg"/>
+                            <button onclick="addSubtask()" class="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90">Add</button>
+                            <button onclick="hideAddSubtaskForm()" class="px-4 py-2 text-sm border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <div id="subtasksList" class="space-y-2">
+                        <p class="text-sm text-text-color/60 text-center py-4">Loading subtasks...</p>
+                    </div>
+                </div>
+
+                <!-- Dependencies -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h2 class="text-xl font-semibold text-text-color mb-4">Dependencies</h2>
+                    <div id="dependenciesList" class="space-y-2">
+                        <p class="text-sm text-text-color/60 text-center py-4">Loading dependencies...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Progress -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h3 class="text-lg font-semibold text-text-color mb-4">Progress</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-text-color/60">Overall Progress</span>
+                            <span class="font-semibold text-text-color" id="progressPercent">0%</span>
+                        </div>
+                        <div class="w-full bg-background-alt rounded-full h-2">
+                            <div id="progressBar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Info -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h3 class="text-lg font-semibold text-text-color mb-4">Task Information</h3>
+                    <div class="space-y-3 text-sm">
+                        <div>
+                            <p class="text-text-color/60">Project</p>
+                            <p class="font-medium text-text-color" id="taskProject">Loading...</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Assigned To</p>
+                            <p class="font-medium text-text-color" id="taskAssignee">Loading...</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Created By</p>
+                            <p class="font-medium text-text-color" id="taskCreator">Loading...</p>
+                        </div>
+                        <div>
+                            <p class="text-text-color/60">Created On</p>
+                            <p class="font-medium text-text-color" id="taskCreated">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                    <h3 class="text-lg font-semibold text-text-color mb-4">Quick Actions</h3>
+                    <div class="space-y-2">
+                        <button onclick="markAsComplete()" class="w-full flex items-center gap-2 px-4 py-2 bg-accent-1 text-white rounded-lg hover:bg-accent-1/90">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span>Mark Complete</span>
+                        </button>
+                        <button onclick="deleteTask()" class="w-full flex items-center gap-2 px-4 py-2 border border-red-500/20 bg-red-500/10 text-red-600 rounded-lg hover:bg-red-500/20">
+                            <span class="material-symbols-outlined">delete</span>
+                            <span>Delete Task</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+let currentTask = null;
+
+async function loadTaskDetails() {
+    try {
+        currentTask = await tasks.getById(taskId);
+        
+        // Populate header
+        document.getElementById('taskBreadcrumb').textContent = currentTask.name;
+        document.getElementById('taskName').textContent = currentTask.name;
+        document.getElementById('taskDescription').textContent = currentTask.description || 'No description';
+        document.getElementById('taskStatus').textContent = currentTask.status.replace('_', ' ');
+        document.getElementById('taskStatus').className = `inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getTaskStatusColor(currentTask.status)}`;
+        
+        // Populate form
+        document.getElementById('editTaskName').value = currentTask.name;
+        document.getElementById('editStatus').value = currentTask.status;
+        document.getElementById('editDueDate').value = currentTask.due_date || '';
+        document.getElementById('editPriority').value = currentTask.priority || 'medium';
+        document.getElementById('editDescription').value = currentTask.description || '';
+        
+        // Populate sidebar
+        document.getElementById('taskProject').textContent = currentTask.project_name;
+        document.getElementById('taskAssignee').textContent = currentTask.assigned_to_name || 'Unassigned';
+        document.getElementById('taskCreator').textContent = currentTask.created_by_name;
+        document.getElementById('taskCreated').textContent = formatDateTime(currentTask.created_at);
+        
+        // Render subtasks
+        renderSubtasks(currentTask.subtasks || []);
+        
+        // Render dependencies
+        renderDependencies(currentTask.dependencies || []);
+        
+        // Calculate progress
+        calculateProgress();
+    } catch (error) {
+        console.error('Failed to load task:', error);
+        alert('Failed to load task details');
+        window.location.href = '/tasks.html';
+    }
+}
+
+function renderSubtasks(subtasks) {
+    const subtasksList = document.getElementById('subtasksList');
+    
+    if (subtasks.length === 0) {
+        subtasksList.innerHTML = '<p class="text-sm text-text-color/60 text-center py-4">No subtasks yet. Add one above!</p>';
+        return;
+    }
+    
+    subtasksList.innerHTML = subtasks.map(subtask => `
+        <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-alt">
+            <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
+                   onchange="toggleSubtask('${subtask.id}')" 
+                   class="w-5 h-5 rounded border-footer-border/30 text-primary focus:ring-primary"/>
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-sm text-text-color ${subtask.completed ? 'line-through opacity-50' : ''}">${subtask.name}</p>
+                ${subtask.due_date ? `<p class="text-xs text-text-color/60">Due: ${subtask.due_date}</p>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderDependencies(dependencies) {
+    const dependenciesList = document.getElementById('dependenciesList');
+    
+    if (dependencies.length === 0) {
+        dependenciesList.innerHTML = '<p class="text-sm text-text-color/60 text-center py-4">No dependencies</p>';
+        return;
+    }
+    
+    dependenciesList.innerHTML = dependencies.map(dep => `
+        <div class="flex items-center gap-3 p-3 rounded-lg bg-background-alt">
+            <span class="material-symbols-outlined text-text-color/40">link</span>
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-sm text-text-color truncate">${dep.task_name}</p>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTaskStatusColor(dep.status)}">
+                ${dep.status}
+            </span>
+        </div>
+    `).join('');
+}
+
+function calculateProgress() {
+    if (!currentTask) return;
+    
+    const subtasks = currentTask.subtasks || [];
+    if (subtasks.length === 0) {
+        // Base progress on task status
+        const progress = currentTask.status === 'completed' ? 100 : 
+                        currentTask.status === 'in_progress' ? 50 : 0;
+        updateProgress(progress);
+        return;
+    }
+    
+    const completed = subtasks.filter(s => s.completed).length;
+    const progress = Math.round((completed / subtasks.length) * 100);
+    updateProgress(progress);
+}
+
+function updateProgress(percent) {
+    document.getElementById('progressPercent').textContent = percent + '%';
+    document.getElementById('progressBar').style.width = percent + '%';
+}
+
+function getTaskStatusColor(status) {
+    const colors = {
+        'pending': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-accent-2/20 text-accent-2',
+        'overdue': 'bg-red-100 text-red-800',
+        'completed': 'bg-accent-1/20 text-accent-1',
+        'cancelled': 'bg-gray-200 text-gray-600'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+}
+
+// Task form handler
+document.getElementById('taskForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+    
+    try {
+        await tasks.update(taskId, {
+            name: document.getElementById('editTaskName').value,
+            description: document.getElementById('editDescription').value,
+            status: document.getElementById('editStatus').value,
+            due_date: document.getElementById('editDueDate').value || null,
+            priority: document.getElementById('editPriority').value
+        });
+        
+        alert('Task updated successfully!');
+        loadTaskDetails();
+    } catch (error) {
+        alert('Failed to update task: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+    }
+});
+
+// Subtask functions
+window.showAddSubtaskForm = function() {
+    document.getElementById('addSubtaskForm').classList.remove('hidden');
+    document.getElementById('newSubtaskName').focus();
+};
+
+window.hideAddSubtaskForm = function() {
+    document.getElementById('addSubtaskForm').classList.add('hidden');
+    document.getElementById('newSubtaskName').value = '';
+    document.getElementById('newSubtaskDate').value = '';
+};
+
+window.addSubtask = async function() {
+    const name = document.getElementById('newSubtaskName').value;
+    const dueDate = document.getElementById('newSubtaskDate').value;
+    
+    if (!name) {
+        alert('Subtask name is required');
+        return;
+    }
+    
+    try {
+        await tasks.addSubtask(taskId, {
+            name,
+            due_date: dueDate || null
+        });
+        hideAddSubtaskForm();
+        loadTaskDetails();
+    } catch (error) {
+        alert('Failed to add subtask: ' + error.message);
+    }
+};
+
+window.toggleSubtask = async function(subtaskId) {
+    try {
+        await tasks.toggleSubtask(subtaskId);
+        loadTaskDetails();
+        calculateProgress();
+    } catch (error) {
+        alert('Failed to toggle subtask: ' + error.message);
+    }
+};
+
+window.markAsComplete = async function() {
+    if (!confirm('Mark this task as completed?')) return;
+    
+    try {
+        await tasks.update(taskId, { status: 'completed' });
+        loadTaskDetails();
+    } catch (error) {
+        alert('Failed to complete task: ' + error.message);
+    }
+};
+
+window.deleteTask = async function() {
+    if (!confirm('Are you sure you want to delete this task? This cannot be undone.')) return;
+    
+    try {
+        await tasks.delete(taskId);
+        alert('Task deleted successfully');
+        window.location.href = '/tasks.html';
+    } catch (error) {
+        alert('Failed to delete task: ' + error.message);
+    }
+};
+
+loadTaskDetails();
+</script>
+</body>
+</html>

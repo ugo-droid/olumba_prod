@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Tasks - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('tasks');
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render tasks content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-text-color">My Tasks</h1>
+            <p class="text-text-color/60 mt-1">View and manage all your assigned tasks</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="mb-6 border-b border-footer-border/20">
+            <nav class="flex gap-8">
+                <button class="filter-tab active pb-3 px-1 text-sm font-semibold border-b-2 border-primary text-primary" data-filter="all">
+                    All Tasks
+                </button>
+                <button class="filter-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="pending">
+                    Pending
+                </button>
+                <button class="filter-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="in_progress">
+                    In Progress
+                </button>
+                <button class="filter-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="completed">
+                    Completed
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tasks List -->
+        <div id="tasksContainer" class="space-y-4">
+            <div class="text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-text-color/30">assignment</span>
+                <p class="text-text-color/60 mt-4">Loading tasks...</p>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const tasksContainer = document.getElementById('tasksContainer');
+let allTasks = [];
+let currentFilter = 'all';
+
+async function loadTasks() {
+    try {
+        allTasks = await tasks.getMyTasks();
+        renderTasks();
+    } catch (error) {
+        console.error('Failed to load tasks:', error);
+        tasksContainer.innerHTML = '<div class="text-center py-12 text-red-500">Failed to load tasks</div>';
+    }
+}
+
+function renderTasks() {
+    const filteredTasks = currentFilter === 'all' 
+        ? allTasks 
+        : allTasks.filter(t => t.status === currentFilter);
+    
+    if (filteredTasks.length === 0) {
+        tasksContainer.innerHTML = `
+            <div class="text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-text-color/30">assignment</span>
+                <p class="text-text-color/60 mt-4">No ${currentFilter === 'all' ? '' : currentFilter.replace('_', ' ')} tasks</p>
+            </div>
+        `;
+        return;
+    }
+    
+    tasksContainer.innerHTML = filteredTasks.map(task => `
+        <div class="bg-background rounded-xl shadow-sm p-6 border border-footer-border/10 hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="text-lg font-bold text-text-color">${task.name}</h3>
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getTaskStatusColor(task.status)}">
+                    ${task.status.replace('_', ' ')}
+                </span>
+            </div>
+            <p class="text-sm text-text-color/60 mb-4">${task.description || 'No description'}</p>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-1 text-text-color/60">
+                        <span class="material-symbols-outlined text-sm">folder</span>
+                        <span>${task.project_name}</span>
+                    </div>
+                    ${task.due_date ? `
+                        <div class="flex items-center gap-1 text-text-color/60">
+                            <span class="material-symbols-outlined text-sm">calendar_today</span>
+                            <span>${task.due_date}</span>
+                        </div>
+                    ` : ''}
+                    ${task.priority ? `
+                        <div class="flex items-center gap-1">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getPriorityColor(task.priority)}">
+                                ${task.priority}
+                            </span>
+                        </div>
+                    ` : ''}
+                </div>
+                <select class="text-sm border border-footer-border/20 rounded px-3 py-1.5 focus:ring-2 focus:ring-primary" onchange="updateTaskStatus('${task.id}', this.value)">
+                    <option value="pending" ${task.status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                    <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
+                </select>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getTaskStatusColor(status) {
+    const colors = {
+        'pending': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-accent-2/20 text-accent-2',
+        'overdue': 'bg-red-100 text-red-800',
+        'completed': 'bg-accent-1/20 text-accent-1'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+function getPriorityColor(priority) {
+    const colors = {
+        'low': 'bg-gray-100 text-gray-600',
+        'medium': 'bg-blue-100 text-blue-600',
+        'high': 'bg-accent-2/20 text-accent-2',
+        'urgent': 'bg-red-100 text-red-600'
+    };
+    return colors[priority] || 'bg-gray-100 text-gray-600';
+}
+
+window.updateTaskStatus = async function(taskId, newStatus) {
+    try {
+        await tasks.update(taskId, { status: newStatus });
+        await loadTasks();
+    } catch (error) {
+        alert('Failed to update task: ' + error.message);
+    }
+};
+
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => {
+            t.classList.remove('active', 'border-primary', 'text-primary');
+            t.classList.add('border-transparent', 'text-text-color/60');
+        });
+        
+        tab.classList.add('active', 'border-primary', 'text-primary');
+        tab.classList.remove('border-transparent', 'text-text-color/60');
+        
+        currentFilter = tab.dataset.filter;
+        renderTasks();
+    });
+});
+
+loadTasks();
+</script>
+</body>
+</html>

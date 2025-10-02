@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>City Plan Check - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<!-- New Submittal Modal -->
+<div id="newSubmittalModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-3xl w-full mx-4 my-8">
+        <h2 class="text-2xl font-bold text-text-color mb-4">New City Submittal</h2>
+        <form id="newSubmittalForm">
+            <div class="space-y-4">
+                <!-- Project Selection -->
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Project *</label>
+                    <select id="submittalProject" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Select a project</option>
+                    </select>
+                </div>
+                
+                <!-- City/Jurisdiction and Reference Number -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">City/Jurisdiction *</label>
+                        <input type="text" id="cityJurisdiction" required placeholder="e.g., City of Metropolis" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Plan Check # / Reference</label>
+                        <input type="text" id="planCheckNumber" placeholder="e.g., PC-2024-001234" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+                
+                <!-- Submittal Type and Name -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Submittal Type *</label>
+                        <select id="submittalType" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="">Select type</option>
+                            <option value="building_permit">Building Permit</option>
+                            <option value="zoning_approval">Zoning Approval</option>
+                            <option value="variance">Variance Request</option>
+                            <option value="environmental">Environmental Review</option>
+                            <option value="fire_safety">Fire Safety Plan</option>
+                            <option value="structural">Structural Plan Review</option>
+                            <option value="electrical">Electrical Plan Review</option>
+                            <option value="plumbing">Plumbing Plan Review</option>
+                            <option value="mechanical">Mechanical Plan Review</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Submittal Name *</label>
+                        <input type="text" id="submittalName" required placeholder="e.g., Building Permit Application" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+                
+                <!-- Document Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Upload Documents</label>
+                    <div class="border-2 border-dashed border-footer-border/20 rounded-lg p-6 text-center hover:border-primary/40 transition-colors cursor-pointer" onclick="document.getElementById('submittalFile').click()">
+                        <input type="file" id="submittalFile" class="hidden" multiple accept=".pdf,.dwg,.rvt"/>
+                        <span class="material-symbols-outlined text-4xl text-text-color/30 mb-2">upload_file</span>
+                        <p class="text-sm text-text-color/60">Click to upload or drag and drop</p>
+                        <p class="text-xs text-text-color/40 mt-1">PDF, DWG, RVT files (max 50MB each)</p>
+                    </div>
+                    <div id="fileList" class="mt-2 space-y-1"></div>
+                </div>
+                
+                <!-- Dates -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Submission Date</label>
+                        <input type="date" id="submissionDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Review Deadline</label>
+                        <input type="date" id="submittalDeadline" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                </div>
+                
+                <!-- City Official -->
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Assigned City Official</label>
+                    <input type="text" id="cityOfficial" placeholder="e.g., Emily Carter, Senior Plan Checker" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                
+                <!-- Notes -->
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Notes / Comments</label>
+                    <textarea id="submittalNotes" rows="3" placeholder="Additional notes, special instructions, or comments..." class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelSubmittalBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                    <span class="flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">send</span>
+                        Submit to City
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Corrections Modal -->
+<div id="correctionsModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-text-color">Submittal Details</h2>
+            <button id="closeCorrectionsBtn" class="text-text-color/60 hover:text-text-color">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div id="correctionsContent">
+            <!-- Dynamic content -->
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('city-approvals');
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render city approvals content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-text-color">City Plan Check</h1>
+                <p class="text-text-color/60 mt-1">Track city review submittals, corrections, and approvals</p>
+            </div>
+            <button id="newSubmittalBtn" class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90">
+                <span class="material-symbols-outlined">add</span>
+                New Submittal
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-footer-border/20">
+            <nav class="flex gap-8">
+                <button class="status-tab active pb-3 px-1 text-sm font-semibold border-b-2 border-primary text-primary" data-filter="all">
+                    All Submittals
+                </button>
+                <button class="status-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="submitted">
+                    Submitted
+                </button>
+                <button class="status-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="under_review">
+                    Under Review
+                </button>
+                <button class="status-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="corrections_required">
+                    Corrections Required
+                </button>
+                <button class="status-tab pb-3 px-1 text-sm font-semibold border-b-2 border-transparent text-text-color/60 hover:text-text-color" data-filter="approved">
+                    Approved
+                </button>
+            </nav>
+        </div>
+
+        <!-- Submittals Table -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Submittal Name</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Project</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Submission Date</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">City Official</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submittalsList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-text-color/60">
+                                <span class="material-symbols-outlined text-4xl mb-2">apartment</span>
+                                <p>Loading submittals...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const newSubmittalBtn = document.getElementById('newSubmittalBtn');
+const newSubmittalModal = document.getElementById('newSubmittalModal');
+const cancelSubmittalBtn = document.getElementById('cancelSubmittalBtn');
+const newSubmittalForm = document.getElementById('newSubmittalForm');
+const submittalsList = document.getElementById('submittalsList');
+const correctionsModal = document.getElementById('correctionsModal');
+const closeCorrectionsBtn = document.getElementById('closeCorrectionsBtn');
+
+let allSubmittals = [];
+let currentFilter = 'all';
+let allProjects = [];
+
+// Load projects for dropdown
+async function loadProjects() {
+    try {
+        allProjects = await projects.getAll();
+        const select = document.getElementById('submittalProject');
+        select.innerHTML = '<option value="">Select a project</option>' + 
+            allProjects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    } catch (error) {
+        console.error('Failed to load projects:', error);
+    }
+}
+
+// Load submittals
+async function loadSubmittals() {
+    try {
+        allSubmittals = await cityApprovals.getAll();
+        renderSubmittals();
+    } catch (error) {
+        console.error('Failed to load submittals:', error);
+        submittalsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Failed to load submittals</td></tr>';
+    }
+}
+
+function renderSubmittals() {
+    const filtered = currentFilter === 'all' 
+        ? allSubmittals 
+        : allSubmittals.filter(s => s.status === currentFilter);
+    
+    if (filtered.length === 0) {
+        submittalsList.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-text-color/60">
+                    <span class="material-symbols-outlined text-4xl mb-2">apartment</span>
+                    <p>No ${currentFilter === 'all' ? '' : currentFilter.replace('_', ' ')} submittals</p>
+                    ${currentFilter === 'all' ? '<p class="text-sm mt-2">Create your first submittal above</p>' : ''}
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    submittalsList.innerHTML = filtered.map(submittal => `
+        <tr class="text-sm hover:bg-background-alt/50">
+            <td class="px-6 py-4 font-medium text-text-color">${submittal.submittal_name}</td>
+            <td class="px-6 py-4 text-text-color/60">${submittal.project_name}</td>
+            <td class="px-6 py-4 text-text-color/60">${submittal.submission_date || 'Not set'}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(submittal.status)}">
+                    ${submittal.status.replace('_', ' ')}
+                </span>
+                ${submittal.pending_corrections > 0 ? `
+                    <span class="ml-2 text-xs text-red-500">(${submittal.pending_corrections} corrections)</span>
+                ` : ''}
+            </td>
+            <td class="px-6 py-4 text-text-color/60">${submittal.city_official || 'Not assigned'}</td>
+            <td class="px-6 py-4">
+                <button onclick="viewSubmittal('${submittal.id}')" class="text-primary hover:underline font-medium">
+                    View
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'submitted': 'bg-blue-100 text-blue-800',
+        'under_review': 'bg-yellow-100 text-yellow-800',
+        'corrections_required': 'bg-accent-2/20 text-accent-2',
+        'approved': 'bg-accent-1/20 text-accent-1',
+        'rejected': 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+// View submittal details
+window.viewSubmittal = async function(approvalId) {
+    try {
+        const approval = await cityApprovals.getById(approvalId);
+        showCorrectionsModal(approval);
+    } catch (error) {
+        alert('Failed to load submittal details: ' + error.message);
+    }
+};
+
+function showCorrectionsModal(approval) {
+    const correctionsContent = document.getElementById('correctionsContent');
+    
+    correctionsContent.innerHTML = `
+        <div class="space-y-6">
+            <!-- Submittal Info -->
+            <div class="bg-background-alt rounded-lg p-4">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-text-color/60">Submittal Name</p>
+                        <p class="font-semibold text-text-color">${approval.submittal_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-text-color/60">Project</p>
+                        <p class="font-semibold text-text-color">${approval.project_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-text-color/60">Submission Date</p>
+                        <p class="font-semibold text-text-color">${approval.submission_date || 'Not set'}</p>
+                    </div>
+                    <div>
+                        <p class="text-text-color/60">City Official</p>
+                        <p class="font-semibold text-text-color">${approval.city_official || 'Not assigned'}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Update -->
+            <div>
+                <label class="block text-sm font-medium text-text-color mb-2">Update Status</label>
+                <div class="flex gap-2">
+                    <select id="statusUpdate" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="submitted" ${approval.status === 'submitted' ? 'selected' : ''}>Submitted</option>
+                        <option value="under_review" ${approval.status === 'under_review' ? 'selected' : ''}>Under Review</option>
+                        <option value="corrections_required" ${approval.status === 'corrections_required' ? 'selected' : ''}>Corrections Required</option>
+                        <option value="approved" ${approval.status === 'approved' ? 'selected' : ''}>Approved</option>
+                        <option value="rejected" ${approval.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                    </select>
+                    <button onclick="updateSubmittalStatus('${approval.id}')" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                        Update
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corrections List -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-text-color">Corrections</h3>
+                    <button onclick="showAddCorrectionForm('${approval.id}')" class="text-sm text-primary hover:text-primary/80 font-medium">
+                        + Add Correction
+                    </button>
+                </div>
+                
+                <div id="addCorrectionForm" class="hidden mb-4 p-4 bg-background-alt rounded-lg">
+                    <h4 class="font-semibold text-text-color mb-3">Add New Correction</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Description *</label>
+                            <textarea id="correctionDescription" rows="2" class="w-full px-3 py-2 border border-footer-border/20 rounded-lg text-sm"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Due Date</label>
+                                <input type="date" id="correctionDueDate" class="w-full px-3 py-2 border border-footer-border/20 rounded-lg text-sm"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Assign To</label>
+                                <select id="correctionAssignee" class="w-full px-3 py-2 border border-footer-border/20 rounded-lg text-sm">
+                                    <option value="">Unassigned</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="hideAddCorrectionForm()" class="flex-1 px-3 py-1.5 text-sm border border-footer-border/20 rounded-lg hover:bg-background">Cancel</button>
+                            <button onclick="addCorrection('${approval.id}')" class="flex-1 px-3 py-1.5 text-sm bg-primary text-white rounded-lg hover:bg-primary/90">Add Correction</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="correctionsList" class="space-y-3">
+                    ${approval.corrections && approval.corrections.length > 0 ? 
+                        approval.corrections.map(corr => `
+                            <div class="bg-background-alt rounded-lg p-4">
+                                <div class="flex items-start justify-between mb-2">
+                                    <p class="text-sm font-medium text-text-color">${corr.description}</p>
+                                    <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getCorrectionStatusColor(corr.status)}">
+                                        ${corr.status}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-4 text-xs text-text-color/60">
+                                    ${corr.assigned_to_name ? `<span>Assigned to: ${corr.assigned_to_name}</span>` : '<span>Unassigned</span>'}
+                                    ${corr.due_date ? `<span>Due: ${corr.due_date}</span>` : ''}
+                                </div>
+                                ${corr.status !== 'resolved' ? `
+                                    <button onclick="resolveCorrection('${corr.id}')" class="mt-2 text-xs text-accent-1 hover:text-accent-1/80 font-medium">
+                                        Mark as Resolved
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `).join('') 
+                        : '<p class="text-sm text-text-color/60 text-center py-4">No corrections yet</p>'
+                    }
+                </div>
+            </div>
+
+            <!-- Notes -->
+            ${approval.notes ? `
+                <div>
+                    <h3 class="text-lg font-semibold text-text-color mb-2">Notes</h3>
+                    <p class="text-sm text-text-color/70 bg-background-alt rounded-lg p-4">${approval.notes}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    correctionsModal.classList.remove('hidden');
+}
+
+function getCorrectionStatusColor(status) {
+    const colors = {
+        'pending': 'bg-accent-2/20 text-accent-2',
+        'in_progress': 'bg-blue-100 text-blue-800',
+        'resolved': 'bg-accent-1/20 text-accent-1'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+// Modal controls
+newSubmittalBtn.addEventListener('click', () => {
+    loadProjects();
+    newSubmittalModal.classList.remove('hidden');
+});
+
+cancelSubmittalBtn.addEventListener('click', () => {
+    newSubmittalModal.classList.add('hidden');
+});
+
+closeCorrectionsBtn.addEventListener('click', () => {
+    correctionsModal.classList.add('hidden');
+});
+
+// File upload handling
+const submittalFileInput = document.getElementById('submittalFile');
+const fileListDiv = document.getElementById('fileList');
+let selectedFiles = [];
+
+submittalFileInput.addEventListener('change', (e) => {
+    selectedFiles = Array.from(e.target.files);
+    displayFileList();
+});
+
+function displayFileList() {
+    if (selectedFiles.length === 0) {
+        fileListDiv.innerHTML = '';
+        return;
+    }
+    
+    fileListDiv.innerHTML = selectedFiles.map((file, index) => `
+        <div class="flex items-center justify-between p-2 bg-background-alt rounded text-sm">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-primary">description</span>
+                <span class="text-text-color">${file.name}</span>
+                <span class="text-text-color/40">(${formatFileSize(file.size)})</span>
+            </div>
+            <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+    `).join('');
+}
+
+window.removeFile = function(index) {
+    selectedFiles.splice(index, 1);
+    displayFileList();
+};
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Create submittal
+newSubmittalForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Submitting...</span>';
+    
+    try {
+        // Note: File upload would be handled via multipart/form-data
+        // For now, we'll simulate by storing file names
+        const documentNames = selectedFiles.map(f => f.name).join(', ');
+        
+        await cityApprovals.create({
+            project_id: document.getElementById('submittalProject').value,
+            submittal_name: document.getElementById('submittalName').value,
+            submittal_type: document.getElementById('submittalType').value || null,
+            city_jurisdiction: document.getElementById('cityJurisdiction').value || null,
+            plan_check_number: document.getElementById('planCheckNumber').value || null,
+            submission_date: document.getElementById('submissionDate').value || null,
+            deadline: document.getElementById('submittalDeadline').value || null,
+            city_official: document.getElementById('cityOfficial').value || null,
+            notes: document.getElementById('submittalNotes').value || null,
+            document_ids: documentNames || null
+        });
+        
+        newSubmittalModal.classList.add('hidden');
+        newSubmittalForm.reset();
+        selectedFiles = [];
+        fileListDiv.innerHTML = '';
+        loadSubmittals();
+        
+        alert('Submittal created successfully!');
+    } catch (error) {
+        alert('Failed to create submittal: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+// Update submittal status
+window.updateSubmittalStatus = async function(approvalId) {
+    const newStatus = document.getElementById('statusUpdate').value;
+    
+    try {
+        await cityApprovals.updateStatus(approvalId, newStatus);
+        correctionsModal.classList.add('hidden');
+        loadSubmittals();
+    } catch (error) {
+        alert('Failed to update status: ' + error.message);
+    }
+};
+
+// Show add correction form
+window.showAddCorrectionForm = function(approvalId) {
+    document.getElementById('addCorrectionForm').classList.remove('hidden');
+};
+
+window.hideAddCorrectionForm = function() {
+    document.getElementById('addCorrectionForm').classList.add('hidden');
+};
+
+// Add correction
+window.addCorrection = async function(approvalId) {
+    const description = document.getElementById('correctionDescription').value;
+    const dueDate = document.getElementById('correctionDueDate').value;
+    const assignee = document.getElementById('correctionAssignee').value;
+    
+    if (!description) {
+        alert('Description is required');
+        return;
+    }
+    
+    try {
+        await cityApprovals.addCorrection(approvalId, {
+            description,
+            due_date: dueDate || null,
+            assigned_to: assignee || null
+        });
+        
+        // Refresh the modal
+        const approval = await cityApprovals.getById(approvalId);
+        showCorrectionsModal(approval);
+        
+        // Also update the status to corrections_required
+        await cityApprovals.updateStatus(approvalId, 'corrections_required');
+        loadSubmittals();
+    } catch (error) {
+        alert('Failed to add correction: ' + error.message);
+    }
+};
+
+// Resolve correction
+window.resolveCorrection = async function(correctionId) {
+    if (!confirm('Mark this correction as resolved?')) return;
+    
+    try {
+        await cityApprovals.updateCorrection(correctionId, 'resolved');
+        
+        // Reload the current modal
+        const modalVisible = !correctionsModal.classList.contains('hidden');
+        if (modalVisible) {
+            // Find which approval this belongs to and refresh
+            const correction = allSubmittals.flatMap(a => 
+                a.corrections?.map(c => ({...c, approval_id: a.id})) || []
+            ).find(c => c.id === correctionId);
+            
+            if (correction) {
+                const approval = await cityApprovals.getById(correction.approval_id);
+                showCorrectionsModal(approval);
+            }
+        }
+        
+        loadSubmittals();
+    } catch (error) {
+        alert('Failed to resolve correction: ' + error.message);
+    }
+};
+
+// Filter tabs
+document.querySelectorAll('.status-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.status-tab').forEach(t => {
+            t.classList.remove('active', 'border-primary', 'text-primary');
+            t.classList.add('border-transparent', 'text-text-color/60');
+        });
+        
+        tab.classList.add('active', 'border-primary', 'text-primary');
+        tab.classList.remove('border-transparent', 'text-text-color/60');
+        
+        currentFilter = tab.dataset.filter;
+        renderSubmittals();
+    });
+});
+
+loadSubmittals();
+</script>
+</body>
+</html>

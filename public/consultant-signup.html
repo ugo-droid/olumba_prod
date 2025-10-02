@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Join Olumba - Consultant Invitation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-background border-b border-footer-border/20 px-6 py-4">
+        <div class="flex items-center gap-3">
+            <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path clip-rule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fill-rule="evenodd"></path>
+            </svg>
+            <h1 class="text-xl font-bold text-text-color">Olumba</h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center p-8">
+        <div class="w-full max-w-2xl">
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center">
+                <div class="inline-block w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+                <p class="text-text-color/60">Validating your invitation...</p>
+            </div>
+
+            <!-- Invalid Invitation -->
+            <div id="invalidState" class="hidden text-center bg-background rounded-xl shadow-lg p-8 border border-red-200">
+                <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+                <h2 class="text-2xl font-bold text-text-color mb-2">Invalid or Expired Invitation</h2>
+                <p class="text-text-color/60 mb-6">This invitation link is no longer valid.</p>
+                <a href="/" class="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90">
+                    Go to Homepage
+                </a>
+            </div>
+
+            <!-- Invitation Details & Signup -->
+            <div id="signupState" class="hidden">
+                <!-- Invitation Info -->
+                <div class="bg-background rounded-xl shadow-lg p-8 border border-footer-border/10 mb-6">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="material-symbols-outlined text-4xl text-primary">mail</span>
+                        </div>
+                        <h2 class="text-3xl font-bold text-text-color mb-2">You're Invited!</h2>
+                        <p class="text-text-color/60">Join <span id="projectName" class="font-semibold text-text-color"></span> as a consultant</p>
+                    </div>
+
+                    <div class="bg-primary/5 border border-primary/20 rounded-lg p-6">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-text-color/60">Project</p>
+                                <p class="font-semibold text-text-color" id="inviteProjectName">-</p>
+                            </div>
+                            <div>
+                                <p class="text-text-color/60">Company</p>
+                                <p class="font-semibold text-text-color" id="inviteCompanyName">-</p>
+                            </div>
+                            <div>
+                                <p class="text-text-color/60">Invited By</p>
+                                <p class="font-semibold text-text-color" id="inviteInviterName">-</p>
+                            </div>
+                            <div>
+                                <p class="text-text-color/60">Role</p>
+                                <p class="font-semibold text-text-color capitalize" id="inviteRole">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Options -->
+                <div class="bg-background rounded-xl shadow-lg p-8 border border-footer-border/10">
+                    <!-- Tabs -->
+                    <div class="flex gap-4 mb-6 border-b border-footer-border/20">
+                        <button id="signupTab" class="pb-3 px-4 text-sm font-semibold border-b-2 border-primary text-primary">
+                            Create Account
+                        </button>
+                        <button id="loginTab" class="pb-3 px-4 text-sm font-semibold border-b-2 border-transparent text-text-color/60">
+                            I Have an Account
+                        </button>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <form id="signupForm" class="space-y-4">
+                        <div class="bg-accent-1/10 border border-accent-1/30 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-accent-1">
+                                <span class="material-symbols-outlined text-sm align-middle">info</span>
+                                You're creating an account for <strong id="signupEmail"></strong>
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Full Name *</label>
+                            <input type="text" id="fullName" required placeholder="John Smith" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Your Company Name *</label>
+                            <input type="text" id="companyName" required placeholder="e.g., ABC Consulting" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                            <p class="text-xs text-text-color/60 mt-1">You'll be registered as a consultant from this company</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Job Title</label>
+                                <input type="text" id="jobTitle" placeholder="e.g., Structural Engineer" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-text-color mb-1">Discipline</label>
+                                <select id="discipline" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                                    <option value="">Select discipline</option>
+                                    <option value="Architecture">Architecture</option>
+                                    <option value="Structural Engineering">Structural Engineering</option>
+                                    <option value="MEP Engineering">MEP Engineering</option>
+                                    <option value="Civil Engineering">Civil Engineering</option>
+                                    <option value="Environmental">Environmental</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Password *</label>
+                            <input type="password" id="password" required placeholder="Create a strong password" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Confirm Password *</label>
+                            <input type="password" id="confirmPassword" required placeholder="Re-enter password" class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+
+                        <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded" role="alert">
+                            <span id="errorText"></span>
+                        </div>
+
+                        <button type="submit" class="w-full px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">how_to_reg</span>
+                            Create Account & Join Project
+                        </button>
+                    </form>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" class="hidden space-y-4">
+                        <div class="bg-accent-1/10 border border-accent-1/30 rounded-lg p-4 mb-4">
+                            <p class="text-sm text-accent-1">
+                                <span class="material-symbols-outlined text-sm align-middle">info</span>
+                                Log in with your existing Olumba account
+                            </p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Email *</label>
+                            <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Password *</label>
+                            <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+
+                        <div id="loginErrorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded" role="alert">
+                            <span id="loginErrorText"></span>
+                        </div>
+
+                        <button type="submit" class="w-full px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">login</span>
+                            Log In & Join Project
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-background border-t border-footer-border/20 py-6 text-center text-sm text-text-color/60">
+        <p>© 2024 Olumba. All rights reserved.</p>
+    </footer>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const token = urlParams.get('token');
+
+const loadingState = document.getElementById('loadingState');
+const invalidState = document.getElementById('invalidState');
+const signupState = document.getElementById('signupState');
+const signupForm = document.getElementById('signupForm');
+const loginForm = document.getElementById('loginForm');
+const signupTab = document.getElementById('signupTab');
+const loginTab = document.getElementById('loginTab');
+const errorMessage = document.getElementById('errorMessage');
+const errorText = document.getElementById('errorText');
+const loginErrorMessage = document.getElementById('loginErrorMessage');
+const loginErrorText = document.getElementById('loginErrorText');
+
+let invitationData = null;
+
+// Validate invitation on load
+async function validateInvitation() {
+    if (!token) {
+        showInvalidState();
+        return;
+    }
+    
+    try {
+        invitationData = await auth.validateInvitation(token);
+        showSignupState();
+    } catch (error) {
+        showInvalidState();
+    }
+}
+
+function showInvalidState() {
+    loadingState.classList.add('hidden');
+    invalidState.classList.remove('hidden');
+}
+
+function showSignupState() {
+    loadingState.classList.add('hidden');
+    signupState.classList.remove('hidden');
+    
+    // Populate invitation details
+    document.getElementById('projectName').textContent = invitationData.project_name || 'a project';
+    document.getElementById('inviteProjectName').textContent = invitationData.project_name || 'N/A';
+    document.getElementById('inviteCompanyName').textContent = invitationData.company_name || 'N/A';
+    document.getElementById('inviteInviterName').textContent = invitationData.inviter_name || 'N/A';
+    document.getElementById('inviteRole').textContent = invitationData.role || 'Consultant';
+    document.getElementById('signupEmail').textContent = invitationData.email;
+}
+
+// Tab switching
+signupTab.addEventListener('click', () => {
+    signupTab.classList.add('border-primary', 'text-primary');
+    signupTab.classList.remove('border-transparent', 'text-text-color/60');
+    loginTab.classList.remove('border-primary', 'text-primary');
+    loginTab.classList.add('border-transparent', 'text-text-color/60');
+    
+    signupForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+});
+
+loginTab.addEventListener('click', () => {
+    loginTab.classList.add('border-primary', 'text-primary');
+    loginTab.classList.remove('border-transparent', 'text-text-color/60');
+    signupTab.classList.remove('border-primary', 'text-primary');
+    signupTab.classList.add('border-transparent', 'text-text-color/60');
+    
+    loginForm.classList.remove('hidden');
+    signupForm.classList.add('hidden');
+});
+
+// Signup form handler
+signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    errorMessage.classList.add('hidden');
+    
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (password !== confirmPassword) {
+        errorText.textContent = 'Passwords do not match';
+        errorMessage.classList.remove('hidden');
+        return;
+    }
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating account...';
+    
+    try {
+        await auth.register({
+            email: invitationData.email,
+            password,
+            full_name: document.getElementById('fullName').value,
+            company_name: document.getElementById('companyName').value,
+            job_title: document.getElementById('jobTitle').value || null,
+            discipline: document.getElementById('discipline').value || null,
+            invitation_token: token
+        });
+        
+        // Redirect to welcome page
+        window.location.href = `/consultant-welcome.html?project=${invitationData.project_id}`;
+    } catch (error) {
+        errorText.textContent = error.message || 'Failed to create account';
+        errorMessage.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined">how_to_reg</span> Create Account & Join Project';
+    }
+});
+
+// Login form handler
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    loginErrorMessage.classList.add('hidden');
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Logging in...';
+    
+    try {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        await auth.login(email, password);
+        
+        // After login, the invitation will be auto-accepted via the backend
+        // Mark invitation as accepted manually since we're using existing account
+        // (This would be handled in a separate endpoint in production)
+        
+        // Redirect to welcome page
+        window.location.href = `/consultant-welcome.html?project=${invitationData.project_id}`;
+    } catch (error) {
+        loginErrorText.textContent = error.message || 'Invalid credentials';
+        loginErrorMessage.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined">login</span> Log In & Join Project';
+    }
+});
+
+// Initialize
+validateInvitation();
+</script>
+</body>
+</html>

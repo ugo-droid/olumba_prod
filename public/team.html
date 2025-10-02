@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Team - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<!-- Invite User Modal -->
+<div id="inviteModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-background rounded-xl shadow-xl p-6 max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold text-text-color mb-4">Invite Team Member</h2>
+        <form id="inviteForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Email Address *</label>
+                    <input type="email" id="inviteEmail" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-color mb-1">Role *</label>
+                    <select id="inviteRole" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                        <option value="">Select role</option>
+                        <option value="member">Member</option>
+                        <option value="consultant">Consultant</option>
+                        <option value="client">Client</option>
+                        <option value="guest">Guest</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button type="button" id="cancelInviteBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Send Invitation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+const currentUser = getCurrentUser();
+if (currentUser.role !== 'admin') {
+    alert('Access denied. Admin only.');
+    window.location.href = '/dashboard.html';
+}
+
+// Initialize navigation
+initNav('team');
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render team content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-text-color">Team Members</h1>
+                <p class="text-text-color/60 mt-1">Manage your company team and access</p>
+            </div>
+            <button id="inviteBtn" class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90">
+                <span class="material-symbols-outlined">person_add</span>
+                Invite Member
+            </button>
+        </div>
+
+        <!-- Team Table -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Name</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Email</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Role</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Last Login</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teamList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-text-color/60">
+                                <span class="material-symbols-outlined text-4xl mb-2">group</span>
+                                <p>Loading team members...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const teamList = document.getElementById('teamList');
+const inviteBtn = document.getElementById('inviteBtn');
+const inviteModal = document.getElementById('inviteModal');
+const cancelInviteBtn = document.getElementById('cancelInviteBtn');
+const inviteForm = document.getElementById('inviteForm');
+
+async function loadTeam() {
+    try {
+        const teamData = await users.getAll();
+        renderTeam(teamData);
+    } catch (error) {
+        console.error('Failed to load team:', error);
+        teamList.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-red-500">Failed to load team members</td></tr>';
+    }
+}
+
+function renderTeam(teamData) {
+    if (teamData.length === 0) {
+        teamList.innerHTML = `
+            <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-text-color/60">
+                    <span class="material-symbols-outlined text-4xl mb-2">group</span>
+                    <p>No team members yet</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    teamList.innerHTML = teamData.map(member => `
+        <tr class="text-sm hover:bg-background-alt/50">
+            <td class="px-6 py-4 font-medium text-text-color">${member.full_name}</td>
+            <td class="px-6 py-4 text-text-color/60">${member.email}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(member.role)}">
+                    ${member.role}
+                </span>
+            </td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${member.status === 'active' ? 'bg-accent-1/20 text-accent-1' : 'bg-gray-100 text-gray-600'}">
+                    ${member.status}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-text-color/60">${member.last_login ? formatDate(member.last_login) : 'Never'}</td>
+        </tr>
+    `).join('');
+}
+
+function getRoleColor(role) {
+    const colors = {
+        'admin': 'bg-red-100 text-red-700',
+        'member': 'bg-primary/20 text-primary',
+        'consultant': 'bg-accent-2/20 text-accent-2',
+        'client': 'bg-purple-100 text-purple-700',
+        'guest': 'bg-gray-100 text-gray-600'
+    };
+    return colors[role] || 'bg-gray-100 text-gray-600';
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+}
+
+// Invite modal
+inviteBtn.addEventListener('click', () => {
+    inviteModal.classList.remove('hidden');
+});
+
+cancelInviteBtn.addEventListener('click', () => {
+    inviteModal.classList.add('hidden');
+});
+
+inviteForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    
+    try {
+        const result = await users.invite(
+            document.getElementById('inviteEmail').value,
+            document.getElementById('inviteRole').value
+        );
+        
+        alert(`Invitation sent! Share this link:\n${result.invitationLink}`);
+        inviteModal.classList.add('hidden');
+        inviteForm.reset();
+        loadTeam();
+    } catch (error) {
+        alert('Failed to send invitation: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Invitation';
+    }
+});
+
+loadTeam();
+</script>
+</body>
+</html>

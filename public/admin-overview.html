@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Overview - Olumba</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+const currentUser = getCurrentUser();
+if (currentUser.role !== 'admin') {
+    alert('Access denied. Admin only.');
+    window.location.href = '/dashboard.html';
+}
+
+// Initialize navigation
+initNav('admin');
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render admin overview content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-text-color">Company Overview</h1>
+            <p class="text-text-color/60 mt-1">Projects, tasks, and documents across your organization</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Total Projects</p>
+                        <p class="text-3xl font-bold text-text-color mt-1" id="statProjects">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">folder</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Total Tasks</p>
+                        <p class="text-3xl font-bold text-text-color mt-1" id="statTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-accent-2/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-2">assignment</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Completed Tasks</p>
+                        <p class="text-3xl font-bold text-text-color mt-1" id="statCompleted">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-accent-1/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-1">check_circle</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Overdue Tasks</p>
+                        <p class="text-3xl font-bold text-red-500 mt-1" id="statOverdue">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-red-500">warning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Table -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="p-6 border-b border-footer-border/10 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-text-color">Company Projects</h2>
+                <a href="/projects.html" class="text-sm text-primary hover:text-primary/80 font-medium">Go to Projects →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Project Name</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white text-center">Tasks</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white text-center">Completed</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white text-center">Overdue</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white text-center">Documents</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Members</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProjectsList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center text-text-color/60">
+                                <span class="material-symbols-outlined text-4xl mb-2">dashboard</span>
+                                <p>Loading company projects...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const adminProjectsList = document.getElementById('adminProjectsList');
+
+async function loadCompanyOverview() {
+    try {
+        const projectsData = await projects.adminCompanyProjects();
+        
+        // Stats
+        document.getElementById('statProjects').textContent = projectsData.length;
+        const totalTasks = projectsData.reduce((sum, p) => sum + (p.total_tasks || 0), 0);
+        const completed = projectsData.reduce((sum, p) => sum + (p.completed_tasks || 0), 0);
+        const overdue = projectsData.reduce((sum, p) => sum + (p.overdue_tasks || 0), 0);
+        
+        document.getElementById('statTasks').textContent = totalTasks;
+        document.getElementById('statCompleted').textContent = completed;
+        document.getElementById('statOverdue').textContent = overdue;
+        
+        // Projects table
+        renderCompanyProjects(projectsData);
+    } catch (error) {
+        console.error('Failed to load company overview:', error);
+        adminProjectsList.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-red-500">Failed to load company projects</td></tr>';
+    }
+}
+
+function renderCompanyProjects(projectsData) {
+    if (projectsData.length === 0) {
+        adminProjectsList.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-8 text-center text-text-color/60">No projects found</td>
+            </tr>
+        `;
+        return;
+    }
+    
+    adminProjectsList.innerHTML = projectsData.map(p => `
+        <tr class="text-sm hover:bg-background-alt/50">
+            <td class="px-6 py-4 font-medium text-text-color">${p.name}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(p.status)}">
+                    ${p.status.replace('_', ' ')}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-center">${p.total_tasks || 0}</td>
+            <td class="px-6 py-4 text-center text-accent-1 font-semibold">${p.completed_tasks || 0}</td>
+            <td class="px-6 py-4 text-center text-red-500 font-semibold">${p.overdue_tasks || 0}</td>
+            <td class="px-6 py-4 text-center">${p.latest_documents || 0}</td>
+            <td class="px-6 py-4 text-text-color/60">${p.member_count || 0}</td>
+        </tr>
+    `).join('');
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'planning': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-primary/20 text-primary',
+        'on_hold': 'bg-accent-2/20 text-accent-2',
+        'completed': 'bg-accent-1/20 text-accent-1',
+        'cancelled': 'bg-gray-200 text-gray-600'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+loadCompanyOverview();
+</script>
+</body>
+</html>

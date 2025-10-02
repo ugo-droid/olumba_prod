@@ -1,0 +1,116 @@
+/* Olumba App Styles */
+
+/* Table alternating row colors */
+table tbody tr:nth-child(odd) {
+    background-color: white;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f1f5f9; /* slate-100 */
+}
+
+/* Navigation color coding */
+.nav-link[href="/dashboard.html"] {
+    --nav-color: #2171f2; /* primary blue */
+}
+
+.nav-link[href="/projects.html"] {
+    --nav-color: #22C55E; /* accent-1 green */
+}
+
+.nav-link[href="/tasks.html"] {
+    --nav-color: #FF8C42; /* accent-2 orange */
+}
+
+.nav-link[href="/city-approvals.html"] {
+    --nav-color: #8B5CF6; /* purple */
+}
+
+.nav-link[href="/communication-hub.html"] {
+    --nav-color: #EC4899; /* pink */
+}
+
+.nav-link[href="/admin-overview.html"] {
+    --nav-color: #EF4444; /* red */
+}
+
+.nav-link[href="/team.html"] {
+    --nav-color: #06B6D4; /* cyan */
+}
+
+.nav-link[href="/notifications.html"] {
+    --nav-color: #F59E0B; /* amber */
+}
+
+.nav-link[href="/settings.html"] {
+    --nav-color: #6B7280; /* gray */
+}
+
+/* Apply colors to navigation icons and active states */
+.nav-link:hover .material-symbols-outlined,
+.nav-link.active .material-symbols-outlined {
+    color: var(--nav-color) !important;
+}
+
+.nav-link:hover {
+    background-color: rgba(var(--nav-color-rgb, 33, 113, 242), 0.1);
+    color: var(--nav-color) !important;
+}
+
+.nav-link.active {
+    background-color: rgba(var(--nav-color-rgb, 33, 113, 242), 0.1);
+    color: var(--nav-color) !important;
+    font-weight: 600;
+}
+
+/* Define RGB values for each navigation item */
+.nav-link[href="/dashboard.html"] { --nav-color-rgb: 33, 113, 242; }
+.nav-link[href="/projects.html"] { --nav-color-rgb: 34, 197, 94; }
+.nav-link[href="/tasks.html"] { --nav-color-rgb: 255, 140, 66; }
+.nav-link[href="/city-approvals.html"] { --nav-color-rgb: 139, 92, 246; }
+.nav-link[href="/communication-hub.html"] { --nav-color-rgb: 236, 72, 153; }
+.nav-link[href="/admin-overview.html"] { --nav-color-rgb: 239, 68, 68; }
+.nav-link[href="/team.html"] { --nav-color-rgb: 6, 182, 212; }
+.nav-link[href="/notifications.html"] { --nav-color-rgb: 245, 158, 11; }
+.nav-link[href="/settings.html"] { --nav-color-rgb: 107, 114, 128; }
+
+/* Hover effects for table rows */
+table tbody tr:hover {
+    background-color: #e2e8f0 !important; /* slate-200 */
+    transition: background-color 0.2s ease;
+}
+
+/* Ensure table headers have proper styling */
+table thead tr {
+    background-color: #475569; /* slate-600 */
+    color: white;
+}
+
+/* Table borders and spacing */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table th,
+table td {
+    padding: 0.75rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0; /* slate-200 */
+}
+
+table th {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Responsive table styling */
+@media (max-width: 768px) {
+    table th,
+    table td {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}
