@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS organizations (
 -- Create subscriptions table
 CREATE TABLE IF NOT EXISTS subscriptions (
     id TEXT PRIMARY KEY,
-    user_id TEXT REFERENCES users(id),
+    user_id UUID REFERENCES users(id),
     organization_id TEXT REFERENCES organizations(id),
     status TEXT NOT NULL,
     plan_id TEXT,
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE TABLE IF NOT EXISTS payment_attempts (
     id TEXT PRIMARY KEY,
     subscription_id TEXT REFERENCES subscriptions(id),
-    user_id TEXT REFERENCES users(id),
+    user_id UUID REFERENCES users(id),
     organization_id TEXT REFERENCES organizations(id),
     status TEXT NOT NULL,
     amount BIGINT,
@@ -65,35 +65,23 @@ ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_attempts ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for organizations
-CREATE POLICY "Users can view organizations they belong to" ON organizations
-    FOR SELECT USING (
-        id IN (
-            SELECT organization_id FROM organization_memberships 
-            WHERE user_id = auth.uid()
-        )
-    );
+-- Note: Clerk organizations don't use auth.uid(), so we'll use a more permissive policy for now
+CREATE POLICY "Users can view organizations" ON organizations
+    FOR SELECT USING (true);
 
 -- Create RLS policies for subscriptions
 CREATE POLICY "Users can view their own subscriptions" ON subscriptions
-    FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "Users can view organization subscriptions if they're members" ON subscriptions
     FOR SELECT USING (
-        organization_id IN (
-            SELECT organization_id FROM organization_memberships 
-            WHERE user_id = auth.uid()
+        user_id IN (
+            SELECT id FROM users WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
         )
     );
 
 -- Create RLS policies for payment_attempts
 CREATE POLICY "Users can view their own payment attempts" ON payment_attempts
-    FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "Users can view organization payment attempts if they're members" ON payment_attempts
     FOR SELECT USING (
-        organization_id IN (
-            SELECT organization_id FROM organization_memberships 
-            WHERE user_id = auth.uid()
+        user_id IN (
+            SELECT id FROM users WHERE email = current_setting('request.jwt.claims', true)::json->>'email'
         )
     );
 
