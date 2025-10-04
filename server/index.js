@@ -8,12 +8,16 @@ import { dirname } from 'path';
 // Import database (keep for backward compatibility during migration)
 import { initializeDatabase } from './database/db.js';
 
-// Import Supabase configuration
+// Import Supabase configuration (for database operations)
 import './config/supabase.js';
+
+// Import Clerk configuration
+import './config/clerk.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
 import supabaseAuthRoutes from './routes/supabaseAuth.js';
+import clerkAuthRoutes from './routes/clerkAuth.js';
 import projectRoutes from './routes/projects.js';
 import taskRoutes from './routes/tasks.js';
 import userRoutes from './routes/users.js';
@@ -22,6 +26,8 @@ import cityApprovalRoutes from './routes/cityApprovals.js';
 import documentRoutes from './routes/documents.js';
 import messageRoutes from './routes/messages.js';
 import searchRoutes from './routes/search.js';
+import clerkWebhookRoutes from './routes/clerkWebhooks.js';
+import clerkBillingWebhookRoutes from './routes/clerkBillingWebhooks.js';
 
 // Load environment variables
 dotenv.config();
@@ -50,8 +56,9 @@ try {
 }
 
 // API Routes
-app.use('/api/auth', supabaseAuthRoutes); // New Supabase auth routes
-app.use('/api/auth/legacy', authRoutes); // Keep old routes for backward compatibility
+app.use('/api/auth', clerkAuthRoutes); // New Clerk auth routes
+app.use('/api/auth/supabase', supabaseAuthRoutes); // Supabase auth routes (deprecated)
+app.use('/api/auth/legacy', authRoutes); // Legacy auth routes (deprecated)
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes);
@@ -60,6 +67,8 @@ app.use('/api/city-approvals', cityApprovalRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/webhooks', clerkWebhookRoutes);
+app.use('/api/webhooks', clerkBillingWebhookRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

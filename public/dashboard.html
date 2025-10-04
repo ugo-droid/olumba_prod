@@ -8,9 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
 <script src="/js/config.js"></script>
-<script src="/js/supabaseClient.js"></script>
+<script src="/js/clerkClient.js"></script>
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div id="app"></div>
@@ -18,18 +20,112 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-requireAuth();
+// Initialize Clerk authentication
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Dashboard initializing...');
+    
+    try {
+        // Show loading state
+        document.body.style.opacity = '0.5';
+        
+        console.log('🔐 Initializing Clerk authentication...');
+        await window.clerkAuth.initializeClerk();
+        console.log('✅ Clerk initialized successfully');
+        
+        // Check if user is authenticated
+        const isAuth = window.clerkAuth.isAuthenticated();
+        console.log('🔍 Authentication status:', isAuth);
+        
+        // Additional debugging
+        if (window.Clerk) {
+            console.log('🔍 Clerk instance details:', {
+                hasUser: !!window.Clerk.user,
+                userId: window.Clerk.user?.id,
+                userEmail: window.Clerk.user?.emailAddresses?.[0]?.emailAddress,
+                isLoaded: window.Clerk.loaded,
+                isSignedIn: window.Clerk.user !== null
+            });
+        }
+        
+        if (!isAuth) {
+            console.log('❌ User not authenticated, redirecting to login');
+            window.location.href = '/login-clerk.html';
+            return;
+        }
+        
+        console.log('✅ User authenticated, initializing dashboard...');
+        
+        // User is authenticated, continue with dashboard initialization
+        initializeDashboard();
+        
+        // Hide loading state
+        document.body.style.opacity = '1';
+        
+    } catch (error) {
+        console.error('❌ Failed to initialize Clerk:', error);
+        
+        // Show error message to user
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
+        errorDiv.innerHTML = `
+            <h3 class="font-bold">Authentication Error</h3>
+            <p class="text-sm mt-1">Failed to load authentication. Redirecting to login...</p>
+        `;
+        document.body.appendChild(errorDiv);
+        
+        // Hide loading state
+        document.body.style.opacity = '1';
+        
+        // Redirect after a delay
+        setTimeout(() => {
+            window.location.href = '/login-clerk.html';
+        }, 3000);
+    }
+});
 
-// Check if onboarding is needed (first login)
-const onboardingCompleted = localStorage.getItem('onboarding_completed');
-const firstLogin = localStorage.getItem('first_login');
+function initializeDashboard() {
+    // Check if onboarding is needed (first login)
+    const onboardingCompleted = localStorage.getItem('onboarding_completed');
+    const firstLogin = localStorage.getItem('first_login');
 
-if (!onboardingCompleted && firstLogin !== 'false') {
-    window.location.href = '/onboarding.html';
+    if (!onboardingCompleted && firstLogin !== 'false') {
+        window.location.href = '/onboarding.html';
+        return;
+    }
+
+    // Initialize navigation
+    initNav('dashboard');
+    
+    // Load user data
+    loadUserData();
 }
 
-// Initialize navigation
-initNav('dashboard');
+// Function to load user data from Clerk
+async function loadUserData() {
+    try {
+        const user = window.clerkAuth.getCurrentUser();
+        if (user) {
+            // Update user name in the dashboard
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = user.fullName || user.firstName || 'User';
+            }
+            
+            // Update user info in navigation
+            updateUserNavigation(user);
+        }
+    } catch (error) {
+        console.error('Failed to load user data:', error);
+    }
+}
+
+// Function to update navigation with user info
+function updateUserNavigation(user) {
+    // This will be implemented in the nav.js file
+    if (window.updateUserNav) {
+        window.updateUserNav(user);
+    }
+}
 
 // Get main content area
 const mainContent = document.getElementById('mainContent');

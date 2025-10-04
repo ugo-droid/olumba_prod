@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clerk Basic Test</title>
+</head>
+<body>
+    <h1>Clerk Basic Test</h1>
+    <div id="status">Loading...</div>
+    <div id="logs"></div>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            document.getElementById('logs').innerHTML += '<div>' + message + '</div>';
+        }
+        
+        log('Starting basic Clerk test...');
+        
+        // Test 1: Try to load from unpkg CDN
+        log('Test 1: Loading Clerk from unpkg CDN...');
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js';
+        script.setAttribute('data-clerk-publishable-key', 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk');
+        script.async = true;
+        script.crossOrigin = 'anonymous';
+        
+        script.onload = function() {
+            log('✅ Script loaded successfully');
+            
+            // Wait a bit for Clerk to initialize
+            setTimeout(() => {
+                if (window.Clerk) {
+                    log('✅ Clerk object is available');
+                    document.getElementById('status').textContent = 'SUCCESS: Clerk loaded';
+                    document.getElementById('status').style.color = 'green';
+                } else {
+                    log('❌ Clerk object not available');
+                    document.getElementById('status').textContent = 'ERROR: Clerk object not found';
+                    document.getElementById('status').style.color = 'red';
+                }
+            }, 1000);
+        };
+        
+        script.onerror = function() {
+            log('❌ Script failed to load');
+            document.getElementById('status').textContent = 'ERROR: Script failed to load';
+            document.getElementById('status').style.color = 'red';
+        };
+        
+        document.head.appendChild(script);
+        
+        // Test 2: Try to access the Clerk domain directly
+        log('Test 2: Testing Clerk domain accessibility...');
+        fetch('https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js', { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    log('✅ Clerk domain is accessible');
+                } else {
+                    log('❌ Clerk domain returned status: ' + response.status);
+                }
+            })
+            .catch(error => {
+                log('❌ Clerk domain error: ' + error.message);
+            });
+    </script>
+</body>
+</html>

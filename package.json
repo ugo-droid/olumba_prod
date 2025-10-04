@@ -22,6 +22,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@clerk/backend": "^2.17.0",
+    "@clerk/clerk-sdk-node": "^4.13.23",
     "@supabase/auth-js": "^2.72.0",
     "@supabase/supabase-js": "^2.58.0",
     "bcryptjs": "^2.4.3",
@@ -35,6 +37,7 @@
     "qrcode": "^1.5.3",
     "speakeasy": "^2.0.0",
     "sql.js": "^1.10.3",
+    "svix": "^1.76.1",
     "uuid": "^9.0.1"
   }
 }

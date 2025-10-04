@@ -3,10 +3,14 @@
  * Contains environment-specific settings for the Olumba app
  */
 
-// Supabase Configuration
+// Supabase Configuration (for database operations)
 // These values should be replaced with your actual Supabase project details
 window.SUPABASE_URL = 'https://mzxsugnnyydinywvwqxt.supabase.co';
 window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16eHN1Z25ueXlkaW55d3Z3cXh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjkwNzUsImV4cCI6MjA3NDk0NTA3NX0.IdoLZqV6azxoIoNjSc6_LJWdVMcD_httDe0rHfATtGI';
+
+// Clerk Configuration (for authentication)
+// These values should be replaced with your actual Clerk project details
+window.CLERK_PUBLISHABLE_KEY = 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk';
 
 // App Configuration
 window.APP_CONFIG = {
@@ -33,7 +37,8 @@ window.APP_CONFIG = {
     
     // Feature flags
     FEATURES: {
-        SUPABASE_MIGRATION: true,
+        CLERK_AUTH: true,
+        SUPABASE_DATABASE: true,
         LEGACY_AUTH: false,
         REAL_TIME_NOTIFICATIONS: true,
         FILE_VERSIONING: true,

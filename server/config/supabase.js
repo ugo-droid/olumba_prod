@@ -34,6 +34,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey ||
 export const TABLES = {
     USERS: 'users',
     COMPANIES: 'companies',
+    ORGANIZATIONS: 'organizations',
     PROJECTS: 'projects',
     TASKS: 'tasks',
     DOCUMENTS: 'documents',
@@ -42,7 +43,9 @@ export const TABLES = {
     NOTIFICATIONS: 'notifications',
     ACTIVITY_LOG: 'activity_log',
     PROJECT_MEMBERS: 'project_members',
-    CITY_APPROVALS: 'city_approvals'
+    CITY_APPROVALS: 'city_approvals',
+    SUBSCRIPTIONS: 'subscriptions',
+    PAYMENT_ATTEMPTS: 'payment_attempts'
 };
 
 // Storage bucket names
