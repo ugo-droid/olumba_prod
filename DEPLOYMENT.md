@@ -54,8 +54,8 @@ This guide provides step-by-step instructions for deploying Olumba to Vercel for
    ```env
    # Application Configuration
    NODE_ENV=production
-   APP_URL=https://olumba.com
-   ALLOWED_ORIGINS=https://olumba.com,https://www.olumba.com
+APP_URL=https://olumba.app
+ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
 
    # Supabase Configuration
    SUPABASE_URL=https://mzxsugnnyydinywvwqxt.supabase.co
@@ -84,8 +84,8 @@ This guide provides step-by-step instructions for deploying Olumba to Vercel for
 
 1. **In Vercel Dashboard → Project → Settings → Domains**
 2. **Add your domain:**
-   - Primary domain: `olumba.com`
-   - Additional domain: `www.olumba.com`
+   - Primary domain: `olumba.app`
+   - Additional domain: `www.olumba.app`
 3. **Configure DNS records as instructed by Vercel:**
    ```
    Type: A
@@ -114,21 +114,21 @@ This guide provides step-by-step instructions for deploying Olumba to Vercel for
 #### Clerk Configuration
 1. **Go to Clerk Dashboard → Configure → Domains**
 2. **Add production domains:**
-   - `olumba.com`
-   - `www.olumba.com`
+   - `olumba.app`
+   - `www.olumba.app`
 3. **Configure webhook endpoints:**
-   - Main webhook: `https://olumba.com/api/webhooks/clerk-webhook`
-   - Billing webhook: `https://olumba.com/api/webhooks/clerk-billing-webhook`
+   - Main webhook: `https://olumba.app/api/webhooks/clerk-webhook`
+   - Billing webhook: `https://olumba.app/api/webhooks/clerk-billing-webhook`
 4. **Update allowed origins in Clerk settings**
 
 #### Resend Configuration
 1. **Go to Resend Dashboard → Domains**
 2. **Add and verify your domain:**
-   - Domain: `olumba.com`
+   - Domain: `olumba.app`
    - Configure DNS records as instructed
 3. **Update sender email:**
-   - From: `hello@olumba.com`
-   - Reply-to: `support@olumba.com`
+   - From: `hello@olumba.app`
+   - Reply-to: `support@olumba.app`
 
 ### Step 6: Deploy Application
 

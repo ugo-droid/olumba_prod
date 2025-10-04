@@ -40,8 +40,8 @@ Add each variable with "Production" environment selected:
 
 #### Application Configuration
 - [ ] `NODE_ENV` = `production`
-- [ ] `APP_URL` = `https://olumba.com`
-- [ ] `ALLOWED_ORIGINS` = `https://olumba.com,https://www.olumba.com`
+- [ ] `APP_URL` = `https://olumba.app`
+- [ ] `ALLOWED_ORIGINS` = `https://olumba.app,https://www.olumba.app`
 
 #### Supabase Configuration
 - [ ] `SUPABASE_URL` = `https://mzxsugnnyydinywvwqxt.supabase.co`
@@ -72,8 +72,8 @@ Add each variable with "Production" environment selected:
 
 ### Step 7: Add Custom Domain
 - [ ] Go to Project Settings → Domains
-- [ ] Add domain: `olumba.com`
-- [ ] Add domain: `www.olumba.com`
+- [ ] Add domain: `olumba.app`
+- [ ] Add domain: `www.olumba.app`
 - [ ] Configure DNS records as instructed by Vercel
 - [ ] Wait for domain verification (up to 24 hours)
 
