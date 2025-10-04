@@ -7,6 +7,7 @@ import express from 'express';
 import { createClerkClient } from '@clerk/backend';
 import { Webhook } from 'svix';
 import { supabase, supabaseAdmin, TABLES } from '../config/supabase.js';
+import resendEmailService from '../services/resendEmailService.js';
 
 const router = express.Router();
 
@@ -130,6 +131,20 @@ async function handleUserCreated(data) {
             console.error('❌ Error creating user in Supabase:', error);
         } else {
             console.log('✅ User created successfully in Supabase');
+            
+            // Send welcome email
+            try {
+                await resendEmailService.sendWelcomeEmail(
+                    user.email_addresses[0]?.email_address,
+                    {
+                        full_name: user.full_name || `${user.first_name} ${user.last_name}`.trim() || 'there'
+                    }
+                );
+                console.log('✅ Welcome email sent to new user');
+            } catch (emailError) {
+                console.error('❌ Welcome email failed:', emailError);
+                // Don't fail user creation if email fails
+            }
         }
     } catch (error) {
         console.error('❌ Error handling user.created:', error);

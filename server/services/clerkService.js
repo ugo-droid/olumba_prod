@@ -5,7 +5,7 @@
 
 import { clerkClient, getUserMetadata, updateUserMetadata, createUser, USER_ROLES } from '../config/clerk.js';
 import { supabaseAdmin, TABLES } from '../config/supabase.js';
-import emailService from './emailService.js';
+import resendEmailService from './resendEmailService.js';
 
 /**
  * Authentication Service using Clerk
@@ -245,9 +245,12 @@ export class ClerkAuthService {
 
             // Send invitation email
             try {
-                await emailService.sendInviteEmail(email, {
-                    role,
-                    invitationUrl: invitation.status
+                await resendEmailService.sendConsultantInvite(email, {
+                    inviter_name: 'Olumba Team',
+                    company_name: 'Olumba',
+                    project_name: 'New Project',
+                    project_description: `You've been invited to join as a ${role}`,
+                    invite_link: `${process.env.APP_URL || 'http://localhost:3000'}/register-clerk`
                 });
             } catch (emailError) {
                 console.error('Invitation email failed:', emailError);

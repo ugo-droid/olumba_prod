@@ -10,7 +10,8 @@
     "init-db": "node server/scripts/initDb.js",
     "seed-db": "node server/scripts/seedDb.js",
     "seed-all": "node server/scripts/createAdmin.js && node server/scripts/seedCityApprovals.js && node server/scripts/seedDocuments.js",
-    "reset": "rm -f data/olumba.db && npm run seed-all"
+    "reset": "rm -f data/olumba.db && npm run seed-all",
+    "test-emails": "node server/scripts/testEmails.js"
   },
   "keywords": [
     "aec",
@@ -35,6 +36,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^7.0.6",
     "qrcode": "^1.5.3",
+    "resend": "^6.1.2",
     "speakeasy": "^2.0.0",
     "sql.js": "^1.10.3",
     "svix": "^1.76.1",
