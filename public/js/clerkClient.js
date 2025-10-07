@@ -33,13 +33,28 @@ async function initializeClerk() {
         
         // Wait for Clerk to be available with longer timeout
         let attempts = 0;
-        const maxAttempts = 100; // 10 seconds total
+        const maxAttempts = 200; // 20 seconds total – accommodate slower networks
         console.log('Waiting for Clerk SDK to load...');
         
         while (!window.Clerk && attempts < maxAttempts) {
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
             
+
+            // After 5 seconds, attempt to load Clerk from the public CDN as a fallback
+            if (attempts === 50 && !window.Clerk) {
+                console.warn('Primary Clerk SDK still unavailable after 5s – loading fallback CDN');
+                if (!document.getElementById('clerk-sdk-fallback')) {
+                    const fallbackScript = document.createElement('script');
+                    fallbackScript.id = 'clerk-sdk-fallback';
+                    fallbackScript.src = 'https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js';
+                    fallbackScript.setAttribute('data-clerk-publishable-key', CLERK_PUBLISHABLE_KEY);
+                    fallbackScript.async = true;
+                    fallbackScript.crossOrigin = 'anonymous';
+                    document.head.appendChild(fallbackScript);
+                }
+            }
+
             if (attempts % 20 === 0) {
                 console.log(`Still waiting for Clerk... (${attempts}/${maxAttempts})`);
             }
