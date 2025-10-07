@@ -91,9 +91,7 @@
                 loadingState.classList.add('hidden');
                 
                 // Render Clerk Sign Up component
-                const { SignUp } = await import('https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js');
-                
-                const signUp = new SignUp(signUpContainer, {
+                const signUp = clerkInstance.components.signUp({
                     afterSignUpUrl: '/dashboard.html',
                     afterSignInUrl: '/dashboard.html',
                     signInUrl: '/login-clerk.html',
@@ -113,6 +111,8 @@
                         }
                     }
                 });
+                
+                signUp.mount(signUpContainer);
                 
                 // Listen for sign up events
                 signUp.addEventListener('signup:success', async (event) => {
