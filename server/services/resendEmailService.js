@@ -10,8 +10,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email configuration
 const EMAIL_CONFIG = {
-    from: 'Olumba <hello@olumba.com>',
-    replyTo: 'support@olumba.com',
+    from: 'Olumba <hello@olumba.app>',
+    replyTo: 'support@olumba.app',
     appUrl: process.env.APP_URL || 'http://localhost:3000'
 };
 

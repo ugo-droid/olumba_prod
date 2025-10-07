@@ -133,7 +133,7 @@ push_to_github() {
 
 # Test production endpoints
 test_production() {
-    local domain=${1:-"https://olumba.com"}
+    local domain=${1:-"https://olumba.app"}
     
     print_status "Testing production endpoints..."
     
@@ -213,7 +213,7 @@ show_help() {
     echo
     echo "Examples:"
     echo "  $0 deploy"
-    echo "  $0 test https://olumba.com"
+    echo "  $0 test https://olumba.app"
     echo "  $0 check"
 }
 
@@ -223,7 +223,7 @@ case "${1:-deploy}" in
         deploy
         ;;
     "test")
-        test_production "${2:-https://olumba.com}"
+        test_production "${2:-https://olumba.app}"
         ;;
     "check")
         check_dependencies

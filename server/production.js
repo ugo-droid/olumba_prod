@@ -44,7 +44,7 @@ const app = express();
 
 // Production middleware
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['https://olumba.com', 'https://www.olumba.com'],
+    origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['https://olumba.app', 'https://www.olumba.app'],
     credentials: true,
     optionsSuccessStatus: 200
 }));

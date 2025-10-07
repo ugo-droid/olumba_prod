@@ -191,7 +191,8 @@ git push origin main
 2. **Configure Environment Variables**:
    ```env
    NODE_ENV=production
-   APP_URL=https://olumba.com
+   APP_URL=https://olumba.app
+   
    SUPABASE_URL=https://mzxsugnnyydinywvwqxt.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=[your-service-role-key]
    CLERK_SECRET_KEY=[your-clerk-secret]

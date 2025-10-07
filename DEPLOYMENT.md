@@ -11,7 +11,7 @@ This guide provides step-by-step instructions for deploying Olumba to Vercel for
 - [Supabase project](https://supabase.com) configured
 - [Clerk account](https://clerk.com) for authentication
 - [Resend account](https://resend.com) for email services
-- Custom domain (e.g., olumba.com)
+- Custom domain (e.g., olumba.app)
 
 ## 🚀 Deployment Steps
 
@@ -72,7 +72,7 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
    RESEND_API_KEY=re_8duHTbw2_GV1dwgmtFNYKa3U3MdvDX1k3
 
    # Email Configuration
-   EMAIL_FROM=hello@olumba.com
+   EMAIL_FROM=hello@olumba.app
 
    # Security
    JWT_SECRET=your_secure_jwt_secret_here
@@ -103,8 +103,8 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
 #### Supabase Configuration
 1. **Go to Supabase Dashboard → Settings → API**
 2. **Update Site URL:**
-   - Add `https://olumba.com` to allowed origins
-   - Add `https://www.olumba.com` to allowed origins
+   - Add `https://olumba.app` to allowed origins
+   - Add `https://www.olumba.app` to allowed origins
 3. **Configure RLS policies for production**
 4. **Run database migrations:**
    ```sql
@@ -136,8 +136,8 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
 2. **Click "Deploy" to trigger deployment**
 3. **Monitor deployment logs for any errors**
 4. **Verify deployment success:**
-   - Check `https://olumba.com/api/health`
-   - Check `https://olumba.com/api/status`
+   - Check `https://olumba.app/api/health`
+   - Check `https://olumba.app/api/status`
 
 ### Step 7: Enable Monitoring and Analytics
 
@@ -160,7 +160,7 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
 
 1. **Vercel automatically provides SSL certificates**
 2. **Verify HTTPS is working:**
-   - Visit `https://olumba.com`
+   - Visit `https://olumba.app`
    - Check SSL certificate in browser
 3. **Configure HSTS headers (already in `vercel.json`)**
 
@@ -170,18 +170,18 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
 
 1. **API Health Check:**
    ```bash
-   curl https://olumba.com/api/health
+   curl https://olumba.app/api/health
    ```
 
 2. **API Status Check:**
    ```bash
-   curl https://olumba.com/api/status
+   curl https://olumba.app/api/status
    ```
 
 ### Functionality Tests
 
 1. **Authentication Flow:**
-   - Visit `https://olumba.com/login-clerk.html`
+   - Visit `https://olumba.app/login-clerk.html`
    - Test user registration and login
    - Verify Clerk integration
 
@@ -328,7 +328,7 @@ For deployment issues:
 
 ## 🎉 Deployment Complete!
 
-Your Olumba application should now be live at `https://olumba.com` with:
+Your Olumba application should now be live at `https://olumba.app` with:
 - ✅ Secure authentication via Clerk
 - ✅ Reliable database via Supabase  
 - ✅ Professional email delivery via Resend

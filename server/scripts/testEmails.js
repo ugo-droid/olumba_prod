@@ -35,7 +35,7 @@ async function testConsultantInvite() {
             company_name: 'Acme Architecture',
             project_name: 'Downtown Office Complex',
             project_description: 'A modern 20-story office building in the heart of downtown',
-            invite_link: 'https://olumba.com/accept-invite/abc123'
+            invite_link: 'https://olumba.app/accept-invite/abc123'
         });
         console.log('✅ Consultant invite email sent successfully:', result.messageId);
     } catch (error) {
@@ -110,7 +110,7 @@ async function testMentionEmail() {
             sender_name: 'Tom Anderson',
             message_content: 'Hey Lisa, could you review the electrical plans and let me know if the load calculations look correct? I noticed some discrepancies in the panel schedules.',
             project_name: 'Downtown Office Complex',
-            project_link: 'https://olumba.com/projects/proj_789'
+            project_link: 'https://olumba.app/projects/proj_789'
         });
         console.log('✅ Mention email sent successfully:', result.messageId);
     } catch (error) {
@@ -124,7 +124,7 @@ async function testPasswordReset() {
     try {
         const result = await resendEmailService.sendPasswordResetEmail(TEST_EMAIL, {
             user_name: 'Robert Taylor',
-            reset_link: 'https://olumba.com/reset-password/token123'
+            reset_link: 'https://olumba.app/reset-password/token123'
         });
         console.log('✅ Password reset email sent successfully:', result.messageId);
     } catch (error) {

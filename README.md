@@ -208,7 +208,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
-EMAIL_FROM=noreply@olumba.com
+EMAIL_FROM=noreply@olumba.app
 ```
 
 ### **Frontend Configuration**
@@ -298,7 +298,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 - 📖 Check the documentation
 - 🔍 Search existing issues
 - 💬 Join our community discussions
-- 📧 Contact support: support@olumba.com
+- 📧 Contact support: support@olumba.app
 
 ### **Resources**
 - [Supabase Documentation](https://supabase.com/docs)

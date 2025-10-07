@@ -37,13 +37,13 @@ RESEND_API_KEY=re_8duHTbw2_GV1dwgmtFNYKa3U3MdvDX1k3
 
 # Email Configuration
 APP_URL=http://localhost:3000
-EMAIL_FROM=hello@olumba.com
+EMAIL_FROM=hello@olumba.app
 ```
 
 ### 2. Resend Dashboard Setup
 
 1. **Go to [Resend Dashboard](https://resend.com/domains)**
-2. **Add your domain** (e.g., `olumba.com`)
+2. **Add your domain** (e.g., `olumba.app`)
 3. **Configure DNS records** as instructed by Resend
 4. **Verify domain** for production use
 

@@ -207,7 +207,7 @@ export async function sendConsultantInvite(recipientEmail, invitationData) {
     const emailHtml = getConsultantInviteTemplate(invitationData);
     
     const mailOptions = {
-        from: `"Olumba" <${process.env.EMAIL_FROM || 'noreply@olumba.com'}>`,
+        from: `"Olumba" <${process.env.EMAIL_FROM || 'noreply@olumba.app'}>`,
         to: recipientEmail,
         subject: `You're invited to join ${invitationData.project_name} on Olumba`,
         html: emailHtml,
@@ -339,7 +339,7 @@ export async function sendMentionEmail(recipientEmail, mentionData) {
     const emailHtml = getMentionTemplate(mentionData);
     
     const mailOptions = {
-        from: `"Olumba" <${process.env.EMAIL_FROM || 'noreply@olumba.com'}>`,
+        from: `"Olumba" <${process.env.EMAIL_FROM || 'noreply@olumba.app'}>`,
         to: recipientEmail,
         subject: `${mentionData.sender_name} mentioned you in ${mentionData.project_name}`,
         html: emailHtml,
@@ -372,7 +372,7 @@ export async function sendMentionEmail(recipientEmail, mentionData) {
 // Send welcome email after signup
 export async function sendWelcomeEmail(recipientEmail, userData) {
     const mailOptions = {
-        from: `"Olumba" <${process.env.EMAIL_FROM || 'noreply@olumba.com'}>`,
+        from: `"Olumba" <${process.env.EMAIL_FROM || 'noreply@olumba.app'}>`,
         to: recipientEmail,
         subject: 'Welcome to Olumba!',
         html: `

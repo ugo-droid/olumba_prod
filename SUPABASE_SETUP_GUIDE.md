@@ -55,7 +55,7 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
-EMAIL_FROM=noreply@olumba.com
+EMAIL_FROM=noreply@olumba.app
 
 # JWT Secret
 JWT_SECRET=your_jwt_secret_key

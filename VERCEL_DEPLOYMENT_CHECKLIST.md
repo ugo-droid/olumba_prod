@@ -55,7 +55,7 @@ Add each variable with "Production" environment selected:
 
 #### Resend Email Service
 - [ ] `RESEND_API_KEY` = `re_8duHTbw2_GV1dwgmtFNYKa3U3MdvDX1k3`
-- [ ] `EMAIL_FROM` = `hello@olumba.com`
+- [ ] `EMAIL_FROM` = `hello@olumba.app`
 
 ### Step 5: Deploy
 - [ ] Click "Deploy"

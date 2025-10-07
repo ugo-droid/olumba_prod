@@ -152,7 +152,7 @@ https://olumba-git-[branch-name]-[username].vercel.app
 
 **Custom Domain (if configured):**
 ```
-https://olumba.com
+https://olumba.app
 ```
 
 ## 🚨 Rollback and Recovery
