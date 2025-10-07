@@ -85,7 +85,7 @@ export const updateUserMetadata = async (userId, metadata) => {
 export const createUser = async (email, password, metadata = {}) => {
     try {
         const user = await clerkClient.users.createUser({
-            emailAddress: [email],
+            emailAddresses: [email],
             password,
             publicMetadata: {
                 ...metadata,
