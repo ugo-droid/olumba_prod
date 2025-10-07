@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Test - Olumba</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", text: "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
+    
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    
+    <script src="/js/config.js"></script>
+    <script src="/js/clerkClient.js"></script>
+    <script src="/js/auth.js"></script>
+</head>
+<body class="bg-background-alt font-display text-text min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-text mb-2">Authentication Test</h1>
+            <p class="text-text opacity-70">Testing Clerk integration</p>
+        </div>
+        
+        <div id="authStatus" class="mb-6 p-4 rounded-lg">
+            <div class="flex items-center justify-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                <span class="ml-2 text-text">Checking authentication...</span>
+            </div>
+        </div>
+        
+        <div id="userInfo" class="hidden mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h3 class="font-semibold text-green-800 mb-2">✅ Authenticated</h3>
+            <div id="userDetails" class="text-sm text-green-700"></div>
+        </div>
+        
+        <div id="notAuthenticated" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h3 class="font-semibold text-red-800 mb-2">❌ Not Authenticated</h3>
+            <p class="text-sm text-red-700">Please log in to continue.</p>
+        </div>
+        
+        <div class="space-y-3">
+            <a href="/login-clerk.html" class="block w-full bg-primary text-white text-center py-3 px-4 rounded-lg hover:bg-blue-700 transition">
+                Go to Login
+            </a>
+            <a href="/register-clerk.html" class="block w-full border border-primary text-primary text-center py-3 px-4 rounded-lg hover:bg-primary hover:text-white transition">
+                Go to Sign Up
+            </a>
+            <a href="/dashboard.html" class="block w-full border border-gray-300 text-gray-700 text-center py-3 px-4 rounded-lg hover:bg-gray-50 transition">
+                Go to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authStatus = document.getElementById('authStatus');
+            const userInfo = document.getElementById('userInfo');
+            const notAuthenticated = document.getElementById('notAuthenticated');
+            const userDetails = document.getElementById('userDetails');
+            
+            try {
+                // Initialize Clerk
+                await window.clerkAuth.initializeClerk();
+                
+                // Check authentication status
+                const isAuth = window.clerkAuth.isAuthenticated();
+                
+                if (isAuth) {
+                    const user = window.clerkAuth.getCurrentUser();
+                    authStatus.classList.add('hidden');
+                    userInfo.classList.remove('hidden');
+                    
+                    userDetails.innerHTML = `
+                        <p><strong>ID:</strong> ${user.id}</p>
+                        <p><strong>Email:</strong> ${user.emailAddresses[0]?.emailAddress || 'N/A'}</p>
+                        <p><strong>Name:</strong> ${user.fullName || 'N/A'}</p>
+                        <p><strong>Created:</strong> ${new Date(user.createdAt).toLocaleDateString()}</p>
+                    `;
+                } else {
+                    authStatus.classList.add('hidden');
+                    notAuthenticated.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Auth test failed:', error);
+                authStatus.classList.add('hidden');
+                notAuthenticated.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

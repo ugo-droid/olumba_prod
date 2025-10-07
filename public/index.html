@@ -408,7 +408,7 @@
             e.preventDefault();
             const email = document.getElementById('trialEmail').value;
             const company = document.getElementById('trialCompany').value;
-            window.location.href = `/register.html?email=${encodeURIComponent(email)}&company=${encodeURIComponent(company)}`;
+            window.location.href = `/register-clerk.html?email=${encodeURIComponent(email)}&company=${encodeURIComponent(company)}`;
         });
 
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {

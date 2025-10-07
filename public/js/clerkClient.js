@@ -21,6 +21,13 @@ async function initializeClerk() {
         if (window.Clerk) {
             clerkInstance = window.Clerk;
             console.log('✅ Clerk already loaded globally');
+            
+            // Wait for Clerk to be ready
+            if (clerkInstance.load) {
+                await clerkInstance.load();
+                console.log('✅ Clerk loaded and ready');
+            }
+            
             return clerkInstance;
         }
         
@@ -268,14 +275,14 @@ async function getUserOrganizations() {
  * Redirect to sign in page
  */
 function redirectToSignIn() {
-    window.location.href = '/login.html';
+    window.location.href = '/login-clerk.html';
 }
 
 /**
  * Redirect to sign up page
  */
 function redirectToSignUp() {
-    window.location.href = '/register.html';
+    window.location.href = '/register-clerk.html';
 }
 
 /**
