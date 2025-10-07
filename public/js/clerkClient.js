@@ -20,6 +20,8 @@ async function initializeClerk() {
         // Check if Clerk is already loaded globally
         if (window.Clerk) {
             clerkInstance = window.Clerk;
+            // Expose the instance globally for inline scripts that rely on it
+            window.clerkInstance = clerkInstance;
             console.log('✅ Clerk already loaded globally');
             
             // Wait for Clerk to be ready
@@ -52,6 +54,8 @@ async function initializeClerk() {
         }
         
         clerkInstance = window.Clerk;
+        // Expose the instance globally for inline scripts that rely on it
+        window.clerkInstance = clerkInstance;
         console.log('✅ Clerk initialized successfully');
         console.log('Clerk instance:', clerkInstance);
         
