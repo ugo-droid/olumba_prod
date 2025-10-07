@@ -3,17 +3,14 @@
   "name": "olumba",
   "builds": [
     {
-      "src": "server/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["server/**", "public/**", "package.json"]
-      }
+      "src": "api/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
@@ -21,7 +18,7 @@
     }
   ],
   "functions": {
-    "server/index.js": {
+    "api/index.js": {
       "maxDuration": 30
     }
   },
