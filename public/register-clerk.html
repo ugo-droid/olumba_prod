@@ -91,7 +91,7 @@
                 loadingState.classList.add('hidden');
                 
                 // Render Clerk Sign Up component
-                const signUp = clerkInstance.components.signUp({
+                const signUp = window.clerkInstance.components.signUp({
                     afterSignUpUrl: '/dashboard.html',
                     afterSignInUrl: '/dashboard.html',
                     signInUrl: '/login-clerk.html',
