@@ -12,6 +12,26 @@
     <!-- Clerk SDK -->
     <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
     
+    <!-- Fallback CDN for Clerk SDK -->
+    <script>
+        /*
+         * Sometimes the regional Clerk CDN (excited-hound-64.clerk.accounts.dev) can be unreachable
+         * from certain networks. After a short delay, check if the global `Clerk` object is present;
+         * if not, load the SDK from the public unpkg CDN as a fallback so the registration form can mount.
+         */
+        setTimeout(() => {
+            if (!window.Clerk) {
+                console.log('Loading Clerk from CDN fallback...');
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js';
+                script.setAttribute('data-clerk-publishable-key', 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk');
+                script.async = true;
+                script.crossOrigin = 'anonymous';
+                document.head.appendChild(script);
+            }
+        }, 2000);
+    </script>
+    
     <!-- App Configuration -->
     <script src="/js/config.js"></script>
     <script src="/js/clerkClient.js"></script>
