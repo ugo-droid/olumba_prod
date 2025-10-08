@@ -5,8 +5,14 @@
 
 import { Resend } from 'resend';
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend client with validation
+let resend = null;
+if (process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('✅ Resend email service initialized');
+} else {
+    console.warn('⚠️  RESEND_API_KEY not found - email service will be in development mode');
+}
 
 // Email configuration
 const EMAIL_CONFIG = {
@@ -14,6 +20,27 @@ const EMAIL_CONFIG = {
     replyTo: 'support@olumba.app',
     appUrl: process.env.APP_URL || 'http://localhost:3000'
 };
+
+// Helper function to send email with fallback for dev mode
+async function sendEmailWithFallback(emailData, devLogData) {
+    if (!resend) {
+        console.log(`\n📧 ${devLogData.type} EMAIL (DEV MODE):`);
+        console.log('───────────────────────────────');
+        console.log('To:', emailData.to[0]);
+        console.log('Subject:', emailData.subject);
+        if (devLogData.extraInfo) {
+            Object.entries(devLogData.extraInfo).forEach(([key, value]) => {
+                console.log(`${key}:`, value);
+            });
+        }
+        console.log('───────────────────────────────\n');
+        return { success: true, messageId: 'dev-mode' };
+    }
+
+    const data = await resend.emails.send(emailData);
+    console.log(`✅ ${devLogData.type} email sent:`, data.id);
+    return { success: true, messageId: data.id };
+}
 
 // Brand colors and styling
 const BRAND_STYLES = {
@@ -304,16 +331,22 @@ export async function sendConsultantInvite(recipientEmail, invitationData) {
     );
 
     try {
-        const data = await resend.emails.send({
-            from: EMAIL_CONFIG.from,
-            to: [recipientEmail],
-            subject: `You're invited to join ${invitationData.project_name} on Olumba`,
-            html: emailHtml,
-            text: `You've been invited to join ${invitationData.project_name} as a consultant. Visit ${invitationData.invite_link} to accept.`
-        });
-
-        console.log('✅ Consultant invite email sent:', data.id);
-        return { success: true, messageId: data.id };
+        return await sendEmailWithFallback(
+            {
+                from: EMAIL_CONFIG.from,
+                to: [recipientEmail],
+                subject: `You're invited to join ${invitationData.project_name} on Olumba`,
+                html: emailHtml,
+                text: `You've been invited to join ${invitationData.project_name} as a consultant. Visit ${invitationData.invite_link} to accept.`
+            },
+            {
+                type: 'CONSULTANT INVITATION',
+                extraInfo: {
+                    'Project': invitationData.project_name,
+                    'Link': invitationData.invite_link
+                }
+            }
+        );
     } catch (error) {
         console.error('❌ Consultant invite email failed:', error);
         throw error;

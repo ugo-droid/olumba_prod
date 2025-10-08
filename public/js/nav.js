@@ -138,11 +138,27 @@ function setupNavListeners() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             try {
-                await auth.logout();
+                // Use Clerk sign out if available
+                if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+                    console.log('Signing out with Clerk...');
+                    await window.clerkAuth.signOut();
+                } else {
+                    // Fallback to legacy auth
+                    console.log('Signing out with legacy auth...');
+                    await auth.logout();
+                }
+                
+                // Clear all local storage
+                localStorage.clear();
+                
+                // Redirect to login page
+                window.location.href = '/login-clerk.html';
             } catch (error) {
                 console.error('Logout error:', error);
+                // Force logout even if API call fails
+                localStorage.clear();
+                window.location.href = '/login-clerk.html';
             }
-            window.location.href = '/login.html';
         });
     }
     

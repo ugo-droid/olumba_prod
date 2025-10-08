@@ -24,7 +24,9 @@ async function initializeClerk() {
             
             // Wait for Clerk to be ready
             if (clerkInstance.load) {
-                await clerkInstance.load();
+                await clerkInstance.load({
+                    publishableKey: CLERK_PUBLISHABLE_KEY
+                });
                 console.log('✅ Clerk loaded and ready');
             }
             
@@ -57,7 +59,9 @@ async function initializeClerk() {
         
         // Wait for Clerk to be ready
         if (clerkInstance.load) {
-            await clerkInstance.load();
+            await clerkInstance.load({
+                publishableKey: CLERK_PUBLISHABLE_KEY
+            });
             console.log('✅ Clerk loaded and ready');
         }
         
@@ -184,8 +188,12 @@ async function signOut() {
             return;
         }
         
+        // Clear local storage including onboarding status
+        localStorage.removeItem('onboarding_completed');
+        localStorage.removeItem('user_profile');
+        
         await clerkInstance.signOut();
-        window.location.href = '/login.html';
+        window.location.href = '/login-clerk.html';
     } catch (error) {
         console.error('Sign out error:', error);
         throw error;
@@ -216,21 +224,78 @@ async function updateUserProfile() {
     try {
         const token = await getAuthToken();
         if (!token) {
+            console.warn('No auth token available for profile update');
             return;
         }
         
         const response = await fetch('/api/auth/me', {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
         
-        if (!response.ok) {
-            console.warn('Failed to update user profile in backend');
+        if (response.ok) {
+            const userProfile = await response.json();
+            console.log('✅ User profile synced with backend:', userProfile);
+            
+            // Store user profile locally for quick access
+            localStorage.setItem('user_profile', JSON.stringify(userProfile));
+            return userProfile;
+        } else {
+            console.warn('Failed to sync user profile with backend:', response.status);
         }
     } catch (error) {
         console.error('Failed to update user profile:', error);
+    }
+}
+
+/**
+ * Ensure user profile exists in backend database
+ */
+async function ensureUserProfileExists() {
+    try {
+        const token = await getAuthToken();
+        const user = getCurrentUser();
+        
+        if (!token || !user) {
+            console.warn('No token or user available for profile creation');
+            return;
+        }
+        
+        // Try to get existing profile first
+        const existingProfile = await updateUserProfile();
+        if (existingProfile) {
+            return existingProfile;
+        }
+        
+        // If no profile exists, create one
+        console.log('Creating user profile in backend...');
+        const response = await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                full_name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+                email: user.emailAddresses?.[0]?.emailAddress || user.email,
+                profile_photo: user.profileImageUrl,
+                role: 'member'
+            })
+        });
+        
+        if (response.ok) {
+            const newProfile = await response.json();
+            console.log('✅ User profile created in backend:', newProfile);
+            localStorage.setItem('user_profile', JSON.stringify(newProfile));
+            return newProfile;
+        } else {
+            console.error('Failed to create user profile:', response.status);
+        }
+    } catch (error) {
+        console.error('Error ensuring user profile exists:', error);
     }
 }
 
@@ -292,6 +357,47 @@ function redirectToDashboard() {
     window.location.href = '/dashboard.html';
 }
 
+/**
+ * Redirect to onboarding
+ */
+function redirectToOnboarding() {
+    window.location.href = '/onboarding.html';
+}
+
+/**
+ * Check if user needs onboarding
+ */
+function needsOnboarding(user) {
+    // Check for URL parameter to bypass onboarding (for testing)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('skipOnboarding') === 'true') {
+        console.log('🔧 Skipping onboarding due to URL parameter');
+        return false;
+    }
+    
+    // Check local storage first (for backward compatibility)
+    const localOnboardingCompleted = localStorage.getItem('onboarding_completed');
+    if (localOnboardingCompleted === 'true') {
+        console.log('✅ Onboarding completed (local storage)');
+        return false;
+    }
+    
+    // Check Clerk metadata
+    const clerkOnboardingCompleted = user?.publicMetadata?.onboardingCompleted;
+    if (clerkOnboardingCompleted) {
+        console.log('✅ Onboarding completed (Clerk metadata)');
+        return false;
+    }
+    
+    console.log('⚠️ User needs onboarding', {
+        hasUser: !!user,
+        publicMetadata: user?.publicMetadata,
+        localStorage: localOnboardingCompleted
+    });
+    
+    return true;
+}
+
 // Initialize Clerk when the script loads
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -312,9 +418,12 @@ window.clerkAuth = {
     signOut,
     updateUserMetadata,
     updateUserProfile,
+    ensureUserProfileExists,
     requestPasswordReset,
     getUserOrganizations,
     redirectToSignIn,
     redirectToSignUp,
-    redirectToDashboard
+    redirectToDashboard,
+    redirectToOnboarding,
+    needsOnboarding
 };

@@ -8,6 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
+<!-- App Scripts -->
+<script src="/js/config.js"></script>
+<script src="/js/clerkClient.js"></script>
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div class="flex flex-col min-h-screen">
@@ -15,12 +22,13 @@
     <header class="bg-background border-b border-footer-border/20 px-6 py-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                    <path clip-rule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fill-rule="evenodd"></path>
-                </svg>
+                <img src="/assets/olumba-logo.png" alt="Olumba" class="h-8 w-auto" />
                 <h1 class="text-xl font-bold text-text-color">Olumba</h1>
             </div>
-            <button id="skipBtn" class="text-sm text-text-color/60 hover:text-text-color">Skip Tour</button>
+            <div class="flex gap-3">
+                <button id="skipBtn" class="text-sm text-text-color/60 hover:text-text-color">Skip Tour</button>
+                <a href="/dashboard.html?skipOnboarding=true" class="text-sm text-primary hover:text-primary/80">Go to Dashboard</a>
+            </div>
         </div>
     </header>
 
@@ -58,192 +66,288 @@
 
 <script src="/js/api.js"></script>
 <script>
-requireAuth();
-
-const currentUser = getCurrentUser();
-const steps = [
-    {
-        title: "Welcome to Olumba! 🎉",
-        icon: "celebration",
-        content: `
-            <p class="text-lg text-text-color/80 mb-4">
-                Your all-in-one platform for Architecture, Engineering, and Construction project management.
-            </p>
-            <p class="text-text-color/70 mb-6">
-                Let's take a quick tour to help you get started. This will only take a minute!
-            </p>
-            <div class="bg-primary/10 rounded-lg p-4">
-                <p class="text-sm text-primary font-medium">
-                    👋 Hi ${currentUser.full_name}! You're logged in as ${currentUser.role}.
-                </p>
-            </div>
-        `
-    },
-    {
-        title: "Create Your First Project",
-        icon: "folder_open",
-        content: `
-            <p class="text-text-color/80 mb-6">
-                Projects are the foundation of Olumba. They help you organize work, assign team members, and track progress.
-            </p>
-            <div class="space-y-4">
-                <div class="flex items-start gap-4 p-4 bg-background-alt rounded-lg">
-                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <span class="material-symbols-outlined text-primary">add</span>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-text-color mb-1">Click "New Project"</h3>
-                        <p class="text-sm text-text-color/70">Go to Projects page and click the "+ New Project" button</p>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4 p-4 bg-background-alt rounded-lg">
-                    <div class="w-12 h-12 rounded-full bg-accent-1/10 flex items-center justify-center flex-shrink-0">
-                        <span class="material-symbols-outlined text-accent-1">edit</span>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-text-color mb-1">Fill in Project Details</h3>
-                        <p class="text-sm text-text-color/70">Add name, description, dates, and team members</p>
-                    </div>
-                </div>
-                <div class="flex items-start gap-4 p-4 bg-background-alt rounded-lg">
-                    <div class="w-12 h-12 rounded-full bg-accent-2/10 flex items-center justify-center flex-shrink-0">
-                        <span class="material-symbols-outlined text-accent-2">check_circle</span>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-text-color mb-1">You're All Set!</h3>
-                        <p class="text-sm text-text-color/70">Start adding tasks and uploading documents</p>
-                    </div>
-                </div>
-            </div>
-        `
-    },
-    {
-        title: "Manage Tasks & Collaborate",
-        icon: "task_alt",
-        content: `
-            <p class="text-text-color/80 mb-6">
-                Keep your team on track with tasks, subtasks, and real-time collaboration.
-            </p>
-            <div class="space-y-3">
-                <div class="flex items-center gap-3 p-3 bg-background-alt rounded-lg">
-                    <span class="material-symbols-outlined text-primary">assignment</span>
-                    <div>
-                        <p class="font-medium text-sm text-text-color">Create and assign tasks</p>
-                        <p class="text-xs text-text-color/60">Assign work to team members with due dates and priorities</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-3 bg-background-alt rounded-lg">
-                    <span class="material-symbols-outlined text-accent-1">checklist</span>
-                    <div>
-                        <p class="font-medium text-sm text-text-color">Break down into subtasks</p>
-                        <p class="text-xs text-text-color/60">Divide complex tasks into manageable steps</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 p-3 bg-background-alt rounded-lg">
-                    <span class="material-symbols-outlined text-accent-2">notifications</span>
-                    <div>
-                        <p class="font-medium text-sm text-text-color">Get notified</p>
-                        <p class="text-xs text-text-color/60">Receive updates on task assignments and changes</p>
-                    </div>
-                </div>
-            </div>
-        `
-    },
-    {
-        title: "You're Ready to Go! 🚀",
-        icon: "rocket_launch",
-        content: `
-            <p class="text-lg text-text-color/80 mb-6">
-                You've completed the walkthrough! Here's what you can do now:
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <a href="/projects.html" class="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 hover:border-primary/40 transition-colors">
-                    <span class="material-symbols-outlined text-3xl text-primary mb-2">folder</span>
-                    <h3 class="font-bold text-text-color mb-1">Create Projects</h3>
-                    <p class="text-sm text-text-color/70">Start managing your AEC projects</p>
-                </a>
-                <a href="/city-approvals.html" class="p-4 bg-gradient-to-br from-accent-1/10 to-accent-1/5 rounded-lg border border-accent-1/20 hover:border-accent-1/40 transition-colors">
-                    <span class="material-symbols-outlined text-3xl text-accent-1 mb-2">apartment</span>
-                    <h3 class="font-bold text-text-color mb-1">City Submittals</h3>
-                    <p class="text-sm text-text-color/70">Track city plan check reviews</p>
-                </a>
-                ${currentUser.role === 'admin' ? `
-                <a href="/team.html" class="p-4 bg-gradient-to-br from-accent-2/10 to-accent-2/5 rounded-lg border border-accent-2/20 hover:border-accent-2/40 transition-colors">
-                    <span class="material-symbols-outlined text-3xl text-accent-2 mb-2">group</span>
-                    <h3 class="font-bold text-text-color mb-1">Invite Team</h3>
-                    <p class="text-sm text-text-color/70">Add members and consultants</p>
-                </a>
-                ` : ''}
-                <a href="/settings.html" class="p-4 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
-                    <span class="material-symbols-outlined text-3xl text-purple-600 mb-2">settings</span>
-                    <h3 class="font-bold text-text-color mb-1">Customize Settings</h3>
-                    <p class="text-sm text-text-color/70">Update your profile and preferences</p>
-                </a>
-            </div>
-            <div class="text-center">
-                <p class="text-sm text-text-color/60 mb-4">Need help? Check out our documentation or contact support.</p>
-            </div>
-        `
-    }
-];
-
+// Steps will be defined after user data is loaded
+let steps = [];
+let currentUser = null;
 let currentStepIndex = 0;
 
 function renderStep() {
-    const step = steps[currentStepIndex];
-    const stepContent = document.getElementById('stepContent');
-    
-    stepContent.innerHTML = `
-        <div class="text-center mb-6">
-            <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <span class="material-symbols-outlined text-4xl text-primary">${step.icon}</span>
+    try {
+        if (!steps || steps.length === 0) {
+            console.error('❌ No steps available to render');
+            return;
+        }
+        
+        if (currentStepIndex >= steps.length) {
+            console.error('❌ Invalid step index:', currentStepIndex);
+            currentStepIndex = 0;
+        }
+        
+        const step = steps[currentStepIndex];
+        const stepContent = document.getElementById('stepContent');
+        
+        if (!stepContent) {
+            console.error('❌ Step content element not found');
+            return;
+        }
+        
+        stepContent.innerHTML = `
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-4xl text-primary">${step.icon}</span>
+                </div>
+                <h2 class="text-3xl font-bold text-text-color">${step.title}</h2>
             </div>
-            <h2 class="text-3xl font-bold text-text-color">${step.title}</h2>
-        </div>
-        <div class="text-center">
-            ${step.content}
-        </div>
-    `;
-    
-    // Update progress
-    document.getElementById('currentStep').textContent = currentStepIndex + 1;
-    const progress = ((currentStepIndex + 1) / steps.length) * 100;
-    document.getElementById('progressBar').style.width = progress + '%';
-    
-    // Update buttons
-    document.getElementById('prevBtn').disabled = currentStepIndex === 0;
-    document.getElementById('nextBtn').textContent = currentStepIndex === steps.length - 1 ? 'Go to Dashboard' : 'Next';
+            <div class="text-center">
+                ${step.content}
+            </div>
+        `;
+        
+        // Update progress
+        const currentStepEl = document.getElementById('currentStep');
+        const progressBar = document.getElementById('progressBar');
+        
+        if (currentStepEl) {
+            currentStepEl.textContent = currentStepIndex + 1;
+        }
+        
+        if (progressBar) {
+            const progress = ((currentStepIndex + 1) / steps.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+        
+        // Update buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        if (prevBtn) {
+            prevBtn.disabled = currentStepIndex === 0;
+        }
+        
+        if (nextBtn) {
+            nextBtn.textContent = currentStepIndex === steps.length - 1 ? 'Go to Dashboard' : 'Next';
+        }
+        
+        console.log('✅ Rendered step', currentStepIndex + 1, 'of', steps.length);
+    } catch (error) {
+        console.error('❌ Error rendering step:', error);
+    }
 }
 
-document.getElementById('prevBtn').addEventListener('click', () => {
-    if (currentStepIndex > 0) {
-        currentStepIndex--;
-        renderStep();
-    }
-});
+// Button event listeners will be set up in DOMContentLoaded
 
-document.getElementById('nextBtn').addEventListener('click', () => {
-    if (currentStepIndex < steps.length - 1) {
-        currentStepIndex++;
-        renderStep();
-    } else {
-        completeOnboarding();
+async function completeOnboarding() {
+    try {
+        // Mark onboarding as completed in Clerk metadata
+        if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+            await window.clerkAuth.updateUserMetadata({
+                onboardingCompleted: true,
+                onboardingCompletedAt: new Date().toISOString()
+            });
+            console.log('✅ Onboarding marked as completed in Clerk');
+        }
+        
+        // Also store locally for backward compatibility
+        localStorage.setItem('onboarding_completed', 'true');
+        
+        console.log('🎉 Onboarding completed, redirecting to dashboard...');
+        window.location.href = '/dashboard.html';
+    } catch (error) {
+        console.error('❌ Error completing onboarding:', error);
+        // Still redirect even if metadata update fails
+        localStorage.setItem('onboarding_completed', 'true');
+        window.location.href = '/dashboard.html';
     }
-});
-
-document.getElementById('skipBtn').addEventListener('click', () => {
-    if (confirm('Skip the walkthrough? You can always come back later.')) {
-        completeOnboarding();
-    }
-});
-
-function completeOnboarding() {
-    localStorage.setItem('onboarding_completed', 'true');
-    window.location.href = '/dashboard.html';
 }
 
-// Initialize
-renderStep();
+// Initialize steps with user data
+function initializeSteps(user) {
+    steps = [
+        {
+            title: "Welcome to Olumba! 🎉",
+            icon: "celebration",
+            content: `
+                <p class="text-lg text-text-color/80 mb-4">
+                    Your all-in-one platform for Architecture, Engineering, and Construction project management.
+                </p>
+                <p class="text-text-color/70 mb-6">
+                    Let's take a quick tour to help you get started. This will only take a minute!
+                </p>
+                <div class="bg-primary/10 rounded-lg p-4">
+                    <p class="text-sm text-primary font-medium">
+                        👋 Hi ${user?.fullName || user?.full_name || 'there'}! Welcome to Olumba.
+                    </p>
+                </div>
+            `
+        },
+        {
+            title: "Create Your First Project",
+            icon: "folder_open",
+            content: `
+                <p class="text-text-color/80 mb-6">
+                    Projects are the foundation of Olumba. They help you organize work, assign team members, and track progress.
+                </p>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4 p-4 bg-background-alt rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-primary">add</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-text-color mb-1">Click "New Project"</h3>
+                            <p class="text-sm text-text-color/70">Go to Projects page and click the "+ New Project" button</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 p-4 bg-background-alt rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-accent-1/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-accent-1">edit</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-text-color mb-1">Fill in Project Details</h3>
+                            <p class="text-sm text-text-color/70">Add name, description, dates, and team members</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4 p-4 bg-background-alt rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-accent-2/10 flex items-center justify-center flex-shrink-0">
+                            <span class="material-symbols-outlined text-accent-2">check_circle</span>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-text-color mb-1">You're All Set!</h3>
+                            <p class="text-sm text-text-color/70">Start adding tasks and uploading documents</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        {
+            title: "Manage Tasks & Collaborate",
+            icon: "task_alt",
+            content: `
+                <p class="text-text-color/80 mb-6">
+                    Keep your team on track with tasks, subtasks, and real-time collaboration.
+                </p>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-background-alt rounded-lg">
+                        <span class="material-symbols-outlined text-primary">assignment</span>
+                        <div>
+                            <p class="font-medium text-sm text-text-color">Create and assign tasks</p>
+                            <p class="text-xs text-text-color/60">Assign work to team members with due dates and priorities</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-background-alt rounded-lg">
+                        <span class="material-symbols-outlined text-accent-1">checklist</span>
+                        <div>
+                            <p class="font-medium text-sm text-text-color">Break down into subtasks</p>
+                            <p class="text-xs text-text-color/60">Divide complex tasks into manageable steps</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-background-alt rounded-lg">
+                        <span class="material-symbols-outlined text-accent-2">notifications</span>
+                        <div>
+                            <p class="font-medium text-sm text-text-color">Get notified</p>
+                            <p class="text-xs text-text-color/60">Receive updates on task assignments and changes</p>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        {
+            title: "You're Ready to Go! 🚀",
+            icon: "rocket_launch",
+            content: `
+                <p class="text-lg text-text-color/80 mb-6">
+                    You've completed the walkthrough! Here's what you can do now:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <a href="/projects.html" class="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 hover:border-primary/40 transition-colors">
+                        <span class="material-symbols-outlined text-3xl text-primary mb-2">folder</span>
+                        <h3 class="font-bold text-text-color mb-1">Create Projects</h3>
+                        <p class="text-sm text-text-color/70">Start managing your AEC projects</p>
+                    </a>
+                    <a href="/city-approvals.html" class="p-4 bg-gradient-to-br from-accent-1/10 to-accent-1/5 rounded-lg border border-accent-1/20 hover:border-accent-1/40 transition-colors">
+                        <span class="material-symbols-outlined text-3xl text-accent-1 mb-2">apartment</span>
+                        <h3 class="font-bold text-text-color mb-1">City Submittals</h3>
+                        <p class="text-sm text-text-color/70">Track city plan check reviews</p>
+                    </a>
+                    <a href="/team.html" class="p-4 bg-gradient-to-br from-accent-2/10 to-accent-2/5 rounded-lg border border-accent-2/20 hover:border-accent-2/40 transition-colors">
+                        <span class="material-symbols-outlined text-3xl text-accent-2 mb-2">group</span>
+                        <h3 class="font-bold text-text-color mb-1">Invite Team</h3>
+                        <p class="text-sm text-text-color/70">Add members and consultants</p>
+                    </a>
+                    <a href="/settings.html" class="p-4 bg-gradient-to-br from-purple-100 to-purple-50 rounded-lg border border-purple-200 hover:border-purple-300 transition-colors">
+                        <span class="material-symbols-outlined text-3xl text-purple-600 mb-2">settings</span>
+                        <h3 class="font-bold text-text-color mb-1">Customize Settings</h3>
+                        <p class="text-sm text-text-color/70">Update your profile and preferences</p>
+                    </a>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-text-color/60 mb-4">Need help? Check out our documentation or contact support.</p>
+                </div>
+            `
+        }
+    ];
+}
+
+// Initialize Clerk and render first step
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🚀 Initializing onboarding page...');
+        
+        // Initialize Clerk
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+            
+            // Check if user is authenticated
+            if (!window.clerkAuth.isAuthenticated()) {
+                console.log('❌ User not authenticated, redirecting to login');
+                window.location.href = '/login-clerk.html';
+                return;
+            }
+            
+            // Get current user
+            currentUser = window.clerkAuth.getCurrentUser();
+            console.log('✅ User authenticated:', currentUser);
+            
+            // Initialize steps with user data
+            initializeSteps(currentUser);
+            
+            console.log('✅ Starting onboarding with', steps.length, 'steps');
+        } else {
+            console.warn('⚠️ Clerk not available, using fallback');
+            // Fallback for when Clerk is not available
+            initializeSteps({ fullName: 'User' });
+        }
+    } catch (error) {
+        console.error('❌ Error initializing onboarding:', error);
+        // Initialize with fallback data
+        initializeSteps({ fullName: 'User' });
+    }
+    
+    // Set up button event listeners
+    document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentStepIndex > 0) {
+            currentStepIndex--;
+            renderStep();
+        }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (currentStepIndex < steps.length - 1) {
+            currentStepIndex++;
+            renderStep();
+        } else {
+            completeOnboarding();
+        }
+    });
+
+    document.getElementById('skipBtn').addEventListener('click', () => {
+        if (confirm('Skip the walkthrough? You can always come back later.')) {
+            completeOnboarding();
+        }
+    });
+    
+    // Render first step
+    renderStep();
+});
 </script>
 </body>
 </html>

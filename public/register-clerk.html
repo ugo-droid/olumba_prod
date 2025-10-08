@@ -91,8 +91,8 @@
                 loadingState.classList.add('hidden');
                 
                 // Render Clerk Sign Up component
-                const signUp = clerkInstance.components.signUp({
-                    afterSignUpUrl: '/dashboard.html',
+                const signUp = window.Clerk.mountSignUp(signUpContainer, {
+                    afterSignUpUrl: '/onboarding.html',
                     afterSignInUrl: '/dashboard.html',
                     signInUrl: '/login-clerk.html',
                     appearance: {
@@ -112,34 +112,8 @@
                     }
                 });
                 
-                signUp.mount(signUpContainer);
-                
-                // Listen for sign up events
-                signUp.addEventListener('signup:success', async (event) => {
-                    console.log('Sign up successful:', event);
-                    
-                    // Update user metadata with role and company info
-                    try {
-                        await window.clerkAuth.updateUserMetadata({
-                            role: 'member',
-                            createdAt: new Date().toISOString()
-                        });
-                        
-                        // Update user profile in backend
-                        await window.clerkAuth.updateUserProfile();
-                    } catch (error) {
-                        console.warn('Failed to update user metadata:', error);
-                    }
-                    
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard.html';
-                });
-                
-                signUp.addEventListener('signup:error', (event) => {
-                    console.error('Sign up error:', event);
-                    errorText.textContent = event.error?.message || 'Registration failed. Please try again.';
-                    errorMessage.classList.remove('hidden');
-                });
+                // Clerk will handle the sign-up flow automatically
+                console.log('✅ Clerk Sign Up component mounted successfully');
                 
             } catch (error) {
                 console.error('Failed to initialize Clerk:', error);

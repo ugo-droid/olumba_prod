@@ -54,6 +54,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
+        // Ensure user profile exists in backend and sync data
+        console.log('🔄 Syncing user profile with backend...');
+        try {
+            await window.clerkAuth.ensureUserProfileExists();
+            console.log('✅ User profile synchronized');
+        } catch (error) {
+            console.error('❌ Failed to sync user profile:', error);
+            // Continue loading dashboard even if profile sync fails
+        }
+        
+        // Check if user needs onboarding (for new signups)
+        const currentUser = window.clerkAuth.getCurrentUser();
+        if (currentUser && window.clerkAuth.needsOnboarding(currentUser)) {
+            console.log('🎯 User needs onboarding, redirecting...');
+            window.location.href = '/onboarding.html';
+            return;
+        }
+        
         console.log('✅ User authenticated, initializing dashboard...');
         
         // User is authenticated, continue with dashboard initialization

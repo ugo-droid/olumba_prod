@@ -70,7 +70,7 @@ export class ClerkAuthService {
             // Note: Clerk handles sign-in on the frontend
             // This method is for verification purposes only
             const users = await clerkClient.users.getUserList({
-                emailAddress: [email]
+                emailAddresses: [email]
             });
 
             if (users.data.length === 0) {

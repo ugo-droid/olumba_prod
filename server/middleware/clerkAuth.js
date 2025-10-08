@@ -159,21 +159,27 @@ export const requireProjectAccess = async (req, res, next) => {
  */
 export const requireProjectAdmin = async (req, res, next) => {
     try {
-        // First check project access
-        await new Promise((resolve, reject) => {
-            requireProjectAccess(req, res, (error) => {
-                if (error) reject(error);
-                else resolve();
-            });
+        // First check project access - call it directly and handle the response
+        requireProjectAccess(req, res, (error) => {
+            if (error) {
+                console.error('Project admin check error:', error);
+                return res.status(500).json({ error: 'Failed to verify project admin access' });
+            }
+            
+            // Only continue if requireProjectAccess succeeded
+            try {
+                // Check if user has admin role in the project or is a system admin
+                if (hasRole(req.user, USER_ROLES.ADMIN) || 
+                    ['owner', 'admin'].includes(req.projectMembership?.role)) {
+                    return next();
+                }
+
+                return res.status(403).json({ error: 'Project admin access required' });
+            } catch (checkError) {
+                console.error('Project admin role check error:', checkError);
+                return res.status(500).json({ error: 'Failed to verify project admin access' });
+            }
         });
-
-        // Check if user has admin role in the project or is a system admin
-        if (hasRole(req.user, USER_ROLES.ADMIN) || 
-            ['owner', 'admin'].includes(req.projectMembership?.role)) {
-            return next();
-        }
-
-        return res.status(403).json({ error: 'Project admin access required' });
 
     } catch (error) {
         console.error('Project admin check error:', error);
