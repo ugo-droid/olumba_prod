@@ -368,8 +368,34 @@ function redirectToOnboarding() {
  * Check if user needs onboarding
  */
 function needsOnboarding(user) {
-    // Check if user has completed onboarding
-    return !user?.publicMetadata?.onboardingCompleted;
+    // Check for URL parameter to bypass onboarding (for testing)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('skipOnboarding') === 'true') {
+        console.log('🔧 Skipping onboarding due to URL parameter');
+        return false;
+    }
+    
+    // Check local storage first (for backward compatibility)
+    const localOnboardingCompleted = localStorage.getItem('onboarding_completed');
+    if (localOnboardingCompleted === 'true') {
+        console.log('✅ Onboarding completed (local storage)');
+        return false;
+    }
+    
+    // Check Clerk metadata
+    const clerkOnboardingCompleted = user?.publicMetadata?.onboardingCompleted;
+    if (clerkOnboardingCompleted) {
+        console.log('✅ Onboarding completed (Clerk metadata)');
+        return false;
+    }
+    
+    console.log('⚠️ User needs onboarding', {
+        hasUser: !!user,
+        publicMetadata: user?.publicMetadata,
+        localStorage: localOnboardingCompleted
+    });
+    
+    return true;
 }
 
 // Initialize Clerk when the script loads

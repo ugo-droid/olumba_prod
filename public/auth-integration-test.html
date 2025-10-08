@@ -18,7 +18,17 @@
 </head>
 <body class="bg-gray-50 font-inter">
     <div class="max-w-4xl mx-auto p-8">
-        <h1 class="text-3xl font-bold mb-8">Authentication Integration Test</h1>
+        <h1 class="text-3xl font-bold mb-8">Authentication & Onboarding Test</h1>
+        
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h2 class="font-semibold text-blue-800 mb-2">🧪 Testing Instructions:</h2>
+            <ol class="text-sm text-blue-700 space-y-1">
+                <li>1. <strong>Sign Up</strong>: Go to Sign Up → Should redirect to Onboarding</li>
+                <li>2. <strong>Complete Onboarding</strong>: Follow steps → Should redirect to Dashboard</li>
+                <li>3. <strong>Sign In</strong>: Go to Sign In → Should redirect directly to Dashboard</li>
+                <li>4. <strong>Bypass Test</strong>: Use "Go to Dashboard" link to skip onboarding</li>
+            </ol>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Clerk Auth Status -->
