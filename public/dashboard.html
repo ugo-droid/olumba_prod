@@ -21,14 +21,11 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-// Initialize Clerk authentication
+// Initialize dashboard page
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Dashboard initializing...');
     
     try {
-        // Show loading state
-        document.body.style.opacity = '0.5';
-        
         console.log('🔐 Initializing Clerk authentication...');
         await window.clerkAuth.initializeClerk();
         console.log('✅ Clerk initialized successfully');
@@ -37,68 +34,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isAuth = window.clerkAuth.isAuthenticated();
         console.log('🔍 Authentication status:', isAuth);
         
-        // Additional debugging
-        if (window.Clerk) {
-            console.log('🔍 Clerk instance details:', {
-                hasUser: !!window.Clerk.user,
-                userId: window.Clerk.user?.id,
-                userEmail: window.Clerk.user?.emailAddresses?.[0]?.emailAddress,
-                isLoaded: window.Clerk.loaded,
-                isSignedIn: window.Clerk.user !== null
-            });
-        }
-        
         if (!isAuth) {
             console.log('❌ User not authenticated, redirecting to login');
             window.location.href = '/login-clerk.html';
             return;
         }
         
-        // Ensure user profile exists in backend and sync data
-        console.log('🔄 Syncing user profile with backend...');
-        try {
-            await window.clerkAuth.ensureUserProfileExists();
-            console.log('✅ User profile synchronized');
-        } catch (error) {
-            console.error('❌ Failed to sync user profile:', error);
-            // Continue loading dashboard even if profile sync fails
-        }
-        
-        // Check if user needs onboarding (for new signups)
-        const currentUser = window.clerkAuth.getCurrentUser();
-        if (currentUser && window.clerkAuth.needsOnboarding(currentUser)) {
-            console.log('🎯 User needs onboarding, redirecting...');
-            window.location.href = '/onboarding.html';
-            return;
-        }
-        
         console.log('✅ User authenticated, initializing dashboard...');
         
-        // User is authenticated, continue with dashboard initialization
+        // Initialize navigation first
+        initNav('dashboard');
+        
+        // Then load dashboard content
         initializeDashboard();
         
-        // Hide loading state
-        document.body.style.opacity = '1';
-        
     } catch (error) {
-        console.error('❌ Failed to initialize Clerk:', error);
-        
-        // Show error message to user
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
-        errorDiv.innerHTML = `
-            <h3 class="font-bold">Authentication Error</h3>
-            <p class="text-sm mt-1">Failed to load authentication. Redirecting to login...</p>
-        `;
-        document.body.appendChild(errorDiv);
-        
-        // Hide loading state
-        document.body.style.opacity = '1';
-        
-        // Redirect after a delay
-        setTimeout(() => {
-            window.location.href = '/login-clerk.html';
-        }, 3000);
+        console.error('❌ Failed to initialize dashboard:', error);
+        window.location.href = '/login-clerk.html';
     }
 });
 
@@ -111,12 +63,15 @@ function initializeDashboard() {
         window.location.href = '/onboarding.html';
         return;
     }
-
-    // Initialize navigation
-    initNav('dashboard');
+    
+    // Render dashboard content
+    renderDashboardContent();
     
     // Load user data
     loadUserData();
+    
+    // Load dashboard data
+    loadDashboard();
 }
 
 // Function to load user data from Clerk
@@ -146,11 +101,16 @@ function updateUserNavigation(user) {
     }
 }
 
-// Get main content area
-const mainContent = document.getElementById('mainContent');
+// Function to render dashboard content
+function renderDashboardContent() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) {
+        console.error('Main content area not found');
+        return;
+    }
 
-// Render dashboard content
-mainContent.innerHTML = `
+    // Render dashboard content
+    mainContent.innerHTML = `
 <div class="p-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
@@ -265,6 +225,7 @@ mainContent.innerHTML = `
     </div>
 </div>
 `;
+}
 
 // Update user name in dashboard (handled by loadUserData function)
 

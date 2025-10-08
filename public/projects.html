@@ -82,11 +82,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeProjectsPage() {
-    // Get main content area
-    const mainContent = document.getElementById('mainContent');
+    // Render projects content
+    renderProjectsContent();
+    
+    // Setup event listeners
+    setupProjectsEventListeners();
+    
+    // Load projects
+    loadProjects();
+}
 
-// Render projects content
-mainContent.innerHTML = `
+function renderProjectsContent() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) {
+        console.error('Main content area not found');
+        return;
+    }
+
+    // Render projects content
+    mainContent.innerHTML = `
 <div class="p-8">
     <div class="max-w-7xl mx-auto">
         <div class="flex items-center justify-between mb-8">
@@ -110,8 +124,11 @@ mainContent.innerHTML = `
     </div>
 </div>
 `;
+}
 
-const newProjectBtn = document.getElementById('newProjectBtn');
+// Setup event listeners after content is rendered
+function setupProjectsEventListeners() {
+    const newProjectBtn = document.getElementById('newProjectBtn');
 const newProjectModal = document.getElementById('newProjectModal');
 const cancelProjectBtn = document.getElementById('cancelProjectBtn');
 const newProjectForm = document.getElementById('newProjectForm');

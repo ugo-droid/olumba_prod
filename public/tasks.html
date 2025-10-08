@@ -29,11 +29,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeTasksPage() {
-    // Get main content area
-    const mainContent = document.getElementById('mainContent');
+    // Render tasks content
+    renderTasksContent();
+    
+    // Setup event listeners
+    setupTasksEventListeners();
+    
+    // Load tasks
+    loadTasks();
+}
 
-// Render tasks content
-mainContent.innerHTML = `
+function renderTasksContent() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) {
+        console.error('Main content area not found');
+        return;
+    }
+
+    // Render tasks content
+    mainContent.innerHTML = `
 <div class="p-8">
     <div class="max-w-7xl mx-auto">
         <div class="mb-8">
@@ -69,11 +83,13 @@ mainContent.innerHTML = `
     </div>
 </div>
 `;
+}
 
-const tasksContainer = document.getElementById('tasksContainer');
+// Global variables for tasks page
 let allTasks = [];
 let currentFilter = 'all';
 
+// Load tasks function
 async function loadTasks() {
     try {
         allTasks = await tasks.getMyTasks();
@@ -167,21 +183,24 @@ window.updateTaskStatus = async function(taskId, newStatus) {
     }
 };
 
-// Filter tabs
-document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(t => {
-            t.classList.remove('active', 'border-primary', 'text-primary');
-            t.classList.add('border-transparent', 'text-text-color/60');
+// Setup event listeners after content is rendered
+function setupTasksEventListeners() {
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.filter-tab').forEach(t => {
+                t.classList.remove('active', 'border-primary', 'text-primary');
+                t.classList.add('border-transparent', 'text-text-color/60');
+            });
+            
+            tab.classList.add('active', 'border-primary', 'text-primary');
+            tab.classList.remove('border-transparent', 'text-text-color/60');
+            
+            currentFilter = tab.dataset.filter;
+            renderTasks();
         });
-        
-        tab.classList.add('active', 'border-primary', 'text-primary');
-        tab.classList.remove('border-transparent', 'text-text-color/60');
-        
-        currentFilter = tab.dataset.filter;
-        renderTasks();
     });
-});
+}
 
 loadTasks();
 </script>
