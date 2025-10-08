@@ -8,6 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
+<!-- App Scripts -->
+<script src="/js/config.js"></script>
+<script src="/js/clerkClient.js"></script>
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div class="flex flex-col min-h-screen">
@@ -237,13 +244,53 @@ document.getElementById('skipBtn').addEventListener('click', () => {
     }
 });
 
-function completeOnboarding() {
-    localStorage.setItem('onboarding_completed', 'true');
-    window.location.href = '/dashboard.html';
+async function completeOnboarding() {
+    try {
+        // Mark onboarding as completed in Clerk metadata
+        if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+            await window.clerkAuth.updateUserMetadata({
+                onboardingCompleted: true,
+                onboardingCompletedAt: new Date().toISOString()
+            });
+            console.log('✅ Onboarding marked as completed in Clerk');
+        }
+        
+        // Also store locally for backward compatibility
+        localStorage.setItem('onboarding_completed', 'true');
+        
+        console.log('🎉 Onboarding completed, redirecting to dashboard...');
+        window.location.href = '/dashboard.html';
+    } catch (error) {
+        console.error('❌ Error completing onboarding:', error);
+        // Still redirect even if metadata update fails
+        localStorage.setItem('onboarding_completed', 'true');
+        window.location.href = '/dashboard.html';
+    }
 }
 
-// Initialize
-renderStep();
+// Initialize Clerk and render first step
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Initialize Clerk
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+            
+            // Check if user is authenticated
+            if (!window.clerkAuth.isAuthenticated()) {
+                console.log('❌ User not authenticated, redirecting to login');
+                window.location.href = '/login-clerk.html';
+                return;
+            }
+            
+            console.log('✅ User authenticated, starting onboarding');
+        }
+    } catch (error) {
+        console.error('❌ Error initializing onboarding:', error);
+    }
+    
+    // Render first step
+    renderStep();
+});
 </script>
 </body>
 </html>

@@ -44,9 +44,12 @@ async function checkAuthAndRedirect() {
 
 // Initialize authentication on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    // Only check auth on protected pages (not login/signup pages)
+    // Only check auth on protected pages (not login/signup/onboarding pages)
     const currentPath = window.location.pathname;
-    const isAuthPage = currentPath.includes('login') || currentPath.includes('register') || currentPath === '/';
+    const isAuthPage = currentPath.includes('login') || 
+                      currentPath.includes('register') || 
+                      currentPath.includes('onboarding') || 
+                      currentPath === '/';
     
     if (!isAuthPage) {
         await checkAuthAndRedirect();

@@ -188,8 +188,12 @@ async function signOut() {
             return;
         }
         
+        // Clear local storage including onboarding status
+        localStorage.removeItem('onboarding_completed');
+        localStorage.removeItem('user_profile');
+        
         await clerkInstance.signOut();
-        window.location.href = '/login.html';
+        window.location.href = '/login-clerk.html';
     } catch (error) {
         console.error('Sign out error:', error);
         throw error;
@@ -353,6 +357,21 @@ function redirectToDashboard() {
     window.location.href = '/dashboard.html';
 }
 
+/**
+ * Redirect to onboarding
+ */
+function redirectToOnboarding() {
+    window.location.href = '/onboarding.html';
+}
+
+/**
+ * Check if user needs onboarding
+ */
+function needsOnboarding(user) {
+    // Check if user has completed onboarding
+    return !user?.publicMetadata?.onboardingCompleted;
+}
+
 // Initialize Clerk when the script loads
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -378,5 +397,7 @@ window.clerkAuth = {
     getUserOrganizations,
     redirectToSignIn,
     redirectToSignUp,
-    redirectToDashboard
+    redirectToDashboard,
+    redirectToOnboarding,
+    needsOnboarding
 };

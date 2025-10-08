@@ -60,9 +60,18 @@
             <a href="/login-clerk.html" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
                 Go to Login
             </a>
+            <a href="/register-clerk.html" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                Go to Sign Up
+            </a>
+            <a href="/onboarding.html" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                Go to Onboarding
+            </a>
             <a href="/dashboard.html" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 Go to Dashboard
             </a>
+            <button id="resetOnboarding" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                Reset Onboarding Status
+            </button>
         </div>
     </div>
 
@@ -86,6 +95,7 @@
             document.getElementById('testClerkAuth').addEventListener('click', testClerkAuth);
             document.getElementById('testApiCall').addEventListener('click', testApiCall);
             document.getElementById('syncProfile').addEventListener('click', syncProfile);
+            document.getElementById('resetOnboarding').addEventListener('click', resetOnboarding);
         });
         
         function updateClerkStatus() {
@@ -105,6 +115,17 @@
             if (user) {
                 document.getElementById('userProfile').innerHTML = `
                     <pre class="text-sm bg-gray-100 p-3 rounded overflow-auto">${JSON.stringify(user, null, 2)}</pre>
+                `;
+                
+                // Show onboarding status
+                const needsOnboardingStatus = window.clerkAuth.needsOnboarding(user);
+                document.getElementById('userProfile').innerHTML += `
+                    <div class="mt-4 p-3 bg-blue-50 rounded">
+                        <div class="text-sm font-medium">Onboarding Status:</div>
+                        <div class="text-sm ${needsOnboardingStatus ? 'text-orange-600' : 'text-green-600'}">
+                            ${needsOnboardingStatus ? '⚠️ Needs Onboarding' : '✅ Onboarding Complete'}
+                        </div>
+                    </div>
                 `;
             }
         }
@@ -161,6 +182,24 @@
                     <div class="text-red-500">❌ Profile sync failed</div>
                     <div class="text-sm text-gray-600">${error.message}</div>
                 `;
+            }
+        }
+        
+        async function resetOnboarding() {
+            try {
+                if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+                    await window.clerkAuth.updateUserMetadata({
+                        onboardingCompleted: false
+                    });
+                    localStorage.removeItem('onboarding_completed');
+                    alert('✅ Onboarding status reset! User will be redirected to onboarding on next dashboard visit.');
+                    updateClerkStatus();
+                } else {
+                    alert('❌ Please sign in first');
+                }
+            } catch (error) {
+                console.error('Reset onboarding failed:', error);
+                alert('❌ Failed to reset onboarding status');
             }
         }
     </script>
