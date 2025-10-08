@@ -90,12 +90,8 @@ async function apiRequest(endpoint, options = {}) {
         clearAuthToken();
         clearCurrentUser();
         
-        // Redirect to appropriate login page
-        if (window.clerkAuth) {
-            window.location.href = '/login-clerk.html';
-        } else {
-            window.location.href = '/login.html';
-        }
+        // Redirect to Clerk login page
+        window.location.href = '/login-clerk.html';
         return;
     }
     
@@ -435,8 +431,29 @@ function isAuthenticated() {
     return !!localStorage.getItem('auth_token');
 }
 
-// Require authentication for page
-async function requireAuth() {
+// Require authentication for page (synchronous version for backward compatibility)
+function requireAuth() {
+    // Quick check for Clerk authentication
+    if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+        console.log('✅ User authenticated with Clerk');
+        return true;
+    }
+    
+    // Check token-based auth
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+        console.log('✅ User has legacy auth token');
+        return true;
+    }
+    
+    // Not authenticated, redirect to login
+    console.log('❌ User not authenticated, redirecting to login');
+    window.location.href = '/login-clerk.html';
+    return false;
+}
+
+// Async version of requireAuth for more thorough checking
+async function requireAuthAsync() {
     // Check Clerk authentication first
     if (window.clerkAuth) {
         try {
@@ -456,11 +473,7 @@ async function requireAuth() {
     }
     
     // Not authenticated, redirect to login
-    if (window.clerkAuth) {
-        window.location.href = '/login-clerk.html';
-    } else {
-        window.location.href = '/login.html';
-    }
+    window.location.href = '/login-clerk.html';
     return false;
 }
 

@@ -268,7 +268,7 @@ class SupabaseClient {
         if (response.status === 401) {
             // Token expired, redirect to login
             this.signOut();
-            window.location.href = '/login.html';
+            window.location.href = '/login-clerk.html';
             return;
         }
 
@@ -379,7 +379,7 @@ window.getCurrentUser = () => window.supabaseClient.getCurrentUser();
 window.getAuthToken = () => window.supabaseClient.getAccessToken();
 window.requireAuth = () => {
     if (!window.supabaseClient.isAuthenticated()) {
-        window.location.href = '/login.html';
+        window.location.href = '/login-clerk.html';
         return false;
     }
     return true;

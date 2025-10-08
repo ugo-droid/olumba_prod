@@ -8,6 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
+<!-- App Scripts -->
+<script src="/js/config.js"></script>
+<script src="/js/clerkClient.js"></script>
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div id="app"></div>
@@ -48,13 +55,35 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-requireAuth();
+// Initialize page with authentication
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Initialize Clerk first
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+        }
+        
+        // Check authentication
+        if (!requireAuth()) {
+            return; // Will redirect to login
+        }
+        
+        console.log('✅ User authenticated, initializing projects page');
+        
+        // Initialize navigation
+        initNav('projects');
+        
+        // Initialize page content
+        initializeProjectsPage();
+    } catch (error) {
+        console.error('❌ Error initializing projects page:', error);
+        window.location.href = '/login-clerk.html';
+    }
+});
 
-// Initialize navigation
-initNav('projects');
-
-// Get main content area
-const mainContent = document.getElementById('mainContent');
+function initializeProjectsPage() {
+    // Get main content area
+    const mainContent = document.getElementById('mainContent');
 
 // Render projects content
 mainContent.innerHTML = `
