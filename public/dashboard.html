@@ -54,6 +54,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
+        // Ensure user profile exists in backend and sync data
+        console.log('🔄 Syncing user profile with backend...');
+        try {
+            await window.clerkAuth.ensureUserProfileExists();
+            console.log('✅ User profile synchronized');
+        } catch (error) {
+            console.error('❌ Failed to sync user profile:', error);
+            // Continue loading dashboard even if profile sync fails
+        }
+        
         console.log('✅ User authenticated, initializing dashboard...');
         
         // User is authenticated, continue with dashboard initialization

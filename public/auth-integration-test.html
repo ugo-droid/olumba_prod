@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Auth Integration Test - Olumba</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/clerkClient.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/supabaseClient.js"></script>
+</head>
+<body class="bg-gray-50 font-inter">
+    <div class="max-w-4xl mx-auto p-8">
+        <h1 class="text-3xl font-bold mb-8">Authentication Integration Test</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Clerk Auth Status -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">Clerk Authentication</h2>
+                <div id="clerkStatus" class="space-y-2">
+                    <div class="text-gray-500">Loading...</div>
+                </div>
+                <button id="testClerkAuth" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Test Clerk Auth
+                </button>
+            </div>
+            
+            <!-- API Integration -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">API Integration</h2>
+                <div id="apiStatus" class="space-y-2">
+                    <div class="text-gray-500">Not tested</div>
+                </div>
+                <button id="testApiCall" class="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                    Test API Call
+                </button>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="bg-white p-6 rounded-lg shadow md:col-span-2">
+                <h2 class="text-xl font-semibold mb-4">User Profile</h2>
+                <div id="userProfile" class="space-y-2">
+                    <div class="text-gray-500">No user data</div>
+                </div>
+                <button id="syncProfile" class="mt-4 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                    Sync Profile
+                </button>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="mt-8 flex gap-4">
+            <a href="/login-clerk.html" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                Go to Login
+            </a>
+            <a href="/dashboard.html" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Go to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🧪 Starting authentication integration test...');
+            
+            // Test Clerk initialization
+            try {
+                await window.clerkAuth.initializeClerk();
+                updateClerkStatus();
+            } catch (error) {
+                console.error('Clerk initialization failed:', error);
+                document.getElementById('clerkStatus').innerHTML = `
+                    <div class="text-red-500">❌ Clerk initialization failed</div>
+                    <div class="text-sm text-gray-600">${error.message}</div>
+                `;
+            }
+            
+            // Setup event listeners
+            document.getElementById('testClerkAuth').addEventListener('click', testClerkAuth);
+            document.getElementById('testApiCall').addEventListener('click', testApiCall);
+            document.getElementById('syncProfile').addEventListener('click', syncProfile);
+        });
+        
+        function updateClerkStatus() {
+            const isAuth = window.clerkAuth.isAuthenticated();
+            const user = window.clerkAuth.getCurrentUser();
+            
+            document.getElementById('clerkStatus').innerHTML = `
+                <div class="${isAuth ? 'text-green-500' : 'text-red-500'}">
+                    ${isAuth ? '✅' : '❌'} Authentication: ${isAuth ? 'Authenticated' : 'Not authenticated'}
+                </div>
+                ${user ? `
+                    <div class="text-sm text-gray-600">User ID: ${user.id}</div>
+                    <div class="text-sm text-gray-600">Email: ${user.emailAddresses?.[0]?.emailAddress || 'N/A'}</div>
+                ` : ''}
+            `;
+            
+            if (user) {
+                document.getElementById('userProfile').innerHTML = `
+                    <pre class="text-sm bg-gray-100 p-3 rounded overflow-auto">${JSON.stringify(user, null, 2)}</pre>
+                `;
+            }
+        }
+        
+        async function testClerkAuth() {
+            try {
+                const token = await window.clerkAuth.getAuthToken();
+                const isAuth = window.clerkAuth.isAuthenticated();
+                
+                document.getElementById('clerkStatus').innerHTML = `
+                    <div class="${isAuth ? 'text-green-500' : 'text-red-500'}">
+                        ${isAuth ? '✅' : '❌'} Authentication: ${isAuth ? 'Authenticated' : 'Not authenticated'}
+                    </div>
+                    <div class="text-sm text-gray-600">Token: ${token ? 'Present' : 'Missing'}</div>
+                    ${token ? `<div class="text-xs text-gray-500 break-all">Token: ${token.substring(0, 50)}...</div>` : ''}
+                `;
+            } catch (error) {
+                console.error('Clerk auth test failed:', error);
+                document.getElementById('clerkStatus').innerHTML = `
+                    <div class="text-red-500">❌ Auth test failed</div>
+                    <div class="text-sm text-gray-600">${error.message}</div>
+                `;
+            }
+        }
+        
+        async function testApiCall() {
+            try {
+                const result = await apiRequest('/auth/me');
+                
+                document.getElementById('apiStatus').innerHTML = `
+                    <div class="text-green-500">✅ API call successful</div>
+                    <pre class="text-sm bg-gray-100 p-3 rounded mt-2 overflow-auto">${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('API test failed:', error);
+                document.getElementById('apiStatus').innerHTML = `
+                    <div class="text-red-500">❌ API call failed</div>
+                    <div class="text-sm text-gray-600">${error.message}</div>
+                `;
+            }
+        }
+        
+        async function syncProfile() {
+            try {
+                const profile = await window.clerkAuth.ensureUserProfileExists();
+                
+                document.getElementById('userProfile').innerHTML = `
+                    <div class="text-green-500 mb-2">✅ Profile synced successfully</div>
+                    <pre class="text-sm bg-gray-100 p-3 rounded overflow-auto">${JSON.stringify(profile, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Profile sync failed:', error);
+                document.getElementById('userProfile').innerHTML = `
+                    <div class="text-red-500">❌ Profile sync failed</div>
+                    <div class="text-sm text-gray-600">${error.message}</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

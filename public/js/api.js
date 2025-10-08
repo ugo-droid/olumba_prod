@@ -1,8 +1,21 @@
 // API utility functions
 const API_BASE_URL = '/api';
 
-// Get auth token from localStorage
-function getAuthToken() {
+// Get auth token - prioritize Clerk token
+async function getAuthToken() {
+    // First try to get Clerk token
+    if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+        try {
+            const clerkToken = await window.clerkAuth.getAuthToken();
+            if (clerkToken) {
+                return clerkToken;
+            }
+        } catch (error) {
+            console.warn('Failed to get Clerk token:', error);
+        }
+    }
+    
+    // Fallback to localStorage token
     return localStorage.getItem('auth_token');
 }
 
@@ -14,10 +27,30 @@ function setAuthToken(token) {
 // Remove auth token
 function clearAuthToken() {
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_profile');
 }
 
-// Get current user from localStorage
+// Get current user - prioritize Clerk user
 function getCurrentUser() {
+    // First try to get Clerk user
+    if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+        const clerkUser = window.clerkAuth.getCurrentUser();
+        if (clerkUser) {
+            return clerkUser;
+        }
+    }
+    
+    // Try to get user profile from localStorage
+    const profileJson = localStorage.getItem('user_profile');
+    if (profileJson) {
+        try {
+            return JSON.parse(profileJson);
+        } catch (error) {
+            console.warn('Failed to parse user profile:', error);
+        }
+    }
+    
+    // Fallback to legacy current_user
     const userJson = localStorage.getItem('current_user');
     return userJson ? JSON.parse(userJson) : null;
 }
@@ -25,16 +58,18 @@ function getCurrentUser() {
 // Set current user
 function setCurrentUser(user) {
     localStorage.setItem('current_user', JSON.stringify(user));
+    localStorage.setItem('user_profile', JSON.stringify(user));
 }
 
 // Clear current user
 function clearCurrentUser() {
     localStorage.removeItem('current_user');
+    localStorage.removeItem('user_profile');
 }
 
 // Make API request
 async function apiRequest(endpoint, options = {}) {
-    const token = getAuthToken();
+    const token = await getAuthToken();
     
     const headers = {
         'Content-Type': 'application/json',
@@ -54,7 +89,13 @@ async function apiRequest(endpoint, options = {}) {
         // Token expired or invalid
         clearAuthToken();
         clearCurrentUser();
-        window.location.href = '/login.html';
+        
+        // Redirect to appropriate login page
+        if (window.clerkAuth) {
+            window.location.href = '/login-clerk.html';
+        } else {
+            window.location.href = '/login.html';
+        }
         return;
     }
     
@@ -385,16 +426,42 @@ const messages = {
 
 // Check if user is authenticated
 function isAuthenticated() {
-    return !!getAuthToken();
+    // First check Clerk authentication
+    if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+        return true;
+    }
+    
+    // Fallback to token-based auth
+    return !!localStorage.getItem('auth_token');
 }
 
 // Require authentication for page
-function requireAuth() {
-    if (!isAuthenticated()) {
-        window.location.href = '/login.html';
-        return false;
+async function requireAuth() {
+    // Check Clerk authentication first
+    if (window.clerkAuth) {
+        try {
+            await window.clerkAuth.initializeClerk();
+            if (window.clerkAuth.isAuthenticated()) {
+                return true;
+            }
+        } catch (error) {
+            console.warn('Clerk auth check failed:', error);
+        }
     }
-    return true;
+    
+    // Check token-based auth
+    const token = await getAuthToken();
+    if (token) {
+        return true;
+    }
+    
+    // Not authenticated, redirect to login
+    if (window.clerkAuth) {
+        window.location.href = '/login-clerk.html';
+    } else {
+        window.location.href = '/login.html';
+    }
+    return false;
 }
 
 // Export for use in other scripts

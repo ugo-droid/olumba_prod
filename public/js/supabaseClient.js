@@ -126,10 +126,18 @@ class SupabaseClient {
     }
 
     /**
-     * Sign in user
+     * Sign in user - now delegates to Clerk
      */
     async signIn(email, password) {
         try {
+            // If Clerk is available, use Clerk authentication
+            if (window.clerkAuth) {
+                console.log('Using Clerk authentication for sign in');
+                return await window.clerkAuth.signIn(email, password);
+            }
+            
+            // Fallback to legacy API authentication
+            console.log('Using legacy API authentication for sign in');
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: {
@@ -225,6 +233,12 @@ class SupabaseClient {
      * Check if user is authenticated
      */
     isAuthenticated() {
+        // First check Clerk authentication
+        if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+            return true;
+        }
+        
+        // Fallback to Supabase authentication
         return !!(this.getCurrentUser() && this.getAccessToken());
     }
 

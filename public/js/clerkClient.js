@@ -220,21 +220,78 @@ async function updateUserProfile() {
     try {
         const token = await getAuthToken();
         if (!token) {
+            console.warn('No auth token available for profile update');
             return;
         }
         
         const response = await fetch('/api/auth/me', {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
         
-        if (!response.ok) {
-            console.warn('Failed to update user profile in backend');
+        if (response.ok) {
+            const userProfile = await response.json();
+            console.log('✅ User profile synced with backend:', userProfile);
+            
+            // Store user profile locally for quick access
+            localStorage.setItem('user_profile', JSON.stringify(userProfile));
+            return userProfile;
+        } else {
+            console.warn('Failed to sync user profile with backend:', response.status);
         }
     } catch (error) {
         console.error('Failed to update user profile:', error);
+    }
+}
+
+/**
+ * Ensure user profile exists in backend database
+ */
+async function ensureUserProfileExists() {
+    try {
+        const token = await getAuthToken();
+        const user = getCurrentUser();
+        
+        if (!token || !user) {
+            console.warn('No token or user available for profile creation');
+            return;
+        }
+        
+        // Try to get existing profile first
+        const existingProfile = await updateUserProfile();
+        if (existingProfile) {
+            return existingProfile;
+        }
+        
+        // If no profile exists, create one
+        console.log('Creating user profile in backend...');
+        const response = await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                full_name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+                email: user.emailAddresses?.[0]?.emailAddress || user.email,
+                profile_photo: user.profileImageUrl,
+                role: 'member'
+            })
+        });
+        
+        if (response.ok) {
+            const newProfile = await response.json();
+            console.log('✅ User profile created in backend:', newProfile);
+            localStorage.setItem('user_profile', JSON.stringify(newProfile));
+            return newProfile;
+        } else {
+            console.error('Failed to create user profile:', response.status);
+        }
+    } catch (error) {
+        console.error('Error ensuring user profile exists:', error);
     }
 }
 
@@ -316,6 +373,7 @@ window.clerkAuth = {
     signOut,
     updateUserMetadata,
     updateUserProfile,
+    ensureUserProfileExists,
     requestPasswordReset,
     getUserOrganizations,
     redirectToSignIn,
