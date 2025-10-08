@@ -57,6 +57,22 @@
                     <a href="/login-clerk.html" class="text-sm font-medium text-primary hover:text-primary/80 transition">Log In</a>
                     <a href="#trial" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition">Start Free Trial</a>
                 </div>
+                
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 text-text-color hover:text-primary transition">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-footer-border/10">
+                <div class="px-4 py-2 space-y-2">
+                    <a href="/why-olumba.html" class="block py-2 text-sm font-medium text-text-color/70 hover:text-primary transition">Why Olumba</a>
+                    <a href="#features" class="block py-2 text-sm font-medium text-text-color/70 hover:text-primary transition">Features</a>
+                    <a href="#testimonials" class="block py-2 text-sm font-medium text-text-color/70 hover:text-primary transition">Testimonials</a>
+                    <a href="/login-clerk.html" class="block py-2 text-sm font-medium text-primary hover:text-primary/80 transition">Log In</a>
+                    <a href="#trial" class="block py-2 text-sm font-medium bg-primary text-white rounded-lg hover:bg-primary/90 transition text-center">Start Free Trial</a>
+                </div>
             </div>
         </div>
     </nav>
@@ -419,6 +435,12 @@
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
+        });
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
         });
     </script>
 </body>

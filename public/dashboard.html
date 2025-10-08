@@ -266,9 +266,7 @@ mainContent.innerHTML = `
 </div>
 `;
 
-// Get current user
-const currentUser = getCurrentUser();
-document.getElementById('userName').textContent = currentUser.full_name || currentUser.email;
+// Update user name in dashboard (handled by loadUserData function)
 
 // Load dashboard data
 async function loadDashboard() {

@@ -83,7 +83,7 @@ function createHeader(pageTitle = 'Olumba') {
             <a href="/dashboard.html" class="flex items-center">
                 <img src="/assets/olumba-logo.png" alt="Olumba" class="h-10 w-auto" />
             </a>
-            <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-4">
                 <div class="relative">
                     <input 
                         type="text" 
@@ -102,6 +102,35 @@ function createHeader(pageTitle = 'Olumba') {
                     <span class="material-symbols-outlined text-text-color/60">notifications</span>
                     <span id="headerNotificationBadge" class="hidden absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">0</span>
                 </button>
+            </div>
+            
+            <!-- Mobile header buttons -->
+            <div class="md:hidden flex items-center gap-2">
+                <button id="mobileNotificationBtn" class="relative p-2 hover:bg-background-alt rounded-lg">
+                    <span class="material-symbols-outlined text-text-color/60">notifications</span>
+                    <span id="mobileNotificationBadge" class="hidden absolute top-1 right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">0</span>
+                </button>
+                <button id="mobileSearchBtn" class="p-2 hover:bg-background-alt rounded-lg">
+                    <span class="material-symbols-outlined text-text-color/60">search</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile search bar -->
+        <div id="mobileSearchBar" class="hidden md:hidden mt-4">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="mobileGlobalSearch"
+                    placeholder="Search projects, tasks, documents..." 
+                    class="w-full px-4 py-2 pl-10 text-sm border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-color/40 text-sm">search</span>
+                
+                <!-- Mobile Search Results Dropdown -->
+                <div id="mobileSearchResults" class="hidden absolute top-full left-0 right-0 mt-2 bg-background border border-footer-border/20 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50">
+                    <div id="mobileSearchResultsContent" class="p-2"></div>
+                </div>
             </div>
         </div>
     </header>
@@ -170,6 +199,23 @@ function setupNavListeners() {
         });
     }
     
+    // Mobile notification button
+    const mobileNotificationBtn = document.getElementById('mobileNotificationBtn');
+    if (mobileNotificationBtn) {
+        mobileNotificationBtn.addEventListener('click', () => {
+            window.location.href = '/notifications.html';
+        });
+    }
+    
+    // Mobile search button
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileSearchBar = document.getElementById('mobileSearchBar');
+    if (mobileSearchBtn && mobileSearchBar) {
+        mobileSearchBtn.addEventListener('click', () => {
+            mobileSearchBar.classList.toggle('hidden');
+        });
+    }
+    
     // Search functionality
     const searchInput = document.getElementById('globalSearch');
     const searchResults = document.getElementById('searchResults');
@@ -206,8 +252,73 @@ function setupNavListeners() {
         });
     }
     
+    // Mobile search functionality
+    const mobileSearchInput = document.getElementById('mobileGlobalSearch');
+    const mobileSearchResults = document.getElementById('mobileSearchResults');
+    const mobileSearchResultsContent = document.getElementById('mobileSearchResultsContent');
+    
+    let mobileSearchTimeout;
+    
+    if (mobileSearchInput) {
+        mobileSearchInput.addEventListener('input', async (e) => {
+            clearTimeout(mobileSearchTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length < 2) {
+                mobileSearchResults.classList.add('hidden');
+                return;
+            }
+            
+            mobileSearchTimeout = setTimeout(async () => {
+                await performMobileSearch(query);
+            }, 300); // Debounce 300ms
+        });
+        
+        mobileSearchInput.addEventListener('focus', () => {
+            if (mobileSearchInput.value.length >= 2) {
+                mobileSearchResults.classList.remove('hidden');
+            }
+        });
+        
+        // Close mobile search on click outside
+        document.addEventListener('click', (e) => {
+            if (!mobileSearchInput.contains(e.target) && !mobileSearchResults.contains(e.target)) {
+                mobileSearchResults.classList.add('hidden');
+            }
+        });
+    }
+    
     // Load notification count
     loadNotificationCount();
+}
+
+async function performMobileSearch(query) {
+    const mobileSearchResults = document.getElementById('mobileSearchResults');
+    const mobileSearchResultsContent = document.getElementById('mobileSearchResultsContent');
+    
+    try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`, {
+            headers: {
+                'Authorization': `Bearer ${getAuthToken()}`
+            }
+        });
+        
+        const results = await response.json();
+        
+        if (results.total === 0) {
+            mobileSearchResultsContent.innerHTML = `
+                <div class="p-4 text-center text-text-color/60 text-sm">
+                    No results found for "${query}"
+                </div>
+            `;
+        } else {
+            mobileSearchResultsContent.innerHTML = renderSearchResults(results);
+        }
+        
+        mobileSearchResults.classList.remove('hidden');
+    } catch (error) {
+        console.error('Mobile search failed:', error);
+    }
 }
 
 async function performSearch(query) {
@@ -324,6 +435,7 @@ async function loadNotificationCount() {
         
         const badge = document.getElementById('notificationBadge');
         const headerBadge = document.getElementById('headerNotificationBadge');
+        const mobileBadge = document.getElementById('mobileNotificationBadge');
         
         if (count > 0) {
             if (badge) {
@@ -334,9 +446,14 @@ async function loadNotificationCount() {
                 headerBadge.textContent = count;
                 headerBadge.classList.remove('hidden');
             }
+            if (mobileBadge) {
+                mobileBadge.textContent = count;
+                mobileBadge.classList.remove('hidden');
+            }
         } else {
             if (badge) badge.classList.add('hidden');
             if (headerBadge) headerBadge.classList.add('hidden');
+            if (mobileBadge) mobileBadge.classList.add('hidden');
         }
     } catch (error) {
         console.error('Failed to load notification count:', error);
