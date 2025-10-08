@@ -24,7 +24,9 @@ async function initializeClerk() {
             
             // Wait for Clerk to be ready
             if (clerkInstance.load) {
-                await clerkInstance.load();
+                await clerkInstance.load({
+                    publishableKey: CLERK_PUBLISHABLE_KEY
+                });
                 console.log('✅ Clerk loaded and ready');
             }
             
@@ -57,7 +59,9 @@ async function initializeClerk() {
         
         // Wait for Clerk to be ready
         if (clerkInstance.load) {
-            await clerkInstance.load();
+            await clerkInstance.load({
+                publishableKey: CLERK_PUBLISHABLE_KEY
+            });
             console.log('✅ Clerk loaded and ready');
         }
         

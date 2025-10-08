@@ -22,9 +22,19 @@
                 script.setAttribute('data-clerk-publishable-key', 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk');
                 script.async = true;
                 script.crossOrigin = 'anonymous';
+                script.onload = () => {
+                    console.log('✅ Clerk fallback CDN loaded');
+                    if (window.Clerk && window.Clerk.load) {
+                        window.Clerk.load({
+                            publishableKey: 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk'
+                        }).then(() => {
+                            console.log('✅ Clerk fallback initialized');
+                        });
+                    }
+                };
                 document.head.appendChild(script);
             }
-        }, 2000);
+        }, 3000);
     </script>
     
     <!-- App Configuration -->
@@ -106,7 +116,7 @@
                 loadingState.classList.add('hidden');
                 
                 // Render Clerk Sign In component
-                const signIn = clerkInstance.components.signIn({
+                const signIn = window.Clerk.mountSignIn(signInContainer, {
                     afterSignInUrl: '/dashboard.html',
                     afterSignUpUrl: '/dashboard.html',
                     signUpUrl: '/register-clerk.html',
@@ -127,28 +137,8 @@
                     }
                 });
                 
-                signIn.mount(signInContainer);
-                
-                // Listen for sign in events
-                signIn.addEventListener('signin:success', async (event) => {
-                    console.log('Sign in successful:', event);
-                    
-                    // Update user profile in backend
-                    try {
-                        await window.clerkAuth.updateUserProfile();
-                    } catch (error) {
-                        console.warn('Failed to update user profile:', error);
-                    }
-                    
-                    // Redirect to dashboard
-                    window.location.href = '/dashboard.html';
-                });
-                
-                signIn.addEventListener('signin:error', (event) => {
-                    console.error('Sign in error:', event);
-                    errorText.textContent = event.error?.message || 'Sign in failed. Please try again.';
-                    errorMessage.classList.remove('hidden');
-                });
+                // Clerk will handle the sign-in flow automatically
+                console.log('✅ Clerk Sign In component mounted successfully');
                 
             } catch (error) {
                 console.error('Failed to initialize Clerk:', error);
