@@ -129,13 +129,37 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-requireAuth();
+// Initialize page with authentication
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🚀 City Approvals page initializing...');
+        
+        // Initialize Clerk
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+        }
+        
+        // Check authentication
+        if (!requireAuth()) {
+            return; // Will redirect to login
+        }
+        
+        console.log('✅ User authenticated, initializing city approvals page');
+        
+        // Initialize navigation
+        initNav('city-approvals');
+        
+        // Initialize page content
+        initializeCityApprovalsPage();
+    } catch (error) {
+        console.error('❌ Error initializing city approvals page:', error);
+        window.location.href = '/login-clerk.html';
+    }
+});
 
-// Initialize navigation
-initNav('city-approvals');
-
-// Get main content area
-const mainContent = document.getElementById('mainContent');
+function initializeCityApprovalsPage() {
+    // Get main content area
+    const mainContent = document.getElementById('mainContent');
 
 // Render city approvals content
 mainContent.innerHTML = `
@@ -202,7 +226,15 @@ mainContent.innerHTML = `
 </div>
 `;
 
-const newSubmittalBtn = document.getElementById('newSubmittalBtn');
+    // Setup event listeners
+    setupCityApprovalsEventListeners();
+    
+    // Load city approvals data
+    loadCityApprovals();
+}
+
+function setupCityApprovalsEventListeners() {
+    const newSubmittalBtn = document.getElementById('newSubmittalBtn');
 const newSubmittalModal = document.getElementById('newSubmittalModal');
 const cancelSubmittalBtn = document.getElementById('cancelSubmittalBtn');
 const newSubmittalForm = document.getElementById('newSubmittalForm');

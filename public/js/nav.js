@@ -182,8 +182,22 @@ function setupNavListeners() {
             sidebarOverlay.classList.toggle('hidden');
         };
         
+        const closeSidebar = () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        };
+        
         mobileMenuToggle.addEventListener('click', toggleSidebar);
         sidebarOverlay.addEventListener('click', toggleSidebar);
+        
+        // Close sidebar when clicking nav links on mobile
+        const navLinks = sidebar.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                // Small delay to allow navigation to start
+                setTimeout(closeSidebar, 100);
+            });
+        });
     }
     
     // Logout button
