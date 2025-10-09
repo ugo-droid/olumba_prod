@@ -150,13 +150,30 @@ function setupProjectsEventListeners() {
                 deadline: document.getElementById('projectDeadline').value || null
             };
             
-            await projects.create(projectData);
+            const result = await projects.create(projectData);
             
-            newProjectModal.classList.add('hidden');
-            newProjectForm.reset();
-            loadProjects();
+            if (result) {
+                newProjectModal.classList.add('hidden');
+                newProjectForm.reset();
+                loadProjects();
+                
+                // Show success message
+                showNotification('Project created successfully!', 'success');
+            }
         } catch (error) {
-            alert('Failed to create project: ' + error.message);
+            console.error('Create project error:', error);
+            
+            let errorMessage = error.message || 'Failed to create project';
+            
+            // Provide helpful error messages
+            if (errorMessage.includes('Authentication required')) {
+                errorMessage = 'Please log in to create projects. You will be redirected to the login page.';
+                setTimeout(() => {
+                    window.location.href = '/login-clerk.html';
+                }, 2000);
+            }
+            
+            showNotification(errorMessage, 'error');
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = 'Create Project';
@@ -219,6 +236,22 @@ function getStatusColor(status) {
         'completed': 'bg-accent-1/20 text-accent-1'
     };
     return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+// Show notification helper
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-500 text-white' :
+        type === 'error' ? 'bg-red-500 text-white' :
+        'bg-blue-500 text-white'
+    }`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 4000);
 }
 </script>
 </body>

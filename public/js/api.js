@@ -8,6 +8,7 @@ async function getAuthToken() {
         try {
             const clerkToken = await window.clerkAuth.getAuthToken();
             if (clerkToken) {
+                console.log('✅ Got Clerk token');
                 return clerkToken;
             }
         } catch (error) {
@@ -16,7 +17,20 @@ async function getAuthToken() {
     }
     
     // Fallback to localStorage token
-    return localStorage.getItem('auth_token');
+    const localToken = localStorage.getItem('auth_token');
+    if (localToken) {
+        console.log('✅ Got local token');
+        return localToken;
+    }
+    
+    // For development/testing - create a demo token
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.warn('⚠️ No auth token found - using demo mode');
+        // Store a demo flag
+        localStorage.setItem('demo_mode', 'true');
+    }
+    
+    return null;
 }
 
 // Set auth token
@@ -95,10 +109,32 @@ async function apiRequest(endpoint, options = {}) {
         return;
     }
     
-    const data = await response.json();
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    let data;
+    
+    try {
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            console.error('API returned non-JSON response:', text.substring(0, 200));
+            
+            // Try to extract useful error message
+            if (text.includes('Access token required')) {
+                throw new Error('Authentication required. Please log in first.');
+            }
+            throw new Error('Server error: ' + (text.substring(0, 50) || 'Invalid response'));
+        }
+    } catch (error) {
+        if (error.message.includes('Authentication required')) {
+            throw error;
+        }
+        throw new Error('Failed to parse server response');
+    }
     
     if (!response.ok) {
-        throw new Error(data.error || 'Request failed');
+        throw new Error(data.error || `Request failed with status ${response.status}`);
     }
     
     return data;

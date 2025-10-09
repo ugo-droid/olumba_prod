@@ -19,7 +19,7 @@
                 <div class="max-w-7xl mx-auto">
                     <div class="flex justify-between items-center mb-6">
                         <h1 class="text-3xl font-bold">Projects</h1>
-                        <button onclick="alert('Create New Project')" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <button onclick="showCreateProject()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                             + New Project
                         </button>
                     </div>
@@ -47,6 +47,14 @@
                 </div>
             `;
         });
+        
+        // Helper function for create project
+        window.showCreateProject = function() {
+            const projectName = prompt('Enter project name:');
+            if (projectName) {
+                alert(`Project "${projectName}" would be created here.\n\nNote: This is demo mode. To create real projects, you need to:\n1. Log in with Clerk authentication\n2. Use the full version (projects.html)`);
+            }
+        };
     </script>
 </body>
 </html>
