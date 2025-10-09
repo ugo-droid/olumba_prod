@@ -138,24 +138,32 @@ function renderStep() {
 
 async function completeOnboarding() {
     try {
+        console.log('🎉 Completing onboarding...');
+        
         // Mark onboarding as completed in Clerk metadata
         if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
-            await window.clerkAuth.updateUserMetadata({
-                onboardingCompleted: true,
-                onboardingCompletedAt: new Date().toISOString()
-            });
-            console.log('✅ Onboarding marked as completed in Clerk');
+            try {
+                await window.clerkAuth.updateUserMetadata({
+                    onboardingCompleted: true,
+                    onboardingCompletedAt: new Date().toISOString()
+                });
+                console.log('✅ Onboarding marked as completed in Clerk');
+            } catch (metadataError) {
+                console.warn('⚠️ Failed to update Clerk metadata:', metadataError);
+            }
         }
         
-        // Also store locally for backward compatibility
+        // Store locally - this is the primary flag
         localStorage.setItem('onboarding_completed', 'true');
+        localStorage.setItem('first_login', 'false');
         
-        console.log('🎉 Onboarding completed, redirecting to dashboard...');
+        console.log('✅ Onboarding completed, redirecting to dashboard...');
         window.location.href = '/dashboard.html';
     } catch (error) {
         console.error('❌ Error completing onboarding:', error);
-        // Still redirect even if metadata update fails
+        // Still redirect even if there's an error
         localStorage.setItem('onboarding_completed', 'true');
+        localStorage.setItem('first_login', 'false');
         window.location.href = '/dashboard.html';
     }
 }
@@ -291,6 +299,17 @@ function initializeSteps(user) {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('🚀 Initializing onboarding page...');
+        
+        // Check if onboarding was already completed
+        const onboardingCompleted = localStorage.getItem('onboarding_completed');
+        const urlParams = new URLSearchParams(window.location.search);
+        const isNewUser = urlParams.get('new') === 'true';
+        
+        if (onboardingCompleted === 'true' && !isNewUser) {
+            console.log('✅ Onboarding already completed, redirecting to dashboard');
+            window.location.href = '/dashboard.html';
+            return;
+        }
         
         // Initialize Clerk
         if (window.clerkAuth) {

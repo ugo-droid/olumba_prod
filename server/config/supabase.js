@@ -5,12 +5,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Validate required environment variables
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || 'https://mzxsugnnyydinywvwqxt.supabase.co';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16eHN1Z25ueXlkaW55d3Z3cXh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjkwNzUsImV4cCI6MjA3NDk0NTA3NX0.IdoLZqV6azxoIoNjSc6_LJWdVMcD_httDe0rHfATtGI';
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing required Supabase environment variables. Please check your .env file.');
+    console.warn('⚠️ Supabase environment variables not set. Using defaults.');
 }
 
 // Create Supabase client for public operations (with RLS)

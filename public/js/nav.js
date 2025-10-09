@@ -6,7 +6,7 @@ function createSidebar(activePage = 'dashboard') {
     const userRole = currentUser?.role || 'member';
     
     return `
-    <aside class="w-64 bg-background flex flex-col border-r border-footer-border/20">
+    <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 z-50 w-64 bg-background flex flex-col border-r border-footer-border/20 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <!-- User Info -->
         <div class="p-6 border-b border-footer-border/20">
             <div class="flex items-center gap-3">
@@ -80,9 +80,15 @@ function createHeader(pageTitle = 'Olumba') {
     return `
     <header class="bg-background border-b border-footer-border/20 px-6 py-4">
         <div class="flex items-center justify-between">
-            <a href="/dashboard.html" class="flex items-center">
-                <img src="/assets/olumba-logo.png" alt="Olumba" class="h-10 w-auto" />
-            </a>
+            <div class="flex items-center gap-4">
+                <!-- Mobile menu button -->
+                <button id="mobileMenuToggle" class="md:hidden p-2 hover:bg-background-alt rounded-lg">
+                    <span class="material-symbols-outlined text-text-color">menu</span>
+                </button>
+                <a href="/dashboard.html" class="flex items-center">
+                    <img src="/assets/olumba-logo.png" alt="Olumba" class="h-10 w-auto" />
+                </a>
+            </div>
             <div class="hidden md:flex items-center gap-4">
                 <div class="relative">
                     <input 
@@ -146,9 +152,12 @@ function initNav(activePage) {
     }
     
     appContainer.innerHTML = `
-        <div class="flex h-screen bg-background-alt">
+        <div class="flex h-screen bg-background-alt relative">
+            <!-- Mobile overlay -->
+            <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
+            
             ${createSidebar(activePage)}
-            <div class="flex-1 flex flex-col overflow-hidden">
+            <div class="flex-1 flex flex-col overflow-hidden w-full md:w-auto">
                 ${createHeader()}
                 <main id="mainContent" class="flex-1 overflow-y-auto">
                     <!-- Content will be inserted here -->
@@ -162,6 +171,21 @@ function initNav(activePage) {
 }
 
 function setupNavListeners() {
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (mobileMenuToggle && sidebar && sidebarOverlay) {
+        const toggleSidebar = () => {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        };
+        
+        mobileMenuToggle.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+    }
+    
     // Logout button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {

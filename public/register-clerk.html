@@ -92,7 +92,7 @@
                 
                 // Render Clerk Sign Up component
                 const signUp = window.Clerk.mountSignUp(signUpContainer, {
-                    afterSignUpUrl: '/onboarding.html',
+                    afterSignUpUrl: '/onboarding.html?new=true',
                     afterSignInUrl: '/dashboard.html',
                     signInUrl: '/login-clerk.html',
                     appearance: {

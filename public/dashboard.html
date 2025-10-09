@@ -55,15 +55,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeDashboard() {
-    // Check if onboarding is needed (first login)
-    const onboardingCompleted = localStorage.getItem('onboarding_completed');
-    const firstLogin = localStorage.getItem('first_login');
-
-    if (!onboardingCompleted && firstLogin !== 'false') {
-        window.location.href = '/onboarding.html';
-        return;
-    }
-    
     // Render dashboard content
     renderDashboardContent();
     
