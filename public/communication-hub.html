@@ -16,12 +16,37 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-requireAuth();
+// Initialize page with authentication
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🚀 Communication Hub page initializing...');
+        
+        // Initialize Clerk
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+        }
+        
+        // Check authentication
+        if (!requireAuth()) {
+            return; // Will redirect to login
+        }
+        
+        console.log('✅ User authenticated, initializing communication hub page');
+        
+        // Initialize navigation
+        initNav('communication');
+        
+        // Initialize page content
+        initializeCommunicationHubPage();
+    } catch (error) {
+        console.error('❌ Error initializing communication hub page:', error);
+        window.location.href = '/login-clerk.html';
+    }
+});
 
-initNav('communication');
-
-const mainContent = document.getElementById('mainContent');
-const currentUser = getCurrentUser();
+function initializeCommunicationHubPage() {
+    const mainContent = document.getElementById('mainContent');
+    const currentUser = getCurrentUser();
 
 mainContent.innerHTML = `
 <div class="p-8">
@@ -110,6 +135,12 @@ mainContent.innerHTML = `
 </div>
 `;
 
+    // Setup event listeners and load initial data
+    setupCommunicationHubEventListeners();
+    loadProjects();
+}
+
+// Global variables
 let currentProjectId = null;
 
 // Load projects for selector
@@ -124,17 +155,43 @@ async function loadProjects() {
     }
 }
 
-// Project selector change
-document.getElementById('projectSelector').addEventListener('change', async (e) => {
-    currentProjectId = e.target.value;
-    if (currentProjectId) {
-        await loadMessages();
-        await loadTeamMembers();
-        document.getElementById('messageInput').classList.remove('hidden');
-    } else {
-        document.getElementById('messageInput').classList.add('hidden');
-    }
-});
+function setupCommunicationHubEventListeners() {
+    // Project selector change
+    document.getElementById('projectSelector').addEventListener('change', async (e) => {
+        currentProjectId = e.target.value;
+        if (currentProjectId) {
+            await loadMessages();
+            await loadTeamMembers();
+            document.getElementById('messageInput').classList.remove('hidden');
+        } else {
+            document.getElementById('messageInput').classList.add('hidden');
+        }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.hub-tab').forEach(tab => {
+        tab.addEventListener('click', async () => {
+            document.querySelectorAll('.hub-tab').forEach(t => {
+                t.classList.remove('active', 'border-primary', 'text-primary');
+                t.classList.add('border-transparent', 'text-text-color/60');
+            });
+            
+            tab.classList.add('active', 'border-primary', 'text-primary');
+            
+            const tabName = tab.dataset.tab;
+            
+            if (tabName === 'messages') {
+                document.getElementById('messagesTab').classList.remove('hidden');
+                document.getElementById('activityTab').classList.add('hidden');
+                if (currentProjectId) await loadMessages();
+            } else {
+                document.getElementById('messagesTab').classList.add('hidden');
+                document.getElementById('activityTab').classList.remove('hidden');
+                if (currentProjectId) await loadActivity();
+            }
+        });
+    });
+}
 
 // Load messages
 async function loadMessages() {
@@ -333,31 +390,6 @@ window.postMessage = async function() {
     }
 };
 
-// Tab switching
-document.querySelectorAll('.hub-tab').forEach(tab => {
-    tab.addEventListener('click', async () => {
-        document.querySelectorAll('.hub-tab').forEach(t => {
-            t.classList.remove('active', 'border-primary', 'text-primary');
-            t.classList.add('border-transparent', 'text-text-color/60');
-        });
-        
-        tab.classList.add('active', 'border-primary', 'text-primary');
-        
-        const tabName = tab.dataset.tab;
-        
-        if (tabName === 'messages') {
-            document.getElementById('messagesTab').classList.remove('hidden');
-            document.getElementById('activityTab').classList.add('hidden');
-            if (currentProjectId) await loadMessages();
-        } else {
-            document.getElementById('messagesTab').classList.add('hidden');
-            document.getElementById('activityTab').classList.remove('hidden');
-            if (currentProjectId) await loadActivity();
-        }
-    });
-});
-
-loadProjects();
 </script>
 </body>
 </html>

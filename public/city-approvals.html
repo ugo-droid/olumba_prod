@@ -231,21 +231,104 @@ mainContent.innerHTML = `
     setupCityApprovalsEventListeners();
     
     // Load city approvals data
-    loadCityApprovals();
+    loadSubmittals();
 }
 
-function setupCityApprovalsEventListeners() {
-    const newSubmittalBtn = document.getElementById('newSubmittalBtn');
-const newSubmittalModal = document.getElementById('newSubmittalModal');
-const cancelSubmittalBtn = document.getElementById('cancelSubmittalBtn');
-const newSubmittalForm = document.getElementById('newSubmittalForm');
-const submittalsList = document.getElementById('submittalsList');
-const correctionsModal = document.getElementById('correctionsModal');
-const closeCorrectionsBtn = document.getElementById('closeCorrectionsBtn');
-
+// Global variables for city approvals page
 let allSubmittals = [];
 let currentFilter = 'all';
 let allProjects = [];
+let selectedFiles = [];
+
+function setupCityApprovalsEventListeners() {
+    const newSubmittalBtn = document.getElementById('newSubmittalBtn');
+    const newSubmittalModal = document.getElementById('newSubmittalModal');
+    const cancelSubmittalBtn = document.getElementById('cancelSubmittalBtn');
+    const newSubmittalForm = document.getElementById('newSubmittalForm');
+    const correctionsModal = document.getElementById('correctionsModal');
+    const closeCorrectionsBtn = document.getElementById('closeCorrectionsBtn');
+
+// Modal controls
+newSubmittalBtn.addEventListener('click', () => {
+    loadProjects();
+    newSubmittalModal.classList.remove('hidden');
+});
+
+cancelSubmittalBtn.addEventListener('click', () => {
+    newSubmittalModal.classList.add('hidden');
+});
+
+closeCorrectionsBtn.addEventListener('click', () => {
+    correctionsModal.classList.add('hidden');
+});
+
+// File upload handling
+const submittalFileInput = document.getElementById('submittalFile');
+const fileListDiv = document.getElementById('fileList');
+
+submittalFileInput.addEventListener('change', (e) => {
+    selectedFiles = Array.from(e.target.files);
+    displayFileList();
+});
+
+// Create submittal
+newSubmittalForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Submitting...</span>';
+    
+    try {
+        // Note: File upload would be handled via multipart/form-data
+        // For now, we'll simulate by storing file names
+        const documentNames = selectedFiles.map(f => f.name).join(', ');
+        
+        await cityApprovals.create({
+            project_id: document.getElementById('submittalProject').value,
+            submittal_name: document.getElementById('submittalName').value,
+            submittal_type: document.getElementById('submittalType').value || null,
+            city_jurisdiction: document.getElementById('cityJurisdiction').value || null,
+            plan_check_number: document.getElementById('planCheckNumber').value || null,
+            submission_date: document.getElementById('submissionDate').value || null,
+            deadline: document.getElementById('submittalDeadline').value || null,
+            city_official: document.getElementById('cityOfficial').value || null,
+            notes: document.getElementById('submittalNotes').value || null,
+            document_ids: documentNames || null
+        });
+        
+        newSubmittalModal.classList.add('hidden');
+        newSubmittalForm.reset();
+        selectedFiles = [];
+        fileListDiv.innerHTML = '';
+        loadSubmittals();
+        
+        alert('Submittal created successfully!');
+    } catch (error) {
+        alert('Failed to create submittal: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+// Filter tabs
+document.querySelectorAll('.status-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.status-tab').forEach(t => {
+            t.classList.remove('active', 'border-primary', 'text-primary');
+            t.classList.add('border-transparent', 'text-text-color/60');
+        });
+        
+        tab.classList.add('active', 'border-primary', 'text-primary');
+        tab.classList.remove('border-transparent', 'text-text-color/60');
+        
+        currentFilter = tab.dataset.filter;
+        renderSubmittals();
+    });
+});
+}
 
 // Load projects for dropdown
 async function loadProjects() {
@@ -262,15 +345,22 @@ async function loadProjects() {
 // Load submittals
 async function loadSubmittals() {
     try {
+        const submittalsList = document.getElementById('submittalsList');
         allSubmittals = await cityApprovals.getAll();
         renderSubmittals();
     } catch (error) {
         console.error('Failed to load submittals:', error);
-        submittalsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Failed to load submittals</td></tr>';
+        const submittalsList = document.getElementById('submittalsList');
+        if (submittalsList) {
+            submittalsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Failed to load submittals</td></tr>';
+        }
     }
 }
 
 function renderSubmittals() {
+    const submittalsList = document.getElementById('submittalsList');
+    if (!submittalsList) return;
+    
     const filtered = currentFilter === 'all' 
         ? allSubmittals 
         : allSubmittals.filter(s => s.status === currentFilter);
@@ -291,7 +381,7 @@ function renderSubmittals() {
     submittalsList.innerHTML = filtered.map(submittal => `
         <tr class="text-sm hover:bg-background-alt/50">
             <td class="px-6 py-4 font-medium text-text-color">${submittal.submittal_name}</td>
-            <td class="px-6 py-4 text-text-color/60">${submittal.project_name}</td>
+            <td class="px-6 py-4 text-text-color/60">${submittal.project_name || 'N/A'}</td>
             <td class="px-6 py-4 text-text-color/60">${submittal.submission_date || 'Not set'}</td>
             <td class="px-6 py-4">
                 <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(submittal.status)}">
@@ -322,6 +412,41 @@ function getStatusColor(status) {
     return colors[status] || 'bg-gray-200 text-gray-600';
 }
 
+// Display file list helper
+function displayFileList() {
+    const fileListDiv = document.getElementById('fileList');
+    if (!fileListDiv) return;
+    
+    if (selectedFiles.length === 0) {
+        fileListDiv.innerHTML = '';
+        return;
+    }
+    
+    fileListDiv.innerHTML = selectedFiles.map((file, index) => `
+        <div class="flex items-center justify-between p-2 bg-background-alt rounded text-sm">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-primary">description</span>
+                <span class="text-text-color">${file.name}</span>
+                <span class="text-text-color/40">(${formatFileSize(file.size)})</span>
+            </div>
+            <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
+                <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+        </div>
+    `).join('');
+}
+
+window.removeFile = function(index) {
+    selectedFiles.splice(index, 1);
+    displayFileList();
+};
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
 // View submittal details
 window.viewSubmittal = async function(approvalId) {
     try {
@@ -334,6 +459,7 @@ window.viewSubmittal = async function(approvalId) {
 
 function showCorrectionsModal(approval) {
     const correctionsContent = document.getElementById('correctionsContent');
+    const correctionsModal = document.getElementById('correctionsModal');
     
     correctionsContent.innerHTML = `
         <div class="space-y-6">
@@ -459,106 +585,10 @@ function getCorrectionStatusColor(status) {
     return colors[status] || 'bg-gray-200 text-gray-600';
 }
 
-// Modal controls
-newSubmittalBtn.addEventListener('click', () => {
-    loadProjects();
-    newSubmittalModal.classList.remove('hidden');
-});
-
-cancelSubmittalBtn.addEventListener('click', () => {
-    newSubmittalModal.classList.add('hidden');
-});
-
-closeCorrectionsBtn.addEventListener('click', () => {
-    correctionsModal.classList.add('hidden');
-});
-
-// File upload handling
-const submittalFileInput = document.getElementById('submittalFile');
-const fileListDiv = document.getElementById('fileList');
-let selectedFiles = [];
-
-submittalFileInput.addEventListener('change', (e) => {
-    selectedFiles = Array.from(e.target.files);
-    displayFileList();
-});
-
-function displayFileList() {
-    if (selectedFiles.length === 0) {
-        fileListDiv.innerHTML = '';
-        return;
-    }
-    
-    fileListDiv.innerHTML = selectedFiles.map((file, index) => `
-        <div class="flex items-center justify-between p-2 bg-background-alt rounded text-sm">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm text-primary">description</span>
-                <span class="text-text-color">${file.name}</span>
-                <span class="text-text-color/40">(${formatFileSize(file.size)})</span>
-            </div>
-            <button type="button" onclick="removeFile(${index})" class="text-red-500 hover:text-red-700">
-                <span class="material-symbols-outlined text-sm">close</span>
-            </button>
-        </div>
-    `).join('');
-}
-
-window.removeFile = function(index) {
-    selectedFiles.splice(index, 1);
-    displayFileList();
-};
-
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-// Create submittal
-newSubmittalForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Submitting...</span>';
-    
-    try {
-        // Note: File upload would be handled via multipart/form-data
-        // For now, we'll simulate by storing file names
-        const documentNames = selectedFiles.map(f => f.name).join(', ');
-        
-        await cityApprovals.create({
-            project_id: document.getElementById('submittalProject').value,
-            submittal_name: document.getElementById('submittalName').value,
-            submittal_type: document.getElementById('submittalType').value || null,
-            city_jurisdiction: document.getElementById('cityJurisdiction').value || null,
-            plan_check_number: document.getElementById('planCheckNumber').value || null,
-            submission_date: document.getElementById('submissionDate').value || null,
-            deadline: document.getElementById('submittalDeadline').value || null,
-            city_official: document.getElementById('cityOfficial').value || null,
-            notes: document.getElementById('submittalNotes').value || null,
-            document_ids: documentNames || null
-        });
-        
-        newSubmittalModal.classList.add('hidden');
-        newSubmittalForm.reset();
-        selectedFiles = [];
-        fileListDiv.innerHTML = '';
-        loadSubmittals();
-        
-        alert('Submittal created successfully!');
-    } catch (error) {
-        alert('Failed to create submittal: ' + error.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-    }
-});
-
 // Update submittal status
 window.updateSubmittalStatus = async function(approvalId) {
     const newStatus = document.getElementById('statusUpdate').value;
+    const correctionsModal = document.getElementById('correctionsModal');
     
     try {
         await cityApprovals.updateStatus(approvalId, newStatus);
@@ -612,6 +642,8 @@ window.addCorrection = async function(approvalId) {
 window.resolveCorrection = async function(correctionId) {
     if (!confirm('Mark this correction as resolved?')) return;
     
+    const correctionsModal = document.getElementById('correctionsModal');
+    
     try {
         await cityApprovals.updateCorrection(correctionId, 'resolved');
         
@@ -634,24 +666,6 @@ window.resolveCorrection = async function(correctionId) {
         alert('Failed to resolve correction: ' + error.message);
     }
 };
-
-// Filter tabs
-document.querySelectorAll('.status-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.status-tab').forEach(t => {
-            t.classList.remove('active', 'border-primary', 'text-primary');
-            t.classList.add('border-transparent', 'text-text-color/60');
-        });
-        
-        tab.classList.add('active', 'border-primary', 'text-primary');
-        tab.classList.remove('border-transparent', 'text-text-color/60');
-        
-        currentFilter = tab.dataset.filter;
-        renderSubmittals();
-    });
-});
-
-loadSubmittals();
 </script>
 </body>
 </html>

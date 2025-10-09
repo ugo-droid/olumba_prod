@@ -124,7 +124,6 @@ function setupProjectsEventListeners() {
     const newProjectModal = document.getElementById('newProjectModal');
     const cancelProjectBtn = document.getElementById('cancelProjectBtn');
     const newProjectForm = document.getElementById('newProjectForm');
-    const projectsContainer = document.getElementById('projectsContainer');
 
     // Modal controls
     newProjectBtn.addEventListener('click', () => {
@@ -184,16 +183,24 @@ function setupProjectsEventListeners() {
 
 // Load projects
 async function loadProjects() {
+    const projectsContainer = document.getElementById('projectsContainer');
+    
     try {
         const projectsData = await projects.getAll();
         renderProjects(projectsData);
     } catch (error) {
         console.error('Failed to load projects:', error);
-        projectsContainer.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Failed to load projects</div>';
+        if (projectsContainer) {
+            projectsContainer.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Failed to load projects</div>';
+        }
     }
 }
 
 function renderProjects(projectsData) {
+    const projectsContainer = document.getElementById('projectsContainer');
+    
+    if (!projectsContainer) return;
+    
     if (projectsData.length === 0) {
         projectsContainer.innerHTML = `
             <div class="col-span-full text-center py-12">

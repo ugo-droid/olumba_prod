@@ -178,57 +178,58 @@ mainContent.innerHTML = `
 </div>
 `;
 
-// Profile form handler
-document.getElementById('profileForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
-    
-    try {
-        await users.updateProfile({
-            full_name: document.getElementById('fullName').value,
-            job_title: document.getElementById('jobTitle').value,
-            discipline: document.getElementById('discipline').value
-        });
+    // Profile form handler
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        // Update local user data
-        const updatedUser = await auth.getMe();
-        setCurrentUser(updatedUser);
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
         
-        alert('Profile updated successfully!');
-    } catch (error) {
-        alert('Failed to update profile: ' + error.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Save Changes';
-    }
-});
+        try {
+            await users.updateProfile({
+                full_name: document.getElementById('fullName').value,
+                job_title: document.getElementById('jobTitle').value,
+                discipline: document.getElementById('discipline').value
+            });
+            
+            // Update local user data
+            const updatedUser = await auth.getMe();
+            setCurrentUser(updatedUser);
+            
+            alert('Profile updated successfully!');
+        } catch (error) {
+            alert('Failed to update profile: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save Changes';
+        }
+    });
 
-// Notification preferences handler
-document.getElementById('notificationPrefsForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
-    
-    try {
-        await users.updateNotificationPreferences({
-            email_enabled: document.getElementById('emailEnabled').checked,
-            in_app_enabled: document.getElementById('inAppEnabled').checked,
-            task_assigned: document.getElementById('taskAssigned').checked
-        });
+    // Notification preferences handler
+    document.getElementById('notificationPrefsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        alert('Notification preferences updated!');
-    } catch (error) {
-        alert('Failed to update preferences: ' + error.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Save Preferences';
-    }
-});
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+        
+        try {
+            await users.updateNotificationPreferences({
+                email_enabled: document.getElementById('emailEnabled').checked,
+                in_app_enabled: document.getElementById('inAppEnabled').checked,
+                task_assigned: document.getElementById('taskAssigned').checked
+            });
+            
+            alert('Notification preferences updated!');
+        } catch (error) {
+            alert('Failed to update preferences: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save Preferences';
+        }
+    });
+}
 
 // Restart onboarding
 window.restartOnboarding = function() {
