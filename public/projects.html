@@ -82,22 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function initializeProjectsPage() {
-    // Render projects content
-    renderProjectsContent();
-    
-    // Setup event listeners
-    setupProjectsEventListeners();
-    
-    // Load projects
-    loadProjects();
-}
-
-function renderProjectsContent() {
+    // Get main content area
     const mainContent = document.getElementById('mainContent');
-    if (!mainContent) {
-        console.error('Main content area not found');
-        return;
-    }
 
     // Render projects content
     mainContent.innerHTML = `
@@ -124,15 +110,59 @@ function renderProjectsContent() {
     </div>
 </div>
 `;
+
+    // Setup event listeners
+    setupProjectsEventListeners();
+    
+    // Load projects
+    loadProjects();
 }
 
-// Setup event listeners after content is rendered
 function setupProjectsEventListeners() {
     const newProjectBtn = document.getElementById('newProjectBtn');
-const newProjectModal = document.getElementById('newProjectModal');
-const cancelProjectBtn = document.getElementById('cancelProjectBtn');
-const newProjectForm = document.getElementById('newProjectForm');
-const projectsContainer = document.getElementById('projectsContainer');
+    const newProjectModal = document.getElementById('newProjectModal');
+    const cancelProjectBtn = document.getElementById('cancelProjectBtn');
+    const newProjectForm = document.getElementById('newProjectForm');
+    const projectsContainer = document.getElementById('projectsContainer');
+
+    // Modal controls
+    newProjectBtn.addEventListener('click', () => {
+        newProjectModal.classList.remove('hidden');
+    });
+
+    cancelProjectBtn.addEventListener('click', () => {
+        newProjectModal.classList.add('hidden');
+    });
+
+    // Create project
+    newProjectForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating...';
+        
+        try {
+            const projectData = {
+                name: document.getElementById('projectName').value,
+                description: document.getElementById('projectDescription').value,
+                start_date: document.getElementById('projectStartDate').value || null,
+                deadline: document.getElementById('projectDeadline').value || null
+            };
+            
+            await projects.create(projectData);
+            
+            newProjectModal.classList.add('hidden');
+            newProjectForm.reset();
+            loadProjects();
+        } catch (error) {
+            alert('Failed to create project: ' + error.message);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Create Project';
+        }
+    });
+}
 
 // Load projects
 async function loadProjects() {
@@ -190,46 +220,6 @@ function getStatusColor(status) {
     };
     return colors[status] || 'bg-gray-200 text-gray-600';
 }
-
-// Modal controls
-newProjectBtn.addEventListener('click', () => {
-    newProjectModal.classList.remove('hidden');
-});
-
-cancelProjectBtn.addEventListener('click', () => {
-    newProjectModal.classList.add('hidden');
-});
-
-// Create project
-newProjectForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitButton = e.target.querySelector('button[type="submit"]');
-    submitButton.disabled = true;
-    submitButton.textContent = 'Creating...';
-    
-    try {
-        const projectData = {
-            name: document.getElementById('projectName').value,
-            description: document.getElementById('projectDescription').value,
-            start_date: document.getElementById('projectStartDate').value || null,
-            deadline: document.getElementById('projectDeadline').value || null
-        };
-        
-        await projects.create(projectData);
-        
-        newProjectModal.classList.add('hidden');
-        newProjectForm.reset();
-        loadProjects();
-    } catch (error) {
-        alert('Failed to create project: ' + error.message);
-    } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = 'Create Project';
-    }
-});
-
-loadProjects();
 </script>
 </body>
 </html>
