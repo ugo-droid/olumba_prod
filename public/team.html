@@ -45,22 +45,48 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-requireAuth();
+// Initialize page with authentication
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🚀 Team page initializing...');
+        
+        // Initialize Clerk
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+        }
+        
+        // Check authentication
+        if (!requireAuth()) {
+            return; // Will redirect to login
+        }
+        
+        // Check admin access
+        const currentUser = getCurrentUser();
+        if (currentUser.role !== 'admin') {
+            alert('Access denied. Admin only.');
+            window.location.href = '/dashboard.html';
+            return;
+        }
+        
+        console.log('✅ Admin user authenticated, initializing team page');
+        
+        // Initialize navigation
+        initNav('team');
+        
+        // Initialize page content
+        initializeTeamPage();
+    } catch (error) {
+        console.error('❌ Error initializing team page:', error);
+        window.location.href = '/login-clerk.html';
+    }
+});
 
-const currentUser = getCurrentUser();
-if (currentUser.role !== 'admin') {
-    alert('Access denied. Admin only.');
-    window.location.href = '/dashboard.html';
-}
+function initializeTeamPage() {
+    // Get main content area
+    const mainContent = document.getElementById('mainContent');
 
-// Initialize navigation
-initNav('team');
-
-// Get main content area
-const mainContent = document.getElementById('mainContent');
-
-// Render team content
-mainContent.innerHTML = `
+    // Render team content
+    mainContent.innerHTML = `
 <div class="p-8">
     <div class="max-w-7xl mx-auto">
         <div class="flex items-center justify-between mb-8">
@@ -102,13 +128,54 @@ mainContent.innerHTML = `
 </div>
 `;
 
-const teamList = document.getElementById('teamList');
-const inviteBtn = document.getElementById('inviteBtn');
-const inviteModal = document.getElementById('inviteModal');
-const cancelInviteBtn = document.getElementById('cancelInviteBtn');
-const inviteForm = document.getElementById('inviteForm');
+    // Setup event listeners
+    const inviteBtn = document.getElementById('inviteBtn');
+    const inviteModal = document.getElementById('inviteModal');
+    const cancelInviteBtn = document.getElementById('cancelInviteBtn');
+    const inviteForm = document.getElementById('inviteForm');
 
+    // Invite modal
+    inviteBtn.addEventListener('click', () => {
+        inviteModal.classList.remove('hidden');
+    });
+
+    cancelInviteBtn.addEventListener('click', () => {
+        inviteModal.classList.add('hidden');
+    });
+
+    inviteForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        
+        try {
+            const result = await users.invite(
+                document.getElementById('inviteEmail').value,
+                document.getElementById('inviteRole').value
+            );
+            
+            alert(`Invitation sent! Share this link:\n${result.invitationLink}`);
+            inviteModal.classList.add('hidden');
+            inviteForm.reset();
+            loadTeam();
+        } catch (error) {
+            alert('Failed to send invitation: ' + error.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Invitation';
+        }
+    });
+
+    // Load team data
+    loadTeam();
+}
+
+// Load team members
 async function loadTeam() {
+    const teamList = document.getElementById('teamList');
+    if (!teamList) return;
     try {
         const teamData = await users.getAll();
         renderTeam(teamData);
@@ -119,6 +186,9 @@ async function loadTeam() {
 }
 
 function renderTeam(teamData) {
+    const teamList = document.getElementById('teamList');
+    if (!teamList) return;
+    
     if (teamData.length === 0) {
         teamList.innerHTML = `
             <tr>
@@ -165,42 +235,6 @@ function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString();
 }
-
-// Invite modal
-inviteBtn.addEventListener('click', () => {
-    inviteModal.classList.remove('hidden');
-});
-
-cancelInviteBtn.addEventListener('click', () => {
-    inviteModal.classList.add('hidden');
-});
-
-inviteForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
-    
-    try {
-        const result = await users.invite(
-            document.getElementById('inviteEmail').value,
-            document.getElementById('inviteRole').value
-        );
-        
-        alert(`Invitation sent! Share this link:\n${result.invitationLink}`);
-        inviteModal.classList.add('hidden');
-        inviteForm.reset();
-        loadTeam();
-    } catch (error) {
-        alert('Failed to send invitation: ' + error.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Invitation';
-    }
-});
-
-loadTeam();
 </script>
 </body>
 </html>
