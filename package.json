@@ -34,7 +34,9 @@
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@supabase/auth-js": "^2.72.0",
     "@supabase/supabase-js": "^2.58.0",
+    "@vercel/node": "^3.0.0",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",
@@ -46,7 +48,13 @@
     "resend": "^6.1.2",
     "speakeasy": "^2.0.0",
     "sql.js": "^1.10.3",
+    "stripe": "^17.5.0",
     "svix": "^1.76.1",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.2"
   }
 }

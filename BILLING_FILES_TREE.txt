@@ -1,0 +1,72 @@
+📁 Billing System - Complete File Tree
+═══════════════════════════════════════════
+
+olumba_prod/
+│
+├── 📂 api/ (Vercel Serverless Functions)
+│   ├── ⭐ stripe-webhook.ts         [400 lines] Process webhooks & update entitlements
+│   ├── 📤 billing-checkout.ts       [100 lines] Create Stripe Checkout sessions
+│   ├── 🏪 billing-portal.ts         [60 lines]  Open Customer Portal
+│   ├── 🔌 billing-addon.ts          [90 lines]  Add/update subscription add-ons
+│   ├── 📊 billing-usage.ts          [80 lines]  Report metered usage (optional)
+│   └── ❤️  health.ts                [10 lines]  Health check endpoint
+│
+├── 📂 lib/ (Shared Libraries)
+│   ├── ⭐ entitlements.ts           [150 lines] Entitlement calculation logic
+│   ├── 💳 stripe.ts                 [40 lines]  Stripe client & price IDs
+│   ├── 🗄️  supabaseAdmin.ts         [70 lines]  Supabase admin client & types
+│   └── 🎯 billingClient.ts          [200 lines] TypeScript client SDK
+│
+├── 📂 supabase/ (Database)
+│   ├── ⭐ billing-schema.sql        [270 lines] Tables, indexes, triggers
+│   └── ⭐ billing-policies.sql      [250 lines] RLS policies & security
+│
+├── 📂 components/ (UI Components)
+│   └── 💎 PricingCard.tsx           [450 lines] React pricing component
+│
+├── 📂 public/
+│   ├── 📂 components/
+│   │   └── 🎨 PricingCard.html      [380 lines] Standalone pricing page
+│   └── 📂 js/
+│       └── 🔧 billing.js            [120 lines] Vanilla JS utilities
+│
+├── 📂 Documentation/
+│   ├── 📖 BILLING_IMPLEMENTATION_SUMMARY.md  [600 lines] Complete overview
+│   ├── 📘 BILLING_RUNBOOK.md                 [800 lines] Deployment guide
+│   ├── 🧪 BILLING_TESTING.md                 [500 lines] Testing scenarios
+│   ├── 📋 BILLING_FILE_INDEX.md              [300 lines] File reference
+│   └── 🌳 BILLING_FILES_TREE.txt             [This file] Visual tree
+│
+├── 📂 Configuration/
+│   ├── ⚙️  vercel.json              [40 lines]  Vercel serverless config
+│   ├── 📝 tsconfig.json             [20 lines]  TypeScript config
+│   ├── 🔐 env.billing.template      [60 lines]  Environment variables
+│   └── 📦 package.json              [Updated]   Dependencies added
+│
+└── 🎯 Key Metrics
+    ├── Total Files Created: 17
+    ├── Total Lines of Code: ~2,790
+    ├── Total Documentation: ~2,200
+    ├── Languages: TypeScript, SQL, JavaScript, HTML
+    └── Time to Deploy: ~55 minutes
+
+═══════════════════════════════════════════
+Legend:
+⭐ = Critical files (understand these first)
+📤 = API endpoint
+🔌 = Integration point
+🗄️ = Database access
+💳 = Payment processing
+🎨 = UI component
+📖 = Documentation
+⚙️ = Configuration
+═══════════════════════════════════════════
+
+Quick Start:
+1. Read: BILLING_RUNBOOK.md
+2. Deploy: Follow deployment steps
+3. Test: BILLING_TESTING.md
+4. Customize: BILLING_FILE_INDEX.md
+
+Questions? Start with BILLING_IMPLEMENTATION_SUMMARY.md
+═══════════════════════════════════════════

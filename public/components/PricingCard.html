@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing - Olumba</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 4rem 2rem;
+    }
+
+    .pricing-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      color: white;
+    }
+
+    .pricing-header h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .pricing-header p {
+      font-size: 1.25rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+
+    .billing-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .toggle-label {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .toggle-label.active {
+      color: #fff;
+    }
+
+    .toggle-label.inactive {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-switch.annual {
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .toggle-switch-slider {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.annual .toggle-switch-slider {
+      transform: translateX(30px);
+      background: #667eea;
+    }
+
+    .savings-badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .pricing-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .pricing-card.recommended {
+      border: 3px solid #667eea;
+      transform: scale(1.05);
+    }
+
+    .recommended-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #667eea;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .plan-name {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-description {
+      color: #6b7280;
+      margin-bottom: 1.5rem;
+    }
+
+    .plan-price {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-price span {
+      font-size: 1.25rem;
+      color: #6b7280;
+      font-weight: 400;
+    }
+
+    .plan-billing {
+      color: #6b7280;
+      margin-bottom: 2rem;
+    }
+
+    .plan-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+
+    .plan-features li {
+      padding: 0.75rem 0;
+      color: #4b5563;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      color: #10b981;
+      font-weight: bold;
+      font-size: 1.25rem;
+    }
+
+    .plan-cta {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .plan-cta.primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .plan-cta.primary:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+
+    .plan-cta.secondary {
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .plan-cta.secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .external-note {
+      text-align: center;
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      color: white;
+    }
+
+    .external-note h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .external-note p {
+      font-size: 1.125rem;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="pricing-container">
+    <div class="pricing-header">
+      <h1>Simple, Transparent Pricing</h1>
+      <p>Choose the plan that fits your team. Upgrade or downgrade anytime.</p>
+      
+      <div class="billing-toggle">
+        <span class="toggle-label" id="monthly-label">Monthly</span>
+        <div class="toggle-switch annual" id="billing-toggle">
+          <div class="toggle-switch-slider"></div>
+        </div>
+        <span class="toggle-label active" id="annual-label">
+          Annual <span class="savings-badge">Save 20%</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Starter Plan -->
+      <div class="pricing-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-description">Perfect for small teams getting started</div>
+        <div class="plan-price">
+          $<span id="starter-price">79</span>
+          <span>/mo</span>
+        </div>
+        <div class="plan-billing" id="starter-billing">Billed annually at $948</div>
+        
+        <ul class="plan-features">
+          <li>Up to 3 internal team members</li>
+          <li>Unlimited external collaborators</li>
+          <li>50 GB cloud storage</li>
+          <li>Basic project management</li>
+          <li>Email support</li>
+        </ul>
+        
+        <button class="plan-cta secondary" onclick="selectPlan('starter')">
+          Get Started
+        </button>
+      </div>
+
+      <!-- Pro Plan (Recommended) -->
+      <div class="pricing-card recommended">
+        <div class="recommended-badge">Most Popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-description">For growing teams with bigger projects</div>
+        <div class="plan-price">
+          $<span id="pro-price">199</span>
+          <span>/mo</span>
+        </div>
+        <div class="plan-billing" id="pro-billing">Billed annually at $2,388</div>
+        
+        <ul class="plan-features">
+          <li>Up to 10 internal team members</li>
+          <li>Unlimited external collaborators</li>
+          <li>250 GB cloud storage</li>
+          <li>Advanced project management</li>
+          <li>City integration add-ons available</li>
+          <li>Priority email support</li>
+          <li>Custom branding</li>
+        </ul>
+        
+        <button class="plan-cta primary" onclick="selectPlan('pro')">
+          Start Pro Trial
+        </button>
+      </div>
+
+      <!-- Studio Plan -->
+      <div class="pricing-card">
+        <div class="plan-name">Studio</div>
+        <div class="plan-description">For large firms and enterprises</div>
+        <div class="plan-price">
+          $<span id="studio-price">399</span>
+          <span>/mo</span>
+        </div>
+        <div class="plan-billing" id="studio-billing">Billed annually at $4,788</div>
+        
+        <ul class="plan-features">
+          <li>Up to 25 internal team members</li>
+          <li>Unlimited external collaborators</li>
+          <li>750 GB cloud storage</li>
+          <li>Full project suite</li>
+          <li>Unlimited city integrations</li>
+          <li>24/7 phone & email support</li>
+          <li>Dedicated account manager</li>
+          <li>Advanced analytics</li>
+        </ul>
+        
+        <button class="plan-cta secondary" onclick="selectPlan('studio')">
+          Contact Sales
+        </button>
+      </div>
+    </div>
+
+    <div class="external-note">
+      <h3>🎉 Invite Unlimited External Consultants — Free</h3>
+      <p>
+        Collaborate with architects, engineers, and consultants at no extra cost.
+        You only pay for your internal team members.
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { startCheckout } from '../js/billing.js';
+
+    // Pricing data
+    const pricing = {
+      starter: {
+        monthly: { price: 99, annual: 1188, priceId: 'price_starter_monthly_XXXX' },
+        annual: { price: 79, annual: 948, priceId: 'price_starter_annual_XXXX' }
+      },
+      pro: {
+        monthly: { price: 249, annual: 2988, priceId: 'price_pro_monthly_XXXX' },
+        annual: { price: 199, annual: 2388, priceId: 'price_pro_annual_XXXX' }
+      },
+      studio: {
+        monthly: { price: 499, annual: 5988, priceId: 'price_studio_monthly_XXXX' },
+        annual: { price: 399, annual: 4788, priceId: 'price_studio_annual_XXXX' }
+      }
+    };
+
+    let isAnnual = true;
+
+    // Toggle billing period
+    const toggle = document.getElementById('billing-toggle');
+    const monthlyLabel = document.getElementById('monthly-label');
+    const annualLabel = document.getElementById('annual-label');
+
+    toggle.addEventListener('click', () => {
+      isAnnual = !isAnnual;
+      toggle.classList.toggle('annual');
+      
+      if (isAnnual) {
+        monthlyLabel.classList.remove('active');
+        monthlyLabel.classList.add('inactive');
+        annualLabel.classList.add('active');
+        annualLabel.classList.remove('inactive');
+      } else {
+        monthlyLabel.classList.add('active');
+        monthlyLabel.classList.remove('inactive');
+        annualLabel.classList.remove('active');
+        annualLabel.classList.add('inactive');
+      }
+      
+      updatePricing();
+    });
+
+    // Update pricing display
+    function updatePricing() {
+      const period = isAnnual ? 'annual' : 'monthly';
+      
+      ['starter', 'pro', 'studio'].forEach(plan => {
+        const data = pricing[plan][period];
+        document.getElementById(`${plan}-price`).textContent = data.price;
+        document.getElementById(`${plan}-billing`).textContent = 
+          isAnnual ? `Billed annually at $${data.annual}` : 'Billed monthly';
+      });
+    }
+
+    // Select plan
+    window.selectPlan = async function(plan) {
+      // Get org ID from session/localStorage (implement based on your auth)
+      const orgId = localStorage.getItem('currentOrgId') || 'demo-org-id';
+      const period = isAnnual ? 'annual' : 'monthly';
+      const priceId = pricing[plan][period].priceId;
+
+      try {
+        await startCheckout(
+          orgId,
+          priceId,
+          `${window.location.origin}/billing/success`,
+          `${window.location.origin}/pricing`
+        );
+      } catch (error) {
+        alert('Failed to start checkout. Please try again.');
+        console.error(error);
+      }
+    };
+
+    // Initialize with annual pricing
+    updatePricing();
+  </script>
+</body>
+</html>
+
