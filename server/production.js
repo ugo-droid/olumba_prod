@@ -32,7 +32,6 @@ import documentRoutes from './routes/documents.js';
 import messageRoutes from './routes/messages.js';
 import searchRoutes from './routes/search.js';
 import clerkWebhookRoutes from './routes/clerkWebhooks.js';
-import clerkBillingWebhookRoutes from './routes/clerkBillingWebhooks.js';
 
 // Load environment variables
 dotenv.config();
@@ -92,7 +91,6 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/webhooks', clerkWebhookRoutes);
-app.use('/api/webhooks', clerkBillingWebhookRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

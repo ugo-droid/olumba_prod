@@ -2,7 +2,7 @@
 
 ## 🎉 Implementation Complete
 
-A production-ready billing system has been implemented for the Olumba AEC platform with Stripe, Supabase, and Clerk integration.
+A production-ready billing system has been implemented for the Olumba AEC platform with Stripe and Supabase integration.
 
 ---
 

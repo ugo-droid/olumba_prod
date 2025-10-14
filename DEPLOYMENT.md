@@ -66,7 +66,6 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
    CLERK_SECRET_KEY=your_clerk_secret_key_here
    CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
    CLERK_WEBHOOK_SECRET=whsec_bhP9d/ho21QLIWeAN3SjkgYK1cBy9hBN
-   CLERK_BILLING_WEBHOOK_SECRET=whsec_VHqzGGEUilg8XR43f/5b3M7kzT4Vl2MH
 
    # Resend Email Service
    RESEND_API_KEY=re_8duHTbw2_GV1dwgmtFNYKa3U3MdvDX1k3
@@ -118,7 +117,6 @@ ALLOWED_ORIGINS=https://olumba.app,https://www.olumba.app
    - `www.olumba.app`
 3. **Configure webhook endpoints:**
    - Main webhook: `https://olumba.app/api/webhooks/clerk-webhook`
-   - Billing webhook: `https://olumba.app/api/webhooks/clerk-billing-webhook`
 4. **Update allowed origins in Clerk settings**
 
 #### Resend Configuration

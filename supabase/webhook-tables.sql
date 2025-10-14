@@ -92,6 +92,6 @@ GRANT ALL ON payment_attempts TO authenticated;
 
 -- Add comments for documentation
 COMMENT ON TABLE organizations IS 'Clerk organizations synchronized via webhooks';
-COMMENT ON TABLE subscriptions IS 'User subscriptions and billing information from Clerk';
+COMMENT ON TABLE subscriptions IS 'User subscriptions and billing information';
 COMMENT ON TABLE payment_attempts IS 'Payment attempts and transaction history from Clerk';
 COMMENT ON COLUMN users.subscription_status IS 'Current subscription status: active, past_due, inactive, etc.';

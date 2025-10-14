@@ -50,7 +50,6 @@ function testEnvironmentVariables() {
     
     const optionalVars = [
         'CLERK_WEBHOOK_SECRET',
-        'CLERK_BILLING_WEBHOOK_SECRET',
         'EMAIL_FROM',
         'JWT_SECRET'
     ];

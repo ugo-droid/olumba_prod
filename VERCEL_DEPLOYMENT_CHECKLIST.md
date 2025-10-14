@@ -51,7 +51,6 @@ Add each variable with "Production" environment selected:
 - [ ] `CLERK_SECRET_KEY` = `[your-clerk-secret-key]`
 - [ ] `CLERK_PUBLISHABLE_KEY` = `[your-clerk-publishable-key]`
 - [ ] `CLERK_WEBHOOK_SECRET` = `whsec_bhP9d/ho21QLIWeAN3SjkgYK1cBy9hBN`
-- [ ] `CLERK_BILLING_WEBHOOK_SECRET` = `whsec_VHqzGGEUilg8XR43f/5b3M7kzT4Vl2MH`
 
 #### Resend Email Service
 - [ ] `RESEND_API_KEY` = `re_8duHTbw2_GV1dwgmtFNYKa3U3MdvDX1k3`
