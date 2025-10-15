@@ -1,8 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "installCommand": "npm install",
   "framework": null,
   "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs22.x",
+      "memory": 1024,
+      "maxDuration": 10
+    },
     "api/**/*.ts": {
       "runtime": "nodejs22.x",
       "memory": 1024,
@@ -11,14 +18,13 @@
     "api/stripe-webhook.ts": {
       "runtime": "nodejs22.x",
       "memory": 1024,
-      "maxDuration": 30,
-      "includeFiles": "api/stripe-webhook.ts"
+      "maxDuration": 30
     }
   },
   "rewrites": [
     {
-      "source": "/api/stripe-webhook",
-      "destination": "/api/stripe-webhook"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
