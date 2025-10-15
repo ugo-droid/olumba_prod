@@ -90,7 +90,7 @@ interface PricingCardProps {
   onError?: (error: Error) => void;
 }
 
-export const PricingCard: React.FC<PricingCardProps> = ({ organizationId, onError }) => {
+export const PricingCard: React.FC<PricingCardProps> = ({ organizationId, onError = () => {} }) => {
   const [isAnnual, setIsAnnual] = useState(true);
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -141,7 +141,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({ organizationId, onErro
             <input
               type="checkbox"
               checked={isAnnual}
-              onChange={(e) => setIsAnnual(e.target.checked)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsAnnual(e.target.checked)}
             />
             <span className="slider"></span>
           </label>

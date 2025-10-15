@@ -81,7 +81,7 @@ async function storeEventInDatabase(event: Stripe.Event): Promise<void> {
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const subscriptionId = session.subscription as string;
   const customerId = session.customer as string;
-  const orgId = session.metadata?.org_id || session.subscription_data?.metadata?.org_id;
+  const orgId = session.metadata?.org_id;
 
   if (!subscriptionId || !customerId || !orgId) {
     console.error('Missing required data in checkout session:', {

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -17,8 +17,7 @@
   },
   "include": [
     "api/**/*",
-    "lib/**/*",
-    "components/**/*"
+    "lib/**/*"
   ],
   "exclude": [
     "node_modules",
