@@ -11,7 +11,7 @@
     <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", text: "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
     
     <!-- Clerk SDK -->
-    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk" src="https://excited-hound-64.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
     
     <!-- Fallback CDN -->
     <script>
@@ -20,14 +20,14 @@
                 console.log('Loading Clerk from CDN fallback...');
                 const script = document.createElement('script');
                 script.src = 'https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js';
-                script.setAttribute('data-clerk-publishable-key', 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk');
+                script.setAttribute('data-clerk-publishable-key', 'pk_live_Y2xlcmsub2x1bWJhLmFwcCQ');
                 script.async = true;
                 script.crossOrigin = 'anonymous';
                 script.onload = () => {
                     console.log('✅ Clerk fallback CDN loaded');
                     if (window.Clerk && window.Clerk.load) {
                         window.Clerk.load({
-                            publishableKey: 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk'
+                            publishableKey: 'pk_live_Y2xlcmsub2x1bWJhLmFwcCQ'
                         }).then(() => {
                             console.log('✅ Clerk fallback initialized');
                         });
