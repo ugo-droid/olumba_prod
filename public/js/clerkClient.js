@@ -4,7 +4,7 @@
  */
 
 // Clerk configuration from environment
-const CLERK_PUBLISHABLE_KEY = window.CLERK_PUBLISHABLE_KEY || 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk';
+const CLERK_PUBLISHABLE_KEY = window.CLERK_PUBLISHABLE_KEY || 'pk_live_Y2xlcmsub2x1bWJhLmFwcCQ';
 
 // Initialize Clerk
 let clerkInstance = null;

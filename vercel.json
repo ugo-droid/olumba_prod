@@ -1,24 +1,27 @@
 {
   "version": 2,
-  "buildCommand": "npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "public",
+  "installCommand": "npm install",
   "framework": null,
   "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    },
     "api/**/*.ts": {
-      "runtime": "nodejs22.x",
       "memory": 1024,
       "maxDuration": 10
     },
     "api/stripe-webhook.ts": {
-      "runtime": "nodejs22.x",
       "memory": 1024,
-      "maxDuration": 30,
-      "includeFiles": "api/stripe-webhook.ts"
+      "maxDuration": 30
     }
   },
   "rewrites": [
     {
-      "source": "/api/stripe-webhook",
-      "destination": "/api/stripe-webhook"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
@@ -40,6 +43,27 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
         }
       ]
     }

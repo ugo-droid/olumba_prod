@@ -73,11 +73,11 @@ export class BillingClient {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json() as { message?: string };
       throw new Error(error.message || 'Failed to create checkout session');
     }
 
-    const data: CheckoutResponse = await response.json();
+    const data = await response.json() as CheckoutResponse;
 
     if (data.url) {
       window.location.href = data.url;
@@ -104,11 +104,11 @@ export class BillingClient {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json() as { message?: string };
       throw new Error(error.message || 'Failed to create portal session');
     }
 
-    const data: PortalResponse = await response.json();
+    const data = await response.json() as PortalResponse;
 
     if (data.url) {
       window.location.href = data.url;
@@ -136,11 +136,11 @@ export class BillingClient {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json() as { message?: string };
       throw new Error(error.message || 'Failed to add addon');
     }
 
-    return await response.json();
+    return await response.json() as AddonResponse;
   }
 }
 

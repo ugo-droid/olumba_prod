@@ -10,7 +10,7 @@ window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 
 // Clerk Configuration (for authentication)
 // These values should be replaced with your actual Clerk project details
-window.CLERK_PUBLISHABLE_KEY = 'pk_test_ZXhjaXRlZC1ob3VuZC02NC5jbGVyay5hY2NvdW50cy5kZXYk';
+window.CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsub2x1bWJhLmFwcCQ';
 
 // App Configuration
 window.APP_CONFIG = {
