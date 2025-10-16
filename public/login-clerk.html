@@ -106,11 +106,35 @@
                 // Initialize Clerk
                 await window.clerkAuth.initializeClerk();
                 
-                // Check if already authenticated
+                // Listen for session changes (critical for OAuth flows)
+                window.Clerk.addListener((session) => {
+                    console.log('🔄 Clerk session changed:', session);
+                    if (session && session.status === 'active') {
+                        console.log('✅ Active session detected, redirecting to dashboard');
+                        window.location.href = '/dashboard.html';
+                    }
+                });
+                
+                // Check if already authenticated (for direct page loads)
                 if (window.clerkAuth.isAuthenticated()) {
                     console.log('User already authenticated, redirecting to dashboard');
                     window.location.href = '/dashboard.html';
                     return;
+                }
+                
+                // Check for OAuth callback - wait a bit for Clerk to process
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('__clerk_status') || window.location.hash.includes('__clerk')) {
+                    console.log('🔄 OAuth callback detected, waiting for Clerk to process...');
+                    // Give Clerk time to establish the session
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Check again after waiting
+                    if (window.clerkAuth.isAuthenticated()) {
+                        console.log('✅ OAuth authentication successful, redirecting to dashboard');
+                        window.location.href = '/dashboard.html';
+                        return;
+                    }
                 }
                 
                 // Hide loading state
@@ -121,6 +145,7 @@
                     afterSignInUrl: '/dashboard.html',
                     afterSignUpUrl: '/onboarding.html',
                     signUpUrl: '/register-clerk.html',
+                    redirectUrl: window.location.origin + '/dashboard.html',
                     appearance: {
                         elements: {
                             formButtonPrimary: 'bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg',
