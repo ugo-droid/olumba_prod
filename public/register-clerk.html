@@ -83,8 +83,8 @@
                 
                 // Check if already authenticated
                 if (window.clerkAuth.isAuthenticated()) {
-                    console.log('User already authenticated, redirecting to dashboard');
-                    window.location.href = '/dashboard.html';
+                    console.log('User already authenticated, redirecting to home page');
+                    window.location.href = '/';
                     return;
                 }
                 
@@ -94,7 +94,7 @@
                 // Render Clerk Sign Up component
                 const signUp = window.Clerk.mountSignUp(signUpContainer, {
                     afterSignUpUrl: '/onboarding.html?new=true',
-                    afterSignInUrl: '/dashboard.html',
+                    afterSignInUrl: '/',
                     signInUrl: '/login-clerk.html',
                     appearance: {
                         elements: {
