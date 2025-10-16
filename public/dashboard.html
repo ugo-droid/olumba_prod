@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard - Olumba</title>
+<link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
+<!-- Vercel Speed Insights -->
+<script>
+    (function() {
+        var script = document.createElement('script');
+        script.src = 'https://unpkg.com/@vercel/speed-insights@latest/dist/index.js';
+        script.defer = true;
+        document.head.appendChild(script);
+    })();
+</script>
+
+<!-- Vercel Speed Insights -->
+<script>
+    (function() {
+        var script = document.createElement('script');
+        script.src = 'https://unpkg.com/@vercel/speed-insights@latest/dist/index.js';
+        script.defer = true;
+        document.head.appendChild(script);
+    })();
+</script>
+
+<script src="/js/config.js"></script>
+<script src="/js/clerkClient.js"></script>
+<script src="/js/auth.js"></script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+// Initialize dashboard page
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Dashboard initializing...');
+    
+    try {
+        console.log('🔐 Initializing Clerk authentication...');
+        await window.clerkAuth.initializeClerk();
+        console.log('✅ Clerk initialized successfully');
+        
+        // Check if user is authenticated
+        const isAuth = window.clerkAuth.isAuthenticated();
+        console.log('🔍 Authentication status:', isAuth);
+        
+        if (!isAuth) {
+            console.log('❌ User not authenticated, redirecting to login');
+            window.location.href = '/login-clerk.html';
+            return;
+        }
+        
+        console.log('✅ User authenticated, initializing dashboard...');
+        
+        // Initialize navigation first
+        initNav('dashboard');
+        
+        // Then load dashboard content
+        initializeDashboard();
+        
+    } catch (error) {
+        console.error('❌ Failed to initialize dashboard:', error);
+        window.location.href = '/login-clerk.html';
+    }
+});
+
+function initializeDashboard() {
+    // Render dashboard content
+    renderDashboardContent();
+    
+    // Load user data
+    loadUserData();
+    
+    // Load dashboard data
+    loadDashboard();
+}
+
+// Function to load user data from Clerk
+async function loadUserData() {
+    try {
+        const user = window.clerkAuth.getCurrentUser();
+        if (user) {
+            // Update user name in the dashboard
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = user.fullName || user.firstName || 'User';
+            }
+            
+            // Update user info in navigation
+            updateUserNavigation(user);
+        }
+    } catch (error) {
+        console.error('Failed to load user data:', error);
+    }
+}
+
+// Function to update navigation with user info
+function updateUserNavigation(user) {
+    // This will be implemented in the nav.js file
+    if (window.updateUserNav) {
+        window.updateUserNav(user);
+    }
+}
+
+// Function to render dashboard content
+function renderDashboardContent() {
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) {
+        console.error('Main content area not found');
+        return;
+    }
+
+    // Render dashboard content
+    mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-text-color">Welcome back, <span id="userName">User</span></h1>
+            <p class="text-text-color/60 mt-1">Here's what's happening with your projects today.</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Total Projects</p>
+                        <p class="text-3xl font-bold text-text-color mt-1" id="totalProjects">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">folder</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Active Tasks</p>
+                        <p class="text-3xl font-bold text-text-color mt-1" id="activeTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-accent-2/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-2">assignment</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Completed</p>
+                        <p class="text-3xl font-bold text-text-color mt-1" id="completedTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-accent-1/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-1">check_circle</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-background rounded-xl p-6 shadow-sm border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-text-color/60">Overdue</p>
+                        <p class="text-3xl font-bold text-red-500 mt-1" id="overdueTasks">0</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-red-500">warning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Section -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 mb-8">
+            <div class="p-6 border-b border-footer-border/10 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-text-color">Recent Projects</h2>
+                <a href="/projects.html" class="text-sm text-primary hover:text-primary/80 font-medium">View All →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Project Name</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white text-center">Overdue Tasks</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Deadline</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-text-color/60">
+                                <span class="material-symbols-outlined text-4xl mb-2">folder_open</span>
+                                <p>Loading projects...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="p-6 border-b border-footer-border/10 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-text-color">My Tasks</h2>
+                <a href="/tasks.html" class="text-sm text-primary hover:text-primary/80 font-medium">View All →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Task</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Project</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Due Date</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-text-color/60">
+                                <span class="material-symbols-outlined text-4xl mb-2">assignment</span>
+                                <p>Loading tasks...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+}
+
+// Update user name in dashboard (handled by loadUserData function)
+
+// Load dashboard data
+async function loadDashboard() {
+    try {
+        const projectsData = await projects.getAll();
+        document.getElementById('totalProjects').textContent = projectsData.length;
+        
+        const tasksData = await tasks.getMyTasks();
+        const activeTasks = tasksData.filter(t => t.status === 'in_progress' || t.status === 'pending');
+        const completedTasks = tasksData.filter(t => t.status === 'completed');
+        const overdueTasks = tasksData.filter(t => t.status === 'overdue');
+        
+        document.getElementById('activeTasks').textContent = activeTasks.length;
+        document.getElementById('completedTasks').textContent = completedTasks.length;
+        document.getElementById('overdueTasks').textContent = overdueTasks.length;
+        
+        renderProjects(projectsData.slice(0, 5));
+        renderTasks(tasksData.slice(0, 10));
+        
+    } catch (error) {
+        console.error('Failed to load dashboard:', error);
+    }
+}
+
+function renderProjects(projectsData) {
+    const tbody = document.getElementById('projectsList');
+    
+    if (projectsData.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-text-color/60">
+                    <span class="material-symbols-outlined text-4xl mb-2">folder_open</span>
+                    <p>No projects yet</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = projectsData.map(project => `
+        <tr class="text-sm hover:bg-background-alt/50 cursor-pointer" onclick="window.location.href='/projects.html'">
+            <td class="px-6 py-4 font-medium text-text-color">${project.name}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(project.status)}">
+                    ${project.status.replace('_', ' ')}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-center ${project.overdue_tasks > 0 ? 'text-red-500 font-semibold' : 'text-text-color/60'}">
+                ${project.overdue_tasks || 0}
+            </td>
+            <td class="px-6 py-4 text-text-color/60">${project.deadline || 'Not set'}</td>
+        </tr>
+    `).join('');
+}
+
+function renderTasks(tasksData) {
+    const tbody = document.getElementById('tasksList');
+    
+    if (tasksData.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-text-color/60">
+                    <span class="material-symbols-outlined text-4xl mb-2">assignment</span>
+                    <p>No tasks assigned</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = tasksData.map(task => `
+        <tr class="text-sm hover:bg-background-alt/50">
+            <td class="px-6 py-4 font-medium text-text-color">${task.name}</td>
+            <td class="px-6 py-4 text-text-color/60">${task.project_name}</td>
+            <td class="px-6 py-4 text-text-color/60">${task.due_date || 'Not set'}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getTaskStatusColor(task.status)}">
+                    ${task.status.replace('_', ' ')}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getStatusColor(status) {
+    const colors = {
+        'planning': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-primary/20 text-primary',
+        'on_hold': 'bg-accent-2/20 text-accent-2',
+        'completed': 'bg-accent-1/20 text-accent-1',
+        'cancelled': 'bg-gray-200 text-gray-600'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+function getTaskStatusColor(status) {
+    const colors = {
+        'pending': 'bg-blue-100 text-blue-800',
+        'in_progress': 'bg-accent-2/20 text-accent-2',
+        'overdue': 'bg-red-100 text-red-800',
+        'completed': 'bg-accent-1/20 text-accent-1',
+        'cancelled': 'bg-gray-200 text-gray-600'
+    };
+    return colors[status] || 'bg-gray-200 text-gray-600';
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

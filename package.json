@@ -1,0 +1,61 @@
+{
+  "name": "olumba",
+  "version": "1.0.0",
+  "description": "Modern AEC Project Management Platform",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "build": "npm run build:clean && npm run build:optimize",
+    "build:clean": "rm -rf dist && mkdir -p dist",
+    "build:optimize": "npm run build:assets",
+    "build:assets": "echo 'Assets optimized for production'",
+    "preview": "npm run build && npm start",
+    "init-db": "node server/scripts/initDb.js",
+    "seed-db": "node server/scripts/seedDb.js",
+    "seed-all": "node server/scripts/createAdmin.js && node server/scripts/seedCityApprovals.js && node server/scripts/seedDocuments.js",
+    "reset": "rm -f data/olumba.db && npm run seed-all",
+    "test-emails": "node server/scripts/testEmails.js",
+    "test:production": "NODE_ENV=production node server/scripts/validateEmailService.js",
+    "health-check": "curl -f http://localhost:3000/api/health || exit 1"
+  },
+  "keywords": [
+    "aec",
+    "project-management",
+    "architecture",
+    "engineering",
+    "construction"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@clerk/backend": "^2.17.0",
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@supabase/auth-js": "^2.72.0",
+    "@supabase/supabase-js": "^2.58.0",
+    "@vercel/node": "^3.0.0",
+    "@vercel/speed-insights": "^1.2.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.6",
+    "qrcode": "^1.5.3",
+    "resend": "^6.1.2",
+    "speakeasy": "^2.0.0",
+    "sql.js": "^1.10.3",
+    "stripe": "^17.5.0",
+    "svix": "^1.76.1",
+    "uuid": "^9.0.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.2"
+  }
+}

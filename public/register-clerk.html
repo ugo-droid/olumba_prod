@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Olumba - Create Account</title>
+    <link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", text: "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
+    
+    <!-- Clerk SDK -->
+    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    
+    <!-- App Configuration -->
+    <script src="/js/config.js"></script>
+    <script src="/js/clerkClient.js"></script>
+</head>
+<body class="bg-background font-display text-text">
+    <div class="flex flex-col min-h-screen">
+        <header class="w-full px-4 sm:px-6 lg:px-8">
+            <div class="container mx-auto flex items-center justify-between py-4 border-b border-footer-border">
+                <div class="flex items-center gap-3">
+                    <img src="/assets/olumba-logo.png" alt="Olumba" class="h-10 w-auto" />
+                </div>
+            </div>
+        </header>
+        
+        <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-background-alt">
+            <div class="w-full max-w-md space-y-8 bg-background p-10 rounded-xl shadow-lg">
+                <div>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-text">Create your account</h2>
+                    <p class="mt-2 text-center text-sm text-text opacity-70">Join Olumba and start managing your projects</p>
+                </div>
+                
+                <!-- Clerk Sign Up Component -->
+                <div id="clerk-sign-up"></div>
+                
+                <!-- Error Message -->
+                <div id="errorMessage" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline" id="errorText"></span>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center">
+                    <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-primary bg-background transition ease-in-out duration-150 cursor-not-allowed">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Loading...
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-sm text-text opacity-70">
+                        Already have an account?
+                        <a class="font-medium text-primary hover:text-blue-500" href="/login-clerk.html">Sign in</a>
+                    </p>
+                </div>
+                
+                <div class="border-t border-footer-border pt-6">
+                    <p class="text-xs text-center text-text opacity-60">
+                        Secure authentication powered by Clerk
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Initialize Clerk and handle registration
+        document.addEventListener('DOMContentLoaded', async () => {
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const loadingState = document.getElementById('loadingState');
+            const signUpContainer = document.getElementById('clerk-sign-up');
+            
+            try {
+                // Initialize Clerk
+                await window.clerkAuth.initializeClerk();
+                
+                // Check if already authenticated
+                if (window.clerkAuth.isAuthenticated()) {
+                    console.log('User already authenticated, redirecting to dashboard');
+                    window.location.href = '/dashboard.html';
+                    return;
+                }
+                
+                // Hide loading state
+                loadingState.classList.add('hidden');
+                
+                // Render Clerk Sign Up component
+                const signUp = window.Clerk.mountSignUp(signUpContainer, {
+                    afterSignUpUrl: window.CLERK_SIGN_UP_REDIRECT_URL || '/onboarding.html?new=true',
+                    afterSignInUrl: window.CLERK_SIGN_IN_REDIRECT_URL || '/dashboard.html',
+                    signInUrl: '/login-clerk.html',
+                    appearance: {
+                        elements: {
+                            formButtonPrimary: 'bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg',
+                            card: 'shadow-lg bg-background rounded-xl',
+                            headerTitle: 'text-3xl font-extrabold text-text',
+                            headerSubtitle: 'text-sm text-text opacity-70',
+                            socialButtonsBlockButton: 'border border-footer-border hover:bg-background-alt',
+                            formFieldInput: 'border border-footer-border bg-background-alt text-text',
+                            footerActionLink: 'text-primary hover:text-blue-500',
+                            identityPreviewText: 'text-text',
+                            formFieldLabel: 'text-text',
+                            dividerLine: 'bg-footer-border',
+                            dividerText: 'text-text opacity-70'
+                        }
+                    }
+                });
+                
+                // Clerk will handle the sign-up flow automatically
+                console.log('✅ Clerk Sign Up component mounted successfully');
+                
+            } catch (error) {
+                console.error('Failed to initialize Clerk:', error);
+                errorText.textContent = 'Failed to load registration form. Please refresh the page.';
+                errorMessage.classList.remove('hidden');
+                loadingState.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

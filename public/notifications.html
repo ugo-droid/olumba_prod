@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notifications - Olumba</title>
+    <link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+// Initialize page with authentication
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('🚀 Notifications page initializing...');
+        
+        // Initialize Clerk
+        if (window.clerkAuth) {
+            await window.clerkAuth.initializeClerk();
+        }
+        
+        // Check authentication
+        if (!requireAuth()) {
+            return;
+        }
+        
+        console.log('✅ User authenticated, initializing notifications page');
+        
+        // Initialize navigation
+        initNav('notifications');
+        
+        // Initialize page content
+        initializeNotificationsPage();
+    } catch (error) {
+        console.error('❌ Error initializing notifications page:', error);
+        window.location.href = '/login-clerk.html';
+    }
+});
+
+function initializeNotificationsPage() {
+    // Get main content area
+    const mainContent = document.getElementById('mainContent');
+
+// Render notifications content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8 flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-text-color">Notifications</h1>
+                <p class="text-text-color/60 mt-1">Stay updated with your project activities</p>
+            </div>
+            <button id="markAllReadBtn" class="text-sm text-primary hover:text-primary/80 font-medium">
+                Mark all as read
+            </button>
+        </div>
+
+        <!-- Notifications List -->
+        <div id="notificationsContainer" class="space-y-3">
+            <div class="text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-text-color/30">notifications</span>
+                <p class="text-text-color/60 mt-4">Loading notifications...</p>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+    // Setup event listeners
+    setupNotificationsEventListeners();
+    
+    // Load notifications
+    loadNotifications();
+}
+
+// Load notifications function
+async function loadNotifications() {
+    try {
+        const notificationsData = await notifications.getAll();
+        renderNotifications(notificationsData);
+    } catch (error) {
+        console.error('Failed to load notifications:', error);
+        notificationsContainer.innerHTML = '<div class="text-center py-12 text-red-500">Failed to load notifications</div>';
+    }
+}
+
+function renderNotifications(notificationsData) {
+    if (notificationsData.length === 0) {
+        notificationsContainer.innerHTML = `
+            <div class="text-center py-12">
+                <span class="material-symbols-outlined text-6xl text-text-color/30">notifications_none</span>
+                <p class="text-text-color/60 mt-4">No notifications yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    notificationsContainer.innerHTML = notificationsData.map(notif => `
+        <div class="bg-background rounded-xl shadow-sm p-4 border ${notif.read ? 'border-footer-border/10' : 'border-primary/20 bg-primary/5'} hover:shadow-md transition-shadow cursor-pointer" onclick="markAsRead('${notif.id}')">
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full ${getNotificationColor(notif.type)} flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-lg">${getNotificationIcon(notif.type)}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-sm font-semibold text-text-color">${notif.title}</h3>
+                    <p class="text-sm text-text-color/60 mt-1">${notif.message}</p>
+                    <p class="text-xs text-text-color/40 mt-2">${formatDate(notif.created_at)}</p>
+                </div>
+                ${!notif.read ? '<div class="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-2"></div>' : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function getNotificationColor(type) {
+    const colors = {
+        'task_assigned': 'bg-primary/10 text-primary',
+        'document_uploaded': 'bg-accent-1/10 text-accent-1',
+        'comment_mention': 'bg-accent-2/10 text-accent-2',
+        'approval_status': 'bg-blue-100 text-blue-600',
+        'deadline_reminder': 'bg-red-100 text-red-600',
+        'permission_change': 'bg-purple-100 text-purple-600',
+        'message': 'bg-primary/10 text-primary'
+    };
+    return colors[type] || 'bg-gray-100 text-gray-600';
+}
+
+function getNotificationIcon(type) {
+    const icons = {
+        'task_assigned': 'assignment',
+        'document_uploaded': 'upload_file',
+        'comment_mention': 'alternate_email',
+        'approval_status': 'check_circle',
+        'deadline_reminder': 'schedule',
+        'permission_change': 'vpn_key',
+        'message': 'chat'
+    };
+    return icons[type] || 'notifications';
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+    
+    return date.toLocaleDateString();
+}
+
+window.markAsRead = async function(notifId) {
+    try {
+        await notifications.markAsRead(notifId);
+        loadNotifications();
+        loadNotificationCount();
+    } catch (error) {
+        console.error('Failed to mark as read:', error);
+    }
+};
+
+// Setup event listeners
+function setupNotificationsEventListeners() {
+    const markAllReadBtn = document.getElementById('markAllReadBtn');
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', async () => {
+            try {
+                await notifications.markAllAsRead();
+                loadNotifications();
+                loadNotificationCount();
+            } catch (error) {
+                alert('Failed to mark all as read: ' + error.message);
+            }
+        });
+    }
+}
+
+loadNotifications();
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Document History - Olumba</title>
+    <link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+<div id="app"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+requireAuth();
+
+// Initialize navigation
+initNav('projects');
+
+// Get document ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const documentId = urlParams.get('id');
+
+if (!documentId) {
+    alert('No document specified');
+    window.location.href = '/projects.html';
+}
+
+// Get main content area
+const mainContent = document.getElementById('mainContent');
+
+// Render document history content
+mainContent.innerHTML = `
+<div class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 text-sm text-text-color/60">
+                <a href="/projects.html" class="hover:text-primary">Projects</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span id="projectBreadcrumb" class="hover:text-primary cursor-pointer">Project</span>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="font-medium text-text-color">Document History</span>
+            </div>
+        </div>
+
+        <!-- Document Info -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-text-color mb-2">Document Version History</h1>
+            <p class="text-lg text-text-color/70" id="documentName">Loading...</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 mb-6">
+            <button onclick="downloadLatest()" class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                <span class="material-symbols-outlined">download</span>
+                Download Latest
+            </button>
+            <button onclick="showCompareModal()" class="flex items-center gap-2 border border-primary/50 bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20">
+                <span class="material-symbols-outlined">compare_arrows</span>
+                Compare Versions
+            </button>
+        </div>
+
+        <!-- Version History Table -->
+        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3.5 text-sm font-semibold text-white">Version</th>
+                            <th class="px-6 py-3.5 text-sm font-semibold text-white">Date Modified</th>
+                            <th class="px-6 py-3.5 text-sm font-semibold text-white">Uploaded By</th>
+                            <th class="px-6 py-3.5 text-sm font-semibold text-white">File Size</th>
+                            <th class="px-6 py-3.5 text-sm font-semibold text-white">Discipline</th>
+                            <th class="px-6 py-3.5 text-sm font-semibold text-white text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="versionsList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-text-color/60">
+                                <span class="material-symbols-outlined text-4xl mb-2">history</span>
+                                <p>Loading version history...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Access Log -->
+        <div class="mt-8 bg-background rounded-xl shadow-sm border border-footer-border/10">
+            <div class="p-6 border-b border-footer-border/10">
+                <h2 class="text-lg font-semibold text-text-color">Access Log</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="border-b border-primary bg-primary">
+                        <tr>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">User</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Action</th>
+                            <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Date & Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="accessLogList" class="divide-y divide-footer-border/10">
+                        <tr>
+                            <td colspan="3" class="px-6 py-4 text-center text-text-color/60 text-sm">No access log available</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+`;
+
+const versionsList = document.getElementById('versionsList');
+const accessLogList = document.getElementById('accessLogList');
+
+async function loadHistory() {
+    try {
+        const history = await documents.getHistory(documentId);
+        
+        document.getElementById('documentName').textContent = history.document.name;
+        
+        renderVersions(history.versions);
+        renderAccessLog(history.accessLog);
+        
+        // Log this view
+        await documents.logAccess(documentId, 'view');
+    } catch (error) {
+        console.error('Failed to load history:', error);
+        versionsList.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Failed to load version history</td></tr>';
+    }
+}
+
+function renderVersions(versions) {
+    if (versions.length === 0) {
+        versionsList.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-text-color/60">No versions found</td>
+            </tr>
+        `;
+        return;
+    }
+    
+    versionsList.innerHTML = versions.map((version, index) => `
+        <tr class="text-sm hover:bg-background-alt/50 ${version.is_latest ? 'bg-accent-1/5' : ''}">
+            <td class="px-6 py-4 font-medium text-text-color">
+                Version ${version.version}
+                ${version.is_latest ? '<span class="ml-2 inline-flex items-center rounded-full bg-accent-1/20 px-2 py-0.5 text-xs font-medium text-accent-1">Latest</span>' : ''}
+            </td>
+            <td class="px-6 py-4 text-text-color/70">${formatDateTime(version.created_at)}</td>
+            <td class="px-6 py-4 text-text-color/70">${version.uploaded_by_name || 'Unknown'}</td>
+            <td class="px-6 py-4 text-text-color/70">${formatFileSize(version.file_size)}</td>
+            <td class="px-6 py-4 text-text-color/70">${version.discipline || 'General'}</td>
+            <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                    <button onclick="viewDocument('${version.id}')" class="text-primary hover:underline">View</button>
+                    <button onclick="downloadDocument('${version.id}')" class="text-text-color/50 hover:text-primary">
+                        <span class="material-symbols-outlined text-xl">download</span>
+                    </button>
+                    ${!version.is_latest && (getCurrentUser().role === 'admin') ? `
+                        <button onclick="restoreVersion('${version.id}')" class="text-text-color/50 hover:text-primary" title="Restore this version">
+                            <span class="material-symbols-outlined text-xl">restore</span>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderAccessLog(accessLog) {
+    if (!accessLog || accessLog.length === 0) {
+        accessLogList.innerHTML = '<tr><td colspan="3" class="px-6 py-4 text-center text-text-color/60 text-sm">No access log available</td></tr>';
+        return;
+    }
+    
+    accessLogList.innerHTML = accessLog.map(log => `
+        <tr class="text-sm hover:bg-background-alt/50">
+            <td class="px-6 py-4 text-text-color">${log.user_name || 'Unknown'}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm ${getActionColor(log.action)}">${getActionIcon(log.action)}</span>
+                    <span class="capitalize">${log.action}</span>
+                </span>
+            </td>
+            <td class="px-6 py-4 text-text-color/70">${formatDateTime(log.created_at)}</td>
+        </tr>
+    `).join('');
+}
+
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function getActionColor(action) {
+    const colors = {
+        'view': 'text-blue-500',
+        'download': 'text-accent-1',
+        'upload': 'text-primary',
+        'delete': 'text-red-500'
+    };
+    return colors[action] || 'text-text-color/60';
+}
+
+function getActionIcon(action) {
+    const icons = {
+        'view': 'visibility',
+        'download': 'download',
+        'upload': 'upload',
+        'delete': 'delete'
+    };
+    return icons[action] || 'info';
+}
+
+window.downloadLatest = async function() {
+    alert('Download functionality would trigger here (file system integration needed)');
+};
+
+window.viewDocument = async function(docId) {
+    await documents.logAccess(docId, 'view');
+    alert('Document viewer would open here (PDF viewer integration needed)');
+};
+
+window.downloadDocument = async function(docId) {
+    await documents.logAccess(docId, 'download');
+    alert('Download would start here (file system integration needed)');
+};
+
+window.restoreVersion = async function(docId) {
+    if (!confirm('Restore this version as the latest?')) return;
+    
+    alert('Version restore functionality would be implemented here');
+};
+
+window.showCompareModal = function() {
+    alert('Version comparison tool would open here (diff viewer needed)');
+};
+
+loadHistory();
+</script>
+</body>
+</html>
