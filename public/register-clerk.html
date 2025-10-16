@@ -81,11 +81,53 @@
                 // Initialize Clerk
                 await window.clerkAuth.initializeClerk();
                 
+                // Listen for session changes (critical for OAuth flows)
+                window.Clerk.addListener((session) => {
+                    console.log('🔄 Clerk session changed:', session);
+                    if (session && session.status === 'active') {
+                        console.log('✅ Active session detected after sign up');
+                        // Check if this is a new user (from OAuth signup)
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const isNewUser = !window.clerkAuth.getCurrentUser()?.publicMetadata?.onboardingCompleted;
+                        
+                        if (isNewUser) {
+                            console.log('Redirecting new user to onboarding');
+                            window.location.href = '/onboarding.html?new=true';
+                        } else {
+                            console.log('Redirecting existing user to dashboard');
+                            window.location.href = '/dashboard.html';
+                        }
+                    }
+                });
+                
                 // Check if already authenticated
                 if (window.clerkAuth.isAuthenticated()) {
                     console.log('User already authenticated, redirecting to dashboard');
                     window.location.href = '/dashboard.html';
                     return;
+                }
+                
+                // Check for OAuth callback - wait a bit for Clerk to process
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('__clerk_status') || window.location.hash.includes('__clerk')) {
+                    console.log('🔄 OAuth callback detected, waiting for Clerk to process...');
+                    // Give Clerk time to establish the session
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // Check again after waiting
+                    if (window.clerkAuth.isAuthenticated()) {
+                        const user = window.clerkAuth.getCurrentUser();
+                        const isNewUser = !user?.publicMetadata?.onboardingCompleted;
+                        
+                        if (isNewUser) {
+                            console.log('✅ OAuth sign up successful, redirecting to onboarding');
+                            window.location.href = '/onboarding.html?new=true';
+                        } else {
+                            console.log('✅ OAuth sign in successful, redirecting to dashboard');
+                            window.location.href = '/dashboard.html';
+                        }
+                        return;
+                    }
                 }
                 
                 // Hide loading state
@@ -96,6 +138,7 @@
                     afterSignUpUrl: '/onboarding.html?new=true',
                     afterSignInUrl: '/dashboard.html',
                     signInUrl: '/login-clerk.html',
+                    redirectUrl: window.location.origin + '/onboarding.html?new=true',
                     appearance: {
                         elements: {
                             formButtonPrimary: 'bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg',
