@@ -4,7 +4,7 @@
  */
 
 import dotenv from 'dotenv';
-import resendEmailService from '../services/resendEmailService.js';
+import resendEmailService from '../lib/resendEmail.js';
 
 // Load environment variables
 dotenv.config();

@@ -1,24 +1,16 @@
 {
   "name": "olumba",
-  "version": "1.0.0",
-  "description": "Modern AEC Project Management Platform",
-  "main": "server/index.js",
+  "version": "2.0.0",
+  "description": "Modern AEC Project Management Platform - Serverless",
   "type": "module",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "node --watch server/index.js",
-    "build": "npm run build:clean && npm run build:optimize",
-    "build:clean": "rm -rf dist && mkdir -p dist",
-    "build:optimize": "npm run build:assets",
-    "build:assets": "echo 'Assets optimized for production'",
-    "preview": "npm run build && npm start",
-    "init-db": "node server/scripts/initDb.js",
-    "seed-db": "node server/scripts/seedDb.js",
-    "seed-all": "node server/scripts/createAdmin.js && node server/scripts/seedCityApprovals.js && node server/scripts/seedDocuments.js",
-    "reset": "rm -f data/olumba.db && npm run seed-all",
-    "test-emails": "node server/scripts/testEmails.js",
-    "test:production": "NODE_ENV=production node server/scripts/validateEmailService.js",
-    "health-check": "curl -f http://localhost:3000/api/health || exit 1"
+    "dev": "vercel dev",
+    "build": "echo 'Vercel handles build automatically'",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "test-emails": "node scripts/testEmails.js",
+    "test:email-service": "node scripts/validateEmailService.js",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "aec",
