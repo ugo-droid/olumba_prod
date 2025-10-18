@@ -46,7 +46,26 @@ async function processWebhookEvent(event: Stripe.Event): Promise<void> {
 }
 
 /**
+ * Check if event has already been processed (idempotency check)
+ */
+async function isEventProcessed(eventId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from('billing_events')
+    .select('id')
+    .eq('idempotency_key', eventId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 = no rows returned, which is fine
+    console.error('Error checking event idempotency:', error);
+  }
+
+  return !!data;
+}
+
+/**
  * Store webhook event in database for audit and debugging
+ * Implements idempotency to prevent duplicate processing
  */
 async function storeEventInDatabase(event: Stripe.Event): Promise<void> {
   try {
@@ -61,11 +80,18 @@ async function storeEventInDatabase(event: Stripe.Event): Promise<void> {
       stripe_subscription_id: subscription?.id,
       payload: event,
       processed: true,
+      idempotency_key: event.id, // Use event ID as idempotency key
+      processed_at: new Date().toISOString(),
     };
 
     const { error } = await supabaseAdmin.from('billing_events').insert(billingEvent);
 
     if (error) {
+      // Check if it's a duplicate key error
+      if (error.code === '23505') {
+        console.log(`Event ${event.id} already processed (idempotency check)`);
+        return;
+      }
       console.error('Failed to store billing event:', error);
       // Don't throw - we still want to process the event
     }
@@ -344,11 +370,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rawBody = req.body as Buffer;
     const event = constructEvent(rawBody, signature);
 
+    // Check if event was already processed (idempotency)
+    const alreadyProcessed = await isEventProcessed(event.id);
+    if (alreadyProcessed) {
+      console.log(`Event ${event.id} already processed, skipping`);
+      return res.status(200).json({ received: true, status: 'already_processed' });
+    }
+
     // Process the event asynchronously
     await processWebhookEvent(event);
 
     // Respond immediately to Stripe
-    return res.status(200).json({ received: true });
+    return res.status(200).json({ received: true, status: 'processed' });
   } catch (error) {
     console.error('Webhook error:', error);
 

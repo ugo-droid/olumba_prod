@@ -8,13 +8,13 @@ if (!process.env.SUPABASE_URL) {
   throw new Error('SUPABASE_URL is required but not set in environment variables');
 }
 
-if (!process.env.SUPABASE_SERVICE_ROLE) {
-  throw new Error('SUPABASE_SERVICE_ROLE is required but not set in environment variables');
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required but not set in environment variables');
 }
 
 export const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
   {
     auth: {
       autoRefreshToken: false,
@@ -73,6 +73,8 @@ export interface BillingEvent {
   stripe_subscription_id?: string;
   payload: any;
   processed: boolean;
+  idempotency_key?: string;
+  processed_at?: string;
   created_at?: string;
 }
 

@@ -14,9 +14,16 @@ if (process.env.RESEND_API_KEY) {
     console.warn('⚠️  RESEND_API_KEY not found - email service will be in development mode');
 }
 
-// Email configuration
+// Email configuration with verified sender addresses
+const EMAIL_SENDERS = {
+    TEAM: 'Olumba Team <team@olumba.app>',           // General communications
+    NO_REPLY: 'Olumba <no-reply@olumba.app>',        // System notifications
+    SUPPORT: 'Olumba Support <support@olumba.app>',  // Customer service
+    NEWSLETTER: 'Olumba <newsletter@olumba.app>'     // Marketing/promotional
+};
+
 const EMAIL_CONFIG = {
-    from: 'Olumba <hello@olumba.app>',
+    from: EMAIL_SENDERS.TEAM,          // Default sender
     replyTo: 'support@olumba.app',
     appUrl: process.env.APP_URL || 'http://localhost:3000'
 };
@@ -268,7 +275,7 @@ export async function sendWelcomeEmail(recipientEmail, userData) {
 
     try {
         const data = await resend.emails.send({
-            from: EMAIL_CONFIG.from,
+            from: EMAIL_SENDERS.TEAM,  // Use team sender for welcome emails
             to: [recipientEmail],
             subject: 'Welcome to Olumba! 🎉',
             html: emailHtml,
@@ -333,7 +340,7 @@ export async function sendConsultantInvite(recipientEmail, invitationData) {
     try {
         return await sendEmailWithFallback(
             {
-                from: EMAIL_CONFIG.from,
+                from: EMAIL_SENDERS.TEAM,  // Use team sender for invitations
                 to: [recipientEmail],
                 subject: `You're invited to join ${invitationData.project_name} on Olumba`,
                 html: emailHtml,
@@ -392,7 +399,7 @@ export async function sendTaskAssignmentEmail(recipientEmail, taskData) {
 
     try {
         const data = await resend.emails.send({
-            from: EMAIL_CONFIG.from,
+            from: EMAIL_SENDERS.NO_REPLY,  // Use no-reply for automated task notifications
             to: [recipientEmail],
             subject: `New task assigned: ${taskData.task_name}`,
             html: emailHtml,

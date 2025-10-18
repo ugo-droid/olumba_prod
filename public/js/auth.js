@@ -24,13 +24,6 @@ async function checkAuthAndRedirect() {
             }
         }
         
-        // Check for legacy token authentication
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            console.log('✅ User has legacy auth token');
-            return true;
-        }
-        
         // If not authenticated, redirect to login
         console.log('❌ User not authenticated, redirecting to login');
         window.location.href = '/login-clerk.html';
