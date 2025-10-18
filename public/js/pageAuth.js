@@ -3,6 +3,22 @@
  * Handles authentication checks for all protected pages
  */
 
+/**
+ * Check if user is authenticated - returns true if authenticated, redirects if not
+ */
+function requireAuth() {
+    // Check if Clerk is initialized and user is authenticated
+    if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+        console.log('✅ User is authenticated');
+        return true;
+    }
+    
+    // Not authenticated - redirect to login
+    console.log('❌ User not authenticated, redirecting to login');
+    window.location.href = '/login-clerk.html';
+    return false;
+}
+
 // Initialize page with proper authentication
 async function initializePage(pageName, initCallback) {
     try {
@@ -38,3 +54,4 @@ async function initializePage(pageName, initCallback) {
 
 // Export for global use
 window.initializePage = initializePage;
+window.requireAuth = requireAuth;

@@ -4,11 +4,19 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Notifications - Olumba</title>
-    <link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+<link rel="icon" type="image/png" href="/assets/faviconolumba.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
+<!-- App Scripts -->
+<script src="/js/config.js"></script>
+<script src="/js/clerkClient.js"></script>
+<script src="/js/pageAuth.js"></script>
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div id="app"></div>

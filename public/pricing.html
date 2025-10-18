@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pricing - Olumba</title>
+<link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols_Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+
+<!-- Clerk SDK -->
+<script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+
+<!-- App Scripts -->
+<script src="/js/config.js"></script>
+<script src="/js/clerkClient.js"></script>
+<script src="/js/billing.js"></script>
+</head>
+<body class="bg-gradient-to-br from-primary via-blue-600 to-purple-600 font-display min-h-screen">
+
+<!-- Navigation -->
+<nav class="bg-white/10 backdrop-blur-sm border-b border-white/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-4">
+            <div class="flex items-center gap-3">
+                <img src="/assets/olumba-logo.png" alt="Olumba" class="h-10 w-auto" />
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/dashboard.html" class="text-white/90 hover:text-white text-sm font-medium">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Pricing Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-bold text-white mb-4">Simple, Transparent Pricing</h1>
+        <p class="text-xl text-white/90 mb-8">Choose the plan that fits your team. Upgrade or downgrade anytime.</p>
+        
+        <!-- Billing Toggle -->
+        <div class="inline-flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-full p-2">
+            <span class="text-white/70 text-sm font-medium px-4" id="monthly-label">Monthly</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="billing-toggle" class="sr-only peer" checked>
+                <div class="w-14 h-7 bg-white/30 rounded-full peer peer-checked:bg-white/90 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white peer-checked:after:bg-primary after:rounded-full after:h-6 after:w-6 after:transition-all"></div>
+            </label>
+            <span class="text-white font-medium text-sm px-4 flex items-center gap-2" id="annual-label">
+                Annual 
+                <span class="inline-block bg-accent-1 text-white text-xs font-bold px-2 py-1 rounded-full">Save 20%</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        
+        <!-- Starter Plan -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 relative transform hover:scale-105 transition-transform duration-300">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-text-color mb-2">Starter</h3>
+                <p class="text-text-color/60 text-sm">Perfect for small teams getting started</p>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-5xl font-bold text-text-color">$<span id="starter-price">79</span></span>
+                    <span class="text-text-color/60">/month</span>
+                </div>
+                <p class="text-sm text-text-color/60 mt-2" id="starter-billing">Billed annually at $948</p>
+            </div>
+            
+            <ul class="space-y-4 mb-8">
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>3</strong> internal team members</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>5</strong> projects</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>20 GB</strong> storage</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Unlimited external collaborators</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Basic project management</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Email support</span>
+                </li>
+            </ul>
+            
+            <button onclick="selectPlan('starter')" class="w-full bg-primary/10 text-primary font-semibold py-3 rounded-lg hover:bg-primary/20 transition-colors">
+                Get Started
+            </button>
+        </div>
+
+        <!-- Pro Plan (Recommended) -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 relative transform scale-105 border-4 border-primary">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span class="bg-gradient-to-r from-primary to-purple-600 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-lg">
+                    MOST POPULAR
+                </span>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-text-color mb-2">Pro</h3>
+                <p class="text-text-color/60 text-sm">For growing teams with bigger projects</p>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-5xl font-bold text-primary">$<span id="pro-price">199</span></span>
+                    <span class="text-text-color/60">/month</span>
+                </div>
+                <p class="text-sm text-text-color/60 mt-2" id="pro-billing">Billed annually at $2,388</p>
+            </div>
+            
+            <ul class="space-y-4 mb-8">
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>15</strong> internal team members</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>15</strong> active projects</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>100 GB</strong> storage</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Unlimited external collaborators</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>3</strong> city integrations</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Advanced project management</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Real-time collaboration</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Priority email support</span>
+                </li>
+            </ul>
+            
+            <button onclick="selectPlan('pro')" class="w-full bg-primary text-white font-semibold py-3 rounded-lg hover:bg-primary/90 transition-colors shadow-lg">
+                Start Pro Trial
+            </button>
+        </div>
+
+        <!-- Studio Plan -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 relative transform hover:scale-105 transition-transform duration-300">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-text-color mb-2">Studio</h3>
+                <p class="text-text-color/60 text-sm">For large firms and enterprises</p>
+            </div>
+            
+            <div class="mb-6">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-5xl font-bold text-text-color">$<span id="studio-price">399</span></span>
+                    <span class="text-text-color/60">/month</span>
+                </div>
+                <p class="text-sm text-text-color/60 mt-2" id="studio-billing">Billed annually at $4,788</p>
+            </div>
+            
+            <ul class="space-y-4 mb-8">
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>50</strong> internal team members</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>50</strong> active projects</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>500 GB</strong> storage</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Unlimited external collaborators</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80"><strong>10</strong> city integrations</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Full project suite</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">API access</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">24/7 priority support</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-accent-1 mt-0.5">check_circle</span>
+                    <span class="text-text-color/80">Dedicated account manager</span>
+                </li>
+            </ul>
+            
+            <button onclick="selectPlan('studio')" class="w-full bg-primary/10 text-primary font-semibold py-3 rounded-lg hover:bg-primary/20 transition-colors">
+                Contact Sales
+            </button>
+        </div>
+    </div>
+
+    <!-- External Collaborators Note -->
+    <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-white/20 mt-12">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-accent-1 rounded-full mb-4">
+            <span class="material-symbols-outlined text-4xl text-white">groups</span>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-2">Invite Unlimited External Consultants — Free</h3>
+        <p class="text-lg text-white/90 max-w-2xl mx-auto">
+            Collaborate with architects, engineers, and consultants at no extra cost.
+            You only pay for your internal team members.
+        </p>
+    </div>
+
+    <!-- Add-ons Section -->
+    <div class="mt-16">
+        <h2 class="text-3xl font-bold text-white text-center mb-8">Add-Ons & Upgrades</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Extra Storage -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h4 class="text-xl font-bold text-text-color mb-1">Extra Storage</h4>
+                        <p class="text-text-color/60 text-sm">Add 100 GB blocks as needed</p>
+                    </div>
+                    <span class="material-symbols-outlined text-4xl text-primary">cloud_upload</span>
+                </div>
+                <div class="flex items-baseline gap-2 mb-4">
+                    <span class="text-3xl font-bold text-text-color">$20</span>
+                    <span class="text-text-color/60">/month</span>
+                </div>
+                <button onclick="selectAddon('storage')" class="w-full bg-primary/10 text-primary font-semibold py-2 rounded-lg hover:bg-primary/20 transition-colors">
+                    Add Storage
+                </button>
+            </div>
+
+            <!-- City Integrations -->
+            <div class="bg-white rounded-xl p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h4 class="text-xl font-bold text-text-color mb-1">City Integrations</h4>
+                        <p class="text-text-color/60 text-sm">Connect to city planning systems</p>
+                    </div>
+                    <span class="material-symbols-outlined text-4xl text-primary">apartment</span>
+                </div>
+                <div class="flex items-baseline gap-2 mb-4">
+                    <span class="text-3xl font-bold text-text-color">$100</span>
+                    <span class="text-text-color/60">/month per integration</span>
+                </div>
+                <button onclick="selectAddon('city')" class="w-full bg-primary/10 text-primary font-semibold py-2 rounded-lg hover:bg-primary/20 transition-colors">
+                    Add Integration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mt-16 bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+        <h2 class="text-3xl font-bold text-white text-center mb-8">Frequently Asked Questions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-white">
+            <div>
+                <h4 class="font-bold mb-2">Can I change plans later?</h4>
+                <p class="text-white/80 text-sm">Yes! Upgrade or downgrade anytime. Changes take effect at the start of your next billing cycle.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-2">What payment methods do you accept?</h4>
+                <p class="text-white/80 text-sm">We accept all major credit cards via Stripe. Annual plans can also be paid by invoice.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-2">Is there a free trial?</h4>
+                <p class="text-white/80 text-sm">Yes! All plans include a 14-day free trial. No credit card required to start.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-2">What happens if I exceed my limits?</h4>
+                <p class="text-white/80 text-sm">We'll notify you when approaching limits. You can upgrade or purchase add-ons anytime.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Pricing data with Stripe Price IDs
+const PRICING = {
+    starter: {
+        monthly: { 
+            price: 99, 
+            annual: 1188, 
+            priceId: process.env.PRICE_STARTER_MONTHLY || 'price_starter_monthly_XXXX'
+        },
+        annual: { 
+            price: 79, 
+            annual: 948, 
+            priceId: process.env.PRICE_STARTER_ANNUAL || 'price_starter_annual_XXXX'
+        }
+    },
+    pro: {
+        monthly: { 
+            price: 249, 
+            annual: 2988, 
+            priceId: process.env.PRICE_PRO_MONTHLY || 'price_pro_monthly_XXXX'
+        },
+        annual: { 
+            price: 199, 
+            annual: 2388, 
+            priceId: process.env.PRICE_PRO_ANNUAL || 'price_pro_annual_XXXX'
+        }
+    },
+    studio: {
+        monthly: { 
+            price: 499, 
+            annual: 5988, 
+            priceId: process.env.PRICE_STUDIO_MONTHLY || 'price_studio_monthly_XXXX'
+        },
+        annual: { 
+            price: 399, 
+            annual: 4788, 
+            priceId: process.env.PRICE_STUDIO_ANNUAL || 'price_studio_annual_XXXX'
+        }
+    }
+};
+
+let isAnnual = true;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('billing-toggle');
+    toggle.addEventListener('change', (e) => {
+        isAnnual = e.target.checked;
+        updatePricing();
+        updateLabels();
+    });
+    
+    updatePricing();
+});
+
+// Update pricing display
+function updatePricing() {
+    const period = isAnnual ? 'annual' : 'monthly';
+    
+    // Update Starter
+    const starterPrice = PRICING.starter[period].price;
+    const starterAnnual = PRICING.starter[period].annual;
+    document.getElementById('starter-price').textContent = starterPrice;
+    document.getElementById('starter-billing').textContent = 
+        isAnnual ? `Billed annually at $${starterAnnual}` : 'Billed monthly';
+    
+    // Update Pro
+    const proPrice = PRICING.pro[period].price;
+    const proAnnual = PRICING.pro[period].annual;
+    document.getElementById('pro-price').textContent = proPrice;
+    document.getElementById('pro-billing').textContent = 
+        isAnnual ? `Billed annually at $${proAnnual}` : 'Billed monthly';
+    
+    // Update Studio
+    const studioPrice = PRICING.studio[period].price;
+    const studioAnnual = PRICING.studio[period].annual;
+    document.getElementById('studio-price').textContent = studioPrice;
+    document.getElementById('studio-billing').textContent = 
+        isAnnual ? `Billed annually at $${studioAnnual}` : 'Billed monthly';
+}
+
+function updateLabels() {
+    const monthlyLabel = document.getElementById('monthly-label');
+    const annualLabel = document.getElementById('annual-label');
+    
+    if (isAnnual) {
+        monthlyLabel.classList.add('text-white/70');
+        monthlyLabel.classList.remove('text-white');
+        annualLabel.classList.add('text-white');
+        annualLabel.classList.remove('text-white/70');
+    } else {
+        monthlyLabel.classList.add('text-white');
+        monthlyLabel.classList.remove('text-white/70');
+        annualLabel.classList.add('text-white/70');
+        annualLabel.classList.remove('text-white');
+    }
+}
+
+// Select plan and start checkout
+window.selectPlan = async function(planName) {
+    try {
+        // Get organization ID from Clerk
+        if (!window.clerkAuth) {
+            alert('Please log in to subscribe');
+            window.location.href = '/login-clerk.html';
+            return;
+        }
+
+        await window.clerkAuth.initializeClerk();
+        const user = window.clerkAuth.getCurrentUser();
+        
+        if (!user) {
+            alert('Please log in to subscribe');
+            window.location.href = '/login-clerk.html';
+            return;
+        }
+
+        // Get organization ID (would come from Clerk organizations)
+        // For now, use a demo value or prompt user
+        const orgId = user.organizationMemberships?.[0]?.organization?.id || 
+                      prompt('Enter your organization ID (temporary):');
+        
+        if (!orgId) {
+            alert('Please create an organization first');
+            window.location.href = '/dashboard.html';
+            return;
+        }
+
+        // Get price ID
+        const period = isAnnual ? 'annual' : 'monthly';
+        const priceId = PRICING[planName][period].priceId;
+
+        // Start Stripe checkout
+        if (window.billing && window.billing.startCheckout) {
+            await window.billing.startCheckout(
+                orgId,
+                priceId,
+                `${window.location.origin}/dashboard.html?subscription=success`,
+                `${window.location.origin}/pricing.html`
+            );
+        } else {
+            // Fallback: Direct API call
+            const response = await fetch('/api/billing-checkout', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${await window.clerkAuth.getAuthToken()}`
+                },
+                body: JSON.stringify({
+                    orgId,
+                    priceId,
+                    successUrl: `${window.location.origin}/dashboard.html?subscription=success`,
+                    cancelUrl: `${window.location.origin}/pricing.html`
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                throw new Error('No checkout URL returned');
+            }
+        }
+    } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Failed to start checkout. Please try again or contact support.');
+    }
+};
+
+// Select add-on
+window.selectAddon = function(addonType) {
+    alert(`Add-on selection for ${addonType} will be implemented in settings page.`);
+    window.location.href = '/settings.html';
+};
+</script>
+
+</body>
+</html>
+
