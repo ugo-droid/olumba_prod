@@ -4,7 +4,7 @@
   "description": "Modern AEC Project Management Platform - Serverless",
   "type": "module",
   "engines": {
-    "node": "18.x",
+    "node": "22.x",
     "npm": "10.x"
   },
   "scripts": {
@@ -30,11 +30,11 @@
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@supabase/auth-js": "^2.72.0",
     "@supabase/supabase-js": "^2.58.0",
-    "@vercel/node": "^3.0.0",
+    "@vercel/node": "^5.4.0",
     "@vercel/speed-insights": "^1.2.0",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
+    "dotenv": "^17.2.3",
     "express": "^4.18.2",
     "resend": "^6.1.2",
     "stripe": "^17.5.0",
