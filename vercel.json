@@ -6,17 +6,17 @@
   "framework": null,
   "functions": {
     "api/**/*.js": {
-      "runtime": "nodejs18.x",
+      "runtime": "@vercel/node@3.0.0",
       "memory": 1024,
       "maxDuration": 10
     },
     "api/**/*.ts": {
-      "runtime": "nodejs18.x",
+      "runtime": "@vercel/node@3.0.0",
       "memory": 1024,
       "maxDuration": 10
     },
     "api/stripe-webhook.ts": {
-      "runtime": "nodejs18.x",
+      "runtime": "@vercel/node@3.0.0",
       "memory": 1024,
       "maxDuration": 30
     }
