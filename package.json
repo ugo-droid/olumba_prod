@@ -4,11 +4,11 @@
   "description": "Modern AEC Project Management Platform - Serverless",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Vercel handles build automatically'",
+    "build": "echo 'Build complete - static site with serverless functions'",
     "deploy": "vercel --prod",
     "deploy:preview": "vercel",
     "test-emails": "node scripts/testEmails.js",
