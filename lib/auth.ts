@@ -34,9 +34,7 @@ export async function requireAuth(req: VercelRequest): Promise<AuthenticatedUser
 
   try {
     // Verify token with Clerk
-    const session = await clerkClient.verifyToken(token, {
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    const session = await clerkClient.verifyToken(token);
 
     if (!session || !session.sub) {
       throw new Error('Invalid or expired token');
@@ -109,7 +107,7 @@ export async function verifyOrganizationAccess(
       userId,
     });
 
-    return orgMemberships.some((membership: any) => membership.organization.id === organizationId);
+    return orgMemberships.data.some((membership: any) => membership.organization.id === organizationId);
   } catch (error) {
     console.error('Organization access verification error:', error);
     return false;
@@ -127,9 +125,7 @@ export async function getSessionFromCookie(req: VercelRequest): Promise<any> {
   }
 
   try {
-    const session = await clerkClient.verifyToken(sessionCookie, {
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
+    const session = await clerkClient.verifyToken(sessionCookie);
 
     return session;
   } catch (error) {
