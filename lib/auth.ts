@@ -4,7 +4,11 @@
 // Verifies Clerk authentication tokens and extracts user info
 
 import { VercelRequest } from '@vercel/node';
-import { clerkClient } from '@clerk/backend';
+import { ClerkClient } from '@clerk/backend';
+
+const clerkClient = new ClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY!,
+});
 
 export interface AuthenticatedUser {
   userId: string;

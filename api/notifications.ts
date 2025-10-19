@@ -20,23 +20,28 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     switch (req.method) {
       case 'GET':
-        return await handleGet(req, res, user);
+        await handleGet(req, res, user);
+        return;
       case 'PUT':
-        return await handlePut(req, res, user);
+        await handlePut(req, res, user);
+        return;
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        res.status(405).json({ error: 'Method not allowed' });
+    return;
     }
   } catch (error) {
     console.error('Notifications API error:', error);
 
     if (error instanceof Error && error.message.includes('Authentication')) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+    return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 }
 
@@ -62,10 +67,12 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Notifications query error:', error);
-    return res.status(500).json({ error: 'Failed to fetch notifications' });
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+    return;
   }
 
-  return res.status(200).json(data || []);
+  res.status(200).json(data || []);
+    return;
 }
 
 /**
@@ -87,10 +94,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
 
     if (error) {
       console.error('Mark all read error:', error);
-      return res.status(500).json({ error: 'Failed to mark notifications as read' });
+      res.status(500).json({ error: 'Failed to mark notifications as read' });
+    return;
     }
 
-    return res.status(200).json({ success: true });
+    res.status(200).json({ success: true });
+    return;
   }
 
   // Mark single notification as read
@@ -108,13 +117,16 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
 
     if (error) {
       console.error('Mark read error:', error);
-      return res.status(500).json({ error: 'Failed to mark notification as read' });
+      res.status(500).json({ error: 'Failed to mark notification as read' });
+    return;
     }
 
-    return res.status(200).json(data);
+    res.status(200).json(data);
+    return;
   }
 
-  return res.status(400).json({ error: 'Invalid request' });
+  res.status(400).json({ error: 'Invalid request' });
+    return;
 }
 
 export default withMonitoring(withRateLimit(handler, 'READ'), '/api/notifications');

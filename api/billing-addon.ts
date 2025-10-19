@@ -16,7 +16,8 @@ const AddonSchema = z.object({
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
@@ -78,22 +79,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.error('Add-on error:', error);
 
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Validation error',
         details: error.errors,
       });
+    return;
     }
 
     if (error instanceof Error) {
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Failed to add addon',
         message: error.message,
       });
+    return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal server error',
     });
+    return;
   }
 }
 

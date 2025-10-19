@@ -23,27 +23,34 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     switch (req.method) {
       case 'GET':
-        return await handleGet(req, res, user);
+        await handleGet(req, res, user);
+        return;
       case 'POST':
-        return await handlePost(req, res, user);
+        await handlePost(req, res, user);
+        return;
       case 'PUT':
-        return await handlePut(req, res, user);
+        await handlePut(req, res, user);
+        return;
       case 'DELETE':
-        return await handleDelete(req, res, user);
+        await handleDelete(req, res, user);
+        return;
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        res.status(405).json({ error: 'Method not allowed' });
+    return;
     }
   } catch (error) {
     console.error('Tasks API error:', error);
 
     if (error instanceof Error && error.message.includes('Authentication')) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+    return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 }
 
@@ -68,10 +75,12 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
 
     if (error) {
       console.error('My tasks error:', error);
-      return res.status(500).json({ error: 'Failed to fetch tasks' });
+      res.status(500).json({ error: 'Failed to fetch tasks' });
+    return;
     }
 
-    return res.status(200).json(data || []);
+    res.status(200).json(data || []);
+    return;
   }
 
   // Get single task
@@ -88,10 +97,12 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
       .single();
 
     if (error) {
-      return res.status(404).json({ error: 'Task not found' });
+      res.status(404).json({ error: 'Task not found' });
+    return;
     }
 
-    return res.status(200).json(data);
+    res.status(200).json(data);
+    return;
   }
 
   // Get tasks by project
@@ -110,13 +121,16 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
 
     if (error) {
       console.error('Project tasks error:', error);
-      return res.status(500).json({ error: 'Failed to fetch tasks' });
+      res.status(500).json({ error: 'Failed to fetch tasks' });
+    return;
     }
 
-    return res.status(200).json(data || []);
+    res.status(200).json(data || []);
+    return;
   }
 
-  return res.status(400).json({ error: 'Invalid request' });
+  res.status(400).json({ error: 'Invalid request' });
+    return;
 }
 
 /**
@@ -134,7 +148,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
   } = req.body as any;
 
   if (!project_id || !name) {
-    return res.status(400).json({ error: 'Project ID and task name are required' });
+    res.status(400).json({ error: 'Project ID and task name are required' });
+    return;
   }
 
   const { data, error } = await supabaseAdmin
@@ -154,10 +169,12 @@ async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Task creation error:', error);
-    return res.status(500).json({ error: 'Failed to create task' });
+    res.status(500).json({ error: 'Failed to create task' });
+    return;
   }
 
-  return res.status(201).json(data);
+  res.status(201).json(data);
+    return;
 }
 
 /**
@@ -167,7 +184,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Task ID required' });
+    res.status(400).json({ error: 'Task ID required' });
+    return;
   }
 
   const updates = req.body;
@@ -206,10 +224,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Task update error:', error);
-    return res.status(500).json({ error: 'Failed to update task' });
+    res.status(500).json({ error: 'Failed to update task' });
+    return;
   }
 
-  return res.status(200).json(data);
+  res.status(200).json(data);
+    return;
 }
 
 /**
@@ -219,17 +239,20 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, user: any) 
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Task ID required' });
+    res.status(400).json({ error: 'Task ID required' });
+    return;
   }
 
   const { error } = await supabaseAdmin.from('tasks').delete().eq('id', id);
 
   if (error) {
     console.error('Task deletion error:', error);
-    return res.status(500).json({ error: 'Failed to delete task' });
+    res.status(500).json({ error: 'Failed to delete task' });
+    return;
   }
 
-  return res.status(200).json({ success: true });
+  res.status(200).json({ success: true });
+    return;
 }
 
 export default withMonitoring(withRateLimit(handler, 'WRITE'), '/api/tasks');

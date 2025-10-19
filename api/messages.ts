@@ -22,27 +22,34 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     switch (req.method) {
       case 'GET':
-        return await handleGet(req, res, user);
+        await handleGet(req, res, user);
+        return;
       case 'POST':
-        return await handlePost(req, res, user);
+        await handlePost(req, res, user);
+        return;
       case 'PUT':
-        return await handlePut(req, res, user);
+        await handlePut(req, res, user);
+        return;
       case 'DELETE':
-        return await handleDelete(req, res, user);
+        await handleDelete(req, res, user);
+        return;
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        res.status(405).json({ error: 'Method not allowed' });
+    return;
     }
   } catch (error) {
     console.error('Messages API error:', error);
 
     if (error instanceof Error && error.message.includes('Authentication')) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+    return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 }
 
@@ -56,7 +63,8 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
 
     // For now, return empty activity - can be enhanced later
     // TODO: Create activity_log table for detailed tracking
-    return res.status(200).json([]);
+    res.status(200).json([]);
+    return;
   }
 
   // Get project messages
@@ -74,7 +82,8 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
 
     if (error) {
       console.error('Messages query error:', error);
-      return res.status(500).json({ error: 'Failed to fetch messages' });
+      res.status(500).json({ error: 'Failed to fetch messages' });
+    return;
     }
 
     // Transform to include sender_name
@@ -84,10 +93,12 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
       sender_photo: msg.user?.profile_photo,
     }));
 
-    return res.status(200).json(messages);
+    res.status(200).json(messages);
+    return;
   }
 
-  return res.status(400).json({ error: 'Invalid request' });
+  res.status(400).json({ error: 'Invalid request' });
+    return;
 }
 
 /**
@@ -97,7 +108,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
   const { project_id, content, mentions, parent_id } = req.body as any;
 
   if (!project_id || !content) {
-    return res.status(400).json({ error: 'Project ID and content are required' });
+    res.status(400).json({ error: 'Project ID and content are required' });
+    return;
   }
 
   const { data, error } = await supabaseAdmin
@@ -114,13 +126,15 @@ async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Message creation error:', error);
-    return res.status(500).json({ error: 'Failed to post message' });
+    res.status(500).json({ error: 'Failed to post message' });
+    return;
   }
 
   // TODO: Send notifications for mentions
   // TODO: Send email notifications
 
-  return res.status(201).json(data);
+  res.status(201).json(data);
+    return;
 }
 
 /**
@@ -130,13 +144,15 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Message ID required' });
+    res.status(400).json({ error: 'Message ID required' });
+    return;
   }
 
   const { content } = req.body as any;
 
   if (!content) {
-    return res.status(400).json({ error: 'Content is required' });
+    res.status(400).json({ error: 'Content is required' });
+    return;
   }
 
   const { data, error } = await supabaseAdmin
@@ -152,10 +168,12 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Message update error:', error);
-    return res.status(500).json({ error: 'Failed to update message' });
+    res.status(500).json({ error: 'Failed to update message' });
+    return;
   }
 
-  return res.status(200).json(data);
+  res.status(200).json(data);
+    return;
 }
 
 /**
@@ -165,7 +183,8 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, user: any) 
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Message ID required' });
+    res.status(400).json({ error: 'Message ID required' });
+    return;
   }
 
   const { error } = await supabaseAdmin
@@ -176,10 +195,12 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, user: any) 
 
   if (error) {
     console.error('Message deletion error:', error);
-    return res.status(500).json({ error: 'Failed to delete message' });
+    res.status(500).json({ error: 'Failed to delete message' });
+    return;
   }
 
-  return res.status(200).json({ success: true });
+  res.status(200).json({ success: true });
+    return;
 }
 
 export default withMonitoring(withRateLimit(handler, 'WRITE'), '/api/messages');

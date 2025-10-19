@@ -107,7 +107,7 @@ async function storeEventInDatabase(event: Stripe.Event): Promise<void> {
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const subscriptionId = session.subscription as string;
   const customerId = session.customer as string;
-  const orgId = session.metadata?.org_id || session.subscription_data?.metadata?.org_id;
+  const orgId = session.metadata?.org_id || session.subscription?.metadata?.org_id;
 
   if (!subscriptionId || !customerId || !orgId) {
     console.error('Missing required data in checkout session:', {
@@ -355,14 +355,16 @@ function constructEvent(rawBody: Buffer, signature: string): Stripe.Event {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   const signature = req.headers['stripe-signature'] as string;
 
   if (!signature) {
     console.error('Missing stripe-signature header');
-    return res.status(400).json({ error: 'Missing signature' });
+    res.status(400).json({ error: 'Missing signature' });
+    return;
   }
 
   try {
@@ -374,27 +376,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const alreadyProcessed = await isEventProcessed(event.id);
     if (alreadyProcessed) {
       console.log(`Event ${event.id} already processed, skipping`);
-      return res.status(200).json({ received: true, status: 'already_processed' });
+      res.status(200).json({ received: true, status: 'already_processed' });
+    return;
     }
 
     // Process the event asynchronously
     await processWebhookEvent(event);
 
     // Respond immediately to Stripe
-    return res.status(200).json({ received: true, status: 'processed' });
+    res.status(200).json({ received: true, status: 'processed' });
+    return;
   } catch (error) {
     console.error('Webhook error:', error);
 
     if (error instanceof Error) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Webhook processing failed',
         message: error.message,
       });
+    return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal server error',
     });
+    return;
   }
 }
 

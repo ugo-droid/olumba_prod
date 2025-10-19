@@ -197,7 +197,7 @@ export async function canPerformAction(
  */
 export function hasFeature(tier: Tier, feature: string): boolean {
   const tierFeatures = TIER_FEATURES[tier];
-  return tierFeatures.features.includes(feature);
+  return tierFeatures.features.includes(feature as any);
 }
 
 /**
@@ -293,7 +293,7 @@ export function getTierComparison(currentTier: Tier): {
 
   const nextTierFeatures = TIER_FEATURES[nextTier];
   const upgradeBenefits = nextTierFeatures.features.filter(
-    (f) => !current.features.includes(f)
+    (f) => !current.features.includes(f as any)
   );
 
   return {
@@ -418,7 +418,7 @@ export async function getUsageDashboard(organizationId: string): Promise<{
             : 0,
       },
     },
-    features: tierLimits.features,
+    features: [...tierLimits.features],
     suggestions,
   };
 }
@@ -476,7 +476,7 @@ export async function requireFeature(
   let requiredTier: Tier | undefined;
   if (!hasAccess) {
     for (const [tierName, limits] of Object.entries(TIER_FEATURES)) {
-      if (limits.features.includes(feature)) {
+      if (limits.features.includes(feature as any)) {
         requiredTier = tierName as Tier;
         break;
       }

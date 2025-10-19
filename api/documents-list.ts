@@ -40,7 +40,8 @@ import { StorageHelpers } from '../lib/storage';
  */
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
@@ -61,10 +62,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     const organizationId = filters.organization_id || req.query.organizationId;
 
     if (!projectId && !organizationId) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: 'Either project_id or organization_id is required',
       });
+    return;
     }
 
     // Check cache
@@ -74,7 +76,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
-      return res.status(200).json(cached);
+      res.status(200).json(cached);
+    return;
     }
 
     res.setHeader('X-Cache', 'MISS');
@@ -136,10 +139,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (error) {
       console.error('Documents list query error:', error);
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Internal Server Error',
         message: 'Failed to fetch documents',
       });
+    return;
     }
 
     // Enhance with formatted data
@@ -172,13 +176,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Cache response
     setInCache('DOCUMENT_LIST', cacheKey, response, cacheParams);
 
-    return res.status(200).json(response);
+    res.status(200).json(response);
+    return;
   } catch (error) {
     console.error('Documents list error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 }
 

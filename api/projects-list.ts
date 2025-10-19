@@ -41,7 +41,8 @@ import { supabaseAdmin } from '../lib/supabaseAdmin';
 async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow GET requests
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
@@ -58,10 +59,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Extract organization_id for caching (required)
     const organizationId = filters.organization_id || req.query.organizationId;
     if (!organizationId) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: 'organization_id is required',
       });
+    return;
     }
 
     // Try to get from cache
@@ -71,7 +73,8 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
-      return res.status(200).json(cached);
+      res.status(200).json(cached);
+    return;
     }
 
     res.setHeader('X-Cache', 'MISS');
@@ -117,10 +120,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (error) {
       console.error('Projects list query error:', error);
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Internal Server Error',
         message: 'Failed to fetch projects',
       });
+    return;
     }
 
     // Create paginated response
@@ -132,13 +136,15 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Cache the response
     cacheProjectList(cacheKey, response, cacheParams);
 
-    return res.status(200).json(response);
+    res.status(200).json(response);
+    return;
   } catch (error) {
     console.error('Projects list error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 }
 

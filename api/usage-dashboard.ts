@@ -25,17 +25,19 @@ import { withMonitoring } from '../lib/monitoring';
  */
 async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
     const organizationId = req.query.organizationId as string;
 
     if (!organizationId) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: 'organizationId is required',
       });
+    return;
     }
 
     // TODO: Verify user has access to this organization
@@ -46,7 +48,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Get tier comparison for upgrade UI
     const comparison = getTierComparison(dashboard.tier);
 
-    return res.status(200).json({
+    res.status(200).json({
       organizationId,
       tier: dashboard.tier,
       usage: dashboard.usage,
@@ -60,12 +62,14 @@ async function handler(req: VercelRequest, res: VercelResponse) {
         benefits: comparison.upgradeBenefits,
       },
     });
+    return;
   } catch (error) {
     console.error('Usage dashboard error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
+    return;
   }
 }
 

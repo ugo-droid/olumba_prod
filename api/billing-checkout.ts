@@ -18,7 +18,8 @@ const CheckoutSchema = z.object({
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   try {
@@ -28,10 +29,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Validate price ID
     if (!isBasePlan(priceId) && !isAddon(priceId)) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Invalid price ID',
         message: 'Price ID must be a valid base plan or add-on',
       });
+    return;
     }
 
     console.log(`Creating checkout session for org ${orgId} with price ${priceId}`);
@@ -61,30 +63,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`Checkout session created: ${session.id}`);
 
-    return res.status(200).json({
+    res.status(200).json({
       url: session.url,
       sessionId: session.id,
     });
+    return;
   } catch (error) {
     console.error('Checkout session error:', error);
 
     if (error instanceof z.ZodError) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Validation error',
         details: error.errors,
       });
+    return;
     }
 
     if (error instanceof Error) {
-      return res.status(500).json({
+      res.status(500).json({
         error: 'Failed to create checkout session',
         message: error.message,
       });
+    return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal server error',
     });
+    return;
   }
 }
 

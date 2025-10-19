@@ -25,24 +25,30 @@ async function handler(req: VercelRequest, res: VercelResponse) {
     // Handle different HTTP methods
     switch (req.method) {
       case 'GET':
-        return await handleGet(req, res, user);
+        await handleGet(req, res, user);
+        return;
       case 'POST':
-        return await handlePost(req, res, user);
+        await handlePost(req, res, user);
+        return;
       case 'PUT':
-        return await handlePut(req, res, user);
+        await handlePut(req, res, user);
+        return;
       case 'DELETE':
-        return await handleDelete(req, res, user);
+        await handleDelete(req, res, user);
+        return;
       default:
-        return res.status(405).json({ error: 'Method not allowed' });
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
     }
   } catch (error) {
     console.error('Projects API error:', error);
     
     if (error instanceof Error && error.message.includes('Authentication')) {
-      return res.status(401).json({ error: 'Unauthorized', message: error.message });
+      res.status(401).json({ error: 'Unauthorized', message: error.message });
+      return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       error: 'Internal Server Error',
       message: error instanceof Error ? error.message : 'Unknown error',
     });
@@ -72,15 +78,18 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
       .single();
 
     if (error) {
-      return res.status(404).json({ error: 'Project not found' });
+      res.status(404).json({ error: 'Project not found' });
+    return;
     }
 
-    return res.status(200).json(data);
+    res.status(200).json(data);
+    return;
   }
 
   // List all projects for user's organization
   if (!user.organizationId) {
-    return res.status(400).json({ error: 'Organization ID required' });
+    res.status(400).json({ error: 'Organization ID required' });
+    return;
   }
 
   const { data, error } = await supabaseAdmin
@@ -95,7 +104,8 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Projects list error:', error);
-    return res.status(500).json({ error: 'Failed to fetch projects' });
+    res.status(500).json({ error: 'Failed to fetch projects' });
+    return;
   }
 
   // Add computed fields
@@ -105,7 +115,8 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
     overdue_tasks: 0, // TODO: Query tasks table
   }));
 
-  return res.status(200).json(projects);
+  res.status(200).json(projects);
+    return;
 }
 
 /**
@@ -113,13 +124,15 @@ async function handleGet(req: VercelRequest, res: VercelResponse, user: any) {
  */
 async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
   if (!user.organizationId) {
-    return res.status(400).json({ error: 'Organization ID required' });
+    res.status(400).json({ error: 'Organization ID required' });
+    return;
   }
 
   const { name, description, start_date, deadline, address, budget } = req.body as any;
 
   if (!name) {
-    return res.status(400).json({ error: 'Project name is required' });
+    res.status(400).json({ error: 'Project name is required' });
+    return;
   }
 
   // Create project
@@ -141,7 +154,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Project creation error:', error);
-    return res.status(500).json({ error: 'Failed to create project' });
+    res.status(500).json({ error: 'Failed to create project' });
+    return;
   }
 
   // Add creator as project member
@@ -154,7 +168,8 @@ async function handlePost(req: VercelRequest, res: VercelResponse, user: any) {
   // Invalidate project list cache
   invalidateProjectList(user.organizationId);
 
-  return res.status(201).json(data);
+  res.status(201).json(data);
+    return;
 }
 
 /**
@@ -164,7 +179,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Project ID required' });
+    res.status(400).json({ error: 'Project ID required' });
+    return;
   }
 
   const updates = req.body;
@@ -198,7 +214,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
 
   if (error) {
     console.error('Project update error:', error);
-    return res.status(500).json({ error: 'Failed to update project' });
+    res.status(500).json({ error: 'Failed to update project' });
+    return;
   }
 
   // Invalidate cache
@@ -206,7 +223,8 @@ async function handlePut(req: VercelRequest, res: VercelResponse, user: any) {
     invalidateProjectList(user.organizationId);
   }
 
-  return res.status(200).json(data);
+  res.status(200).json(data);
+    return;
 }
 
 /**
@@ -216,14 +234,16 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, user: any) 
   const { id } = req.query;
 
   if (!id) {
-    return res.status(400).json({ error: 'Project ID required' });
+    res.status(400).json({ error: 'Project ID required' });
+    return;
   }
 
   const { error } = await supabaseAdmin.from('projects').delete().eq('id', id);
 
   if (error) {
     console.error('Project deletion error:', error);
-    return res.status(500).json({ error: 'Failed to delete project' });
+    res.status(500).json({ error: 'Failed to delete project' });
+    return;
   }
 
   // Invalidate cache
@@ -231,7 +251,8 @@ async function handleDelete(req: VercelRequest, res: VercelResponse, user: any) 
     invalidateProjectList(user.organizationId);
   }
 
-  return res.status(200).json({ success: true });
+  res.status(200).json({ success: true });
+    return;
 }
 
 // Apply rate limiting and monitoring
