@@ -1,5 +1,5 @@
 // API utility functions
-const API_BASE_URL = '/api';
+const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || '/api';
 
 // Get auth token - prioritize Clerk token
 async function getAuthToken() {
@@ -94,12 +94,19 @@ async function apiRequest(endpoint, options = {}) {
         headers['Authorization'] = `Bearer ${token}`;
     }
     
+    console.log(`🌐 Making API request to: ${API_BASE_URL}${endpoint}`);
+    console.log('📋 Request options:', { method: options.method || 'GET', headers });
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers
     });
     
+    console.log(`📊 Response status: ${response.status} ${response.statusText}`);
+    console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (response.status === 401) {
+        console.log('🔐 Authentication failed, redirecting to login...');
         // Token expired or invalid
         clearAuthToken();
         clearCurrentUser();
@@ -111,32 +118,47 @@ async function apiRequest(endpoint, options = {}) {
     
     // Check if response is JSON
     const contentType = response.headers.get('content-type');
+    console.log('📄 Response Content-Type:', contentType);
+    
     let data;
     
     try {
         if (contentType && contentType.includes('application/json')) {
             data = await response.json();
+            console.log('✅ Successfully parsed JSON response:', data);
         } else {
             const text = await response.text();
-            console.error('API returned non-JSON response:', text.substring(0, 200));
+            console.error('❌ API returned non-JSON response:');
+            console.error('Raw response (first 500 chars):', text.substring(0, 500));
+            console.error('Full response length:', text.length);
             
             // Try to extract useful error message
             if (text.includes('Access token required')) {
                 throw new Error('Authentication required. Please log in first.');
             }
-            throw new Error('Server error: ' + (text.substring(0, 50) || 'Invalid response'));
+            if (text.includes('<!DOCTYPE html>')) {
+                throw new Error('Server returned HTML page instead of JSON. Check if API endpoint exists.');
+            }
+            throw new Error('Server error: ' + (text.substring(0, 100) || 'Invalid response'));
         }
     } catch (error) {
+        console.error('💥 Error parsing response:', error);
         if (error.message.includes('Authentication required')) {
             throw error;
         }
-        throw new Error('Failed to parse server response');
+        if (error.message.includes('Server returned HTML')) {
+            throw error;
+        }
+        throw new Error('Failed to parse server response: ' + error.message);
     }
     
     if (!response.ok) {
-        throw new Error(data.error || `Request failed with status ${response.status}`);
+        console.error('❌ Request failed with status:', response.status);
+        console.error('Error data:', data);
+        throw new Error(data?.error || `Request failed with status ${response.status}`);
     }
     
+    console.log('✅ API request successful');
     return data;
 }
 
