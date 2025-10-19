@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "description": "Modern AEC Project Management Platform - Serverless",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'Vercel handles build automatically'",
