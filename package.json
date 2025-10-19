@@ -3,10 +3,6 @@
   "version": "2.0.0",
   "description": "Modern AEC Project Management Platform - Serverless",
   "type": "module",
-  "engines": {
-    "node": "22.x",
-    "npm": "10.x"
-  },
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'Build complete - static site with serverless functions'",
