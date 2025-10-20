@@ -4,7 +4,7 @@
 // Demonstrates: Rate Limiting + Caching + Pagination + File Metadata
 
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { withRateLimit } from '../lib/rateLimiter';
+import { withRateLimit } from '../lib/rateLimiter.js';
 import { getFromCache, setInCache } from '../lib/cache';
 import {
   getPaginationParams,
@@ -14,7 +14,7 @@ import {
   applyPagination,
   applySearch,
 } from '../lib/pagination';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 import { StorageHelpers } from '../lib/storage';
 
 /**

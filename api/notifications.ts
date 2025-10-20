@@ -3,10 +3,10 @@
 // =============================
 
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { withRateLimit } from '../lib/rateLimiter';
-import { withMonitoring } from '../lib/monitoring';
-import { requireAuth } from '../lib/auth';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { withRateLimit } from '../lib/rateLimiter.js';
+import { withMonitoring } from '../lib/monitoring.js';
+import { requireAuth } from '../lib/auth.js';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
 /**
  * Notifications Handler

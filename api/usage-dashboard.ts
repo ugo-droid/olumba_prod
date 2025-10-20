@@ -4,9 +4,9 @@
 // Returns organization usage stats and upgrade suggestions
 
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { withRateLimit } from '../lib/rateLimiter';
+import { withRateLimit } from '../lib/rateLimiter.js';
 import { getUsageDashboard, getTierComparison } from '../lib/upgradeLogic';
-import { withMonitoring } from '../lib/monitoring';
+import { withMonitoring } from '../lib/monitoring.js';
 
 /**
  * GET /api/usage-dashboard
