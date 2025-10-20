@@ -51,8 +51,8 @@ export async function requireAuth(req: VercelRequest): Promise<AuthenticatedUser
     return {
       userId: user.id,
       email: user.emailAddresses[0]?.emailAddress,
-      organizationId: null, // Will be implemented later
-      role: null, // Will be implemented later
+      organizationId: undefined, // Will be implemented later
+      role: undefined, // Will be implemented later
     };
   } catch (error) {
     console.error('Authentication error:', error);
