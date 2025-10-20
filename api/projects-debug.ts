@@ -1,5 +1,5 @@
 // =============================
-// Projects API Endpoint - SIMPLIFIED FOR DEBUGGING
+// Projects API Endpoint - DEBUG VERSION
 // =============================
 
 export default async function handler(req: any, res: any) {
