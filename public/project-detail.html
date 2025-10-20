@@ -249,10 +249,17 @@ true // Authentication removed;
 initNav('projects');
 
 // Get project ID from URL
-const urlParams = new URLSearchParams(window.location.search);
-const projectId = urlParams.get('id');
+function getProjectIdFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = urlParams.get('id');
+  console.log('📋 Project ID from URL:', projectId);
+  return projectId;
+}
+
+const projectId = getProjectIdFromUrl();
 
 if (!projectId) {
+    console.error('❌ No project ID in URL');
     alert('No project specified');
     window.location.href = '/projects.html';
 }
@@ -446,8 +453,34 @@ const uploadDocForm = document.getElementById('uploadDocForm');
 const cancelUploadBtn = document.getElementById('cancelUploadBtn');
 
 async function loadProjectDetails() {
+    console.log('🔍 Starting to load project details...');
+    
     try {
-        currentProject = await projects.getById(projectId);
+        console.log('📡 Fetching project:', projectId);
+        const response = await fetch(`/api/projects/${projectId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('📊 Response status:', response.status);
+        console.log('✅ Response OK?', response.ok);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Response error:', errorText);
+            throw new Error(`Failed to fetch project: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        console.log('📄 Raw response:', text);
+        
+        const result = JSON.parse(text);
+        console.log('✅ Parsed result:', result);
+        
+        currentProject = result.data || result.project || result;
+        console.log('📦 Project data:', currentProject);
         
         // Header
         document.getElementById('projectBreadcrumb').textContent = currentProject.name;
@@ -469,6 +502,8 @@ async function loadProjectDetails() {
         document.getElementById('projectDeadline').textContent = currentProject.deadline || 'Not set';
         document.getElementById('projectBudget').textContent = currentProject.budget ? '$' + currentProject.budget.toLocaleString() : 'Not set';
         
+        console.log('✅ Project details loaded successfully');
+        
         // Load tasks
         await loadProjectTasks();
         
@@ -482,9 +517,32 @@ async function loadProjectDetails() {
         renderTeamMembers(currentProject.members || []);
         
     } catch (error) {
-        console.error('Failed to load project:', error);
-        alert('Failed to load project details');
-        window.location.href = '/projects.html';
+        console.error('💥 Error loading project details:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // Show error to user
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.innerHTML = `
+                <div class="p-8">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="text-center py-12">
+                            <span class="material-symbols-outlined text-6xl text-red-500 mb-4">error</span>
+                            <h2 class="text-2xl font-bold text-red-500 mb-2">Failed to load project details</h2>
+                            <p class="text-text-color/60 mb-4">${error.message}</p>
+                            <p class="text-sm text-text-color/40 mb-6">Check console for details</p>
+                            <button onclick="window.location.href='/projects.html'" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90">
+                                Back to Projects
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            alert('Failed to load project details: ' + error.message);
+            window.location.href = '/projects.html';
+        }
     }
 }
 
