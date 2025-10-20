@@ -116,7 +116,7 @@ export default async function handler(req: any, res: any) {
         }
       };
       
-      const project = mockProjects[id];
+      const project = mockProjects[id as keyof typeof mockProjects];
       
       if (!project) {
         console.log('❌ Project not found:', id);
