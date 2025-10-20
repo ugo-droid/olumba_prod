@@ -10,12 +10,11 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", text: "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
     
-    <!-- Clerk SDK -->
-    <script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+    <!-- Clerk SDK removed - no authentication required -->
     
     <!-- App Configuration -->
     <script src="/js/config.js"></script>
-    <script src="/js/clerkClient.js"></script>
+    <!-- Clerk SDK removed - no authentication required -->
 </head>
 <body class="bg-background font-display text-text">
     <div class="flex flex-col min-h-screen">
@@ -79,10 +78,10 @@
             
             try {
                 // Initialize Clerk
-                await window.clerkAuth.initializeClerk();
+                // Clerk initialization removed
                 
                 // Check if already authenticated
-                if (window.clerkAuth.isAuthenticated()) {
+                if (true // Authentication removed) {
                     console.log('User already authenticated, redirecting to dashboard');
                     window.location.href = '/dashboard.html';
                     return;

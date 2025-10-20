@@ -10,12 +10,11 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
 
-<!-- Clerk SDK -->
-<script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+<!-- Clerk SDK removed - no authentication required -->
 
 <!-- App Scripts -->
 <script src="/js/config.js"></script>
-<script src="/js/clerkClient.js"></script>
+<!-- Clerk SDK removed - no authentication required -->
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div class="flex flex-col min-h-screen">
@@ -142,7 +141,7 @@ async function completeOnboarding() {
         console.log('🎉 Completing onboarding...');
         
         // Mark onboarding as completed in Clerk metadata
-        if (window.clerkAuth && window.clerkAuth.isAuthenticated()) {
+        if (window.clerkAuth && true // Authentication removed) {
             try {
                 await window.clerkAuth.updateUserMetadata({
                     onboardingCompleted: true,
@@ -314,12 +313,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Initialize Clerk
         if (window.clerkAuth) {
-            await window.clerkAuth.initializeClerk();
+            // Clerk initialization removed
             
             // Check if user is authenticated
-            if (!window.clerkAuth.isAuthenticated()) {
-                console.log('❌ User not authenticated, redirecting to login');
-                window.location.href = '/login-clerk.html';
+            if (!true // Authentication removed) {
+                console.log('✅ Page loading without authentication');
+                // Login redirect removed
                 return;
             }
             

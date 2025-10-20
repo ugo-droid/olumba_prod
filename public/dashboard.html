@@ -9,8 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}, borderRadius: {DEFAULT: "0.5rem", lg: "1rem", xl: "1.5rem", full: "9999px"}}}};</script>
-<!-- Clerk SDK -->
-<script async crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsub2x1bWJhLmFwcCQ" src="https://clerk.olumba.app/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+<!-- Clerk SDK removed - no authentication required -->
 
 <!-- Vercel Speed Insights -->
 <script>
@@ -23,9 +22,7 @@
 </script>
 
 <script src="/js/config.js"></script>
-<script src="/js/clerkClient.js"></script>
-<script src="/js/auth.js"></script>
-<script src="/js/pageAuth.js"></script>
+<!-- Clerk authentication scripts removed -->
 </head>
 <body class="bg-background-alt font-display text-text-color">
 <div id="app"></div>
@@ -33,26 +30,12 @@
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-// Initialize dashboard page
-document.addEventListener('DOMContentLoaded', async () => {
+// Initialize dashboard page - NO AUTHENTICATION REQUIRED
+document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Dashboard initializing...');
     
     try {
-        console.log('🔐 Initializing Clerk authentication...');
-        await window.clerkAuth.initializeClerk();
-        console.log('✅ Clerk initialized successfully');
-        
-        // Check if user is authenticated
-        const isAuth = window.clerkAuth.isAuthenticated();
-        console.log('🔍 Authentication status:', isAuth);
-        
-        if (!isAuth) {
-            console.log('❌ User not authenticated, redirecting to login');
-            window.location.href = '/login-clerk.html';
-            return;
-        }
-        
-        console.log('✅ User authenticated, initializing dashboard...');
+        console.log('✅ Dashboard loading without authentication');
         
         // Initialize navigation first
         initNav('dashboard');
@@ -62,7 +45,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     } catch (error) {
         console.error('❌ Failed to initialize dashboard:', error);
-        window.location.href = '/login-clerk.html';
     }
 });
 

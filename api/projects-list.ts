@@ -1,154 +1,88 @@
 // =============================
-// Projects List API Endpoint
+// PROJECTS LIST API Endpoint - SIMPLIFIED (NO AUTH)
 // =============================
-// Demonstrates: Rate Limiting + Caching + Pagination
 
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { withRateLimit } from '../lib/rateLimiter.js';
-import { getCachedProjectList, cacheProjectList, invalidateProjectList } from '../lib/cache';
-import {
-  getPaginationParams,
-  getFilterParams,
-  createPaginatedResponse,
-  applySorting,
-  applyFilters,
-  applyPagination,
-  applySearch,
-} from '../lib/pagination';
-import { supabaseAdmin } from '../lib/supabaseAdmin.js';
-
-/**
- * GET /api/projects-list
- * 
- * Query Parameters:
- * - page: Page number (default: 1)
- * - limit: Items per page (default: 20, max: 100)
- * - sortBy: Field to sort by (default: created_at)
- * - sortOrder: asc or desc (default: desc)
- * - filter_status: Filter by status
- * - filter_organizationId: Filter by organization
- * - search: Search term (searches name and description)
- * 
- * Response Headers:
- * - X-RateLimit-Limit: Maximum requests allowed
- * - X-RateLimit-Remaining: Remaining requests
- * - X-RateLimit-Reset: When the rate limit resets
- * - X-Cache: HIT or MISS
- * 
- * Example:
- * GET /api/projects-list?page=1&limit=20&sortBy=name&sortOrder=asc&filter_status=active&search=design
- */
-async function handler(req: VercelRequest, res: VercelResponse) {
-  // Only allow GET requests
-  if (req.method !== 'GET') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
+export default async function handler(req: any, res: any) {
+  // Log everything at the start
+  console.log('=== API PROJECTS LIST START ===');
+  console.log('Method:', req.method);
+  console.log('Headers:', JSON.stringify(req.headers));
+  console.log('Body:', JSON.stringify(req.body));
+  
+  // Set JSON response header immediately
+  res.setHeader('Content-Type', 'application/json');
+  
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS preflight');
+    return res.status(200).end();
   }
-
+  
+  // Wrap EVERYTHING in try-catch
   try {
-    // Get pagination parameters
-    const paginationParams = getPaginationParams(req);
+    console.log('Inside try block');
     
-    // Get filter parameters
-    const filters = getFilterParams(req, [
-      'status',
-      'organization_id',
-      'created_by_user_id',
-    ]);
-
-    // Extract organization_id for caching (required)
-    const organizationId = filters.organization_id || req.query.organizationId;
-    if (!organizationId) {
-      res.status(400).json({
-        error: 'Bad Request',
-        message: 'organization_id is required',
+    if (req.method !== 'POST') {
+      console.log('Method not allowed:', req.method);
+      return res.status(405).json({ 
+        success: false, 
+        error: 'Method not allowed' 
       });
-    return;
     }
-
-    // Try to get from cache
-    const cacheKey = `${organizationId}`;
-    const cacheParams = { ...paginationParams, ...filters };
-    const cached = getCachedProjectList(cacheKey, cacheParams);
-
-    if (cached) {
-      res.setHeader('X-Cache', 'HIT');
-      res.status(200).json(cached);
-    return;
-    }
-
-    res.setHeader('X-Cache', 'MISS');
-
-    // Build Supabase query
-    let query = supabaseAdmin
-      .from('projects')
-      .select('*', { count: 'exact' })
-      .eq('organization_id', organizationId);
-
-    // Apply search if provided
-    const searchTerm = String(filters.search || req.query.search || '');
-    if (searchTerm) {
-      query = applySearch(query, searchTerm, ['name', 'description']);
-    }
-
-    // Apply filters
-    if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters.created_by_user_id) {
-      query = query.eq('created_by_user_id', filters.created_by_user_id);
-    }
-
-    // Apply sorting
-    query = applySorting(query, paginationParams, [
-      'name',
-      'created_at',
-      'updated_at',
-      'deadline',
-      'status',
-    ]);
-
-    // Get total count
-    const { count } = await query;
-    const total = count || 0;
-
-    // Apply pagination
-    query = applyPagination(query, paginationParams);
-
-    // Execute query
-    const { data, error } = await query;
-
-    if (error) {
-      console.error('Projects list query error:', error);
-      res.status(500).json({
-        error: 'Internal Server Error',
-        message: 'Failed to fetch projects',
+    
+    console.log('Method is POST, proceeding...');
+    
+    // Log each step
+    console.log('Step 1: Validating request body');
+    const data = req.body;
+    
+    if (!data) {
+      console.log('No request body');
+      return res.status(400).json({
+        success: false,
+        error: 'Request body is required'
       });
-    return;
     }
-
-    // Create paginated response
-    const response = createPaginatedResponse(data || [], total, paginationParams, {
-      filters,
-      organizationId,
+    
+    console.log('Step 2: Data validated:', data);
+    
+    // TEMPORARY: Just return success without any database operations
+    console.log('Step 3: Returning success response');
+    const response = {
+      success: true,
+      message: 'PROJECTS LIST received (basic implementation)',
+      data: {
+        id: `projects-list_${Date.now()}`,
+        ...data,
+        createdAt: new Date().toISOString()
+      }
+    };
+    
+    console.log('Response to send:', response);
+    console.log('=== API PROJECTS LIST END SUCCESS ===');
+    
+    return res.status(201).json(response);
+    
+  } catch (error: any) {
+    // Maximum error logging
+    console.error('=== ERROR CAUGHT ===');
+    console.error('Error type:', typeof error);
+    console.error('Error message:', error?.message);
+    console.error('Error name:', error?.name);
+    console.error('Error stack:', error?.stack);
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    console.error('=== ERROR END ===');
+    
+    // ALWAYS return JSON for errors
+    return res.status(500).json({
+      success: false,
+      error: error?.message || 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     });
-
-    // Cache the response
-    cacheProjectList(cacheKey, response, cacheParams);
-
-    res.status(200).json(response);
-    return;
-  } catch (error) {
-    console.error('Projects list error:', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return;
   }
 }
-
-// Export with rate limiting (READ limit: 100 req/min)
-export default withRateLimit(handler, 'READ');
-
-
