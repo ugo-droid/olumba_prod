@@ -1,20 +1,14 @@
 // =============================
-// Tasks API Endpoint - SIMPLIFIED (NO AUTH)
+// Tasks API Endpoint
 // =============================
 
 export default async function handler(req: any, res: any) {
-  // Log everything at the start
-  console.log('=== API TASKS START ===');
-  console.log('Method:', req.method);
-  console.log('Headers:', JSON.stringify(req.headers));
-  console.log('Body:', JSON.stringify(req.body));
+  console.log('📥 Tasks API called:', req.method);
   
-  // Set JSON response header immediately
+  // Set headers
   res.setHeader('Content-Type', 'application/json');
-  
-  // Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   // Handle preflight
@@ -23,75 +17,166 @@ export default async function handler(req: any, res: any) {
     return res.status(200).end();
   }
   
-  // Wrap EVERYTHING in try-catch
   try {
-    console.log('Inside try block');
-    
-    if (req.method !== 'POST') {
-      console.log('Method not allowed:', req.method);
-      return res.status(405).json({ 
-        success: false, 
-        error: 'Method not allowed' 
+    // GET - Fetch tasks (optionally filtered by projectId)
+    if (req.method === 'GET') {
+      const { projectId } = req.query;
+      console.log('📋 Fetching tasks for project:', projectId);
+      
+      // TODO: Fetch from database
+      // For now, return mock tasks
+      const allTasks = [
+        {
+          id: '1',
+          projectId: '1',
+          title: 'Design floor plans',
+          description: 'Create detailed floor plans for all levels',
+          status: 'In Progress',
+          priority: 'High',
+          assignee: 'Alice Johnson',
+          dueDate: '2024-04-15',
+          createdAt: '2024-01-15T10:00:00Z'
+        },
+        {
+          id: '2',
+          projectId: '1',
+          title: 'Order materials',
+          description: 'Order construction materials from suppliers',
+          status: 'To Do',
+          priority: 'Medium',
+          assignee: 'Bob Wilson',
+          dueDate: '2024-04-20',
+          createdAt: '2024-01-16T11:00:00Z'
+        },
+        {
+          id: '3',
+          projectId: '1',
+          title: 'Schedule inspections',
+          description: 'Coordinate building inspections with authorities',
+          status: 'To Do',
+          priority: 'Critical',
+          assignee: 'Carol Davis',
+          dueDate: '2024-04-10',
+          createdAt: '2024-01-17T09:00:00Z'
+        },
+        {
+          id: '4',
+          projectId: '2',
+          title: 'Site preparation',
+          description: 'Prepare construction site for new building',
+          status: 'Planning',
+          priority: 'High',
+          assignee: 'David Brown',
+          dueDate: '2024-03-15',
+          createdAt: '2024-02-01T08:00:00Z'
+        },
+        {
+          id: '5',
+          projectId: '3',
+          title: 'Traffic management plan',
+          description: 'Develop traffic management plan for bridge repair',
+          status: 'In Progress',
+          priority: 'Critical',
+          assignee: 'Grace Taylor',
+          dueDate: '2024-03-01',
+          createdAt: '2024-01-25T14:00:00Z'
+        }
+      ];
+      
+      // Filter by project if projectId provided
+      const tasks = projectId 
+        ? allTasks.filter(t => t.projectId === projectId)
+        : allTasks;
+      
+      console.log('✅ Returning tasks:', tasks.length);
+      
+      return res.status(200).json({
+        success: true,
+        data: tasks,
+        count: tasks.length
       });
     }
     
-    console.log('Method is POST, proceeding...');
-    
-    // Log each step
-    console.log('Step 1: Validating request body');
-    const taskData = req.body;
-    
-    if (!taskData) {
-      console.log('No request body');
-      return res.status(400).json({
-        success: false,
-        error: 'Request body is required'
-      });
-    }
-    
-    console.log('Step 2: Checking required fields');
-    if (!taskData.title) {
-      console.log('Missing task title');
-      return res.status(400).json({
-        success: false,
-        error: 'Task title is required'
-      });
-    }
-    
-    console.log('Step 3: Task data validated:', taskData);
-    
-    // TEMPORARY: Just return success without any database operations
-    console.log('Step 4: Returning success response');
-    const response = {
-      success: true,
-      message: 'Task received (basic implementation)',
-      data: {
-        id: `task_${Date.now()}`,
-        ...taskData,
-        createdAt: new Date().toISOString()
+    // POST - Create new task
+    if (req.method === 'POST') {
+      console.log('📝 Creating new task...');
+      console.log('Request body:', req.body);
+      
+      const taskData = req.body;
+      
+      // Validate required fields
+      console.log('Validating task data...');
+      console.log('Title:', taskData.title);
+      console.log('Name:', taskData.name);
+      console.log('Title type:', typeof taskData.title);
+      console.log('Name type:', typeof taskData.name);
+      
+      // Check both 'title' and 'name' fields (for compatibility)
+      const title = taskData.title || taskData.name;
+      
+      if (!title) {
+        console.error('❌ Missing title/name');
+        return res.status(400).json({
+          success: false,
+          error: 'Task title is required'
+        });
       }
-    };
+      
+      if (typeof title === 'string' && title.trim() === '') {
+        console.error('❌ Empty title');
+        return res.status(400).json({
+          success: false,
+          error: 'Task title cannot be empty'
+        });
+      }
+      
+      if (!taskData.project_id && !taskData.projectId) {
+        console.error('❌ Missing project ID');
+        return res.status(400).json({
+          success: false,
+          error: 'Project ID is required'
+        });
+      }
+      
+      // Create new task
+      const newTask = {
+        id: `task_${Date.now()}`,
+        projectId: taskData.project_id || taskData.projectId,
+        title: title,
+        description: taskData.description || '',
+        status: taskData.status || 'To Do',
+        priority: taskData.priority || 'Medium',
+        assignee: taskData.assigned_to || taskData.assignee || null,
+        dueDate: taskData.due_date || taskData.dueDate || null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('✅ Task created:', newTask);
+      
+      // TODO: Save to database
+      
+      return res.status(201).json({
+        success: true,
+        data: newTask,
+        message: 'Task created successfully'
+      });
+    }
     
-    console.log('Response to send:', response);
-    console.log('=== API TASKS END SUCCESS ===');
-    
-    return res.status(201).json(response);
+    // Method not allowed
+    console.log('Method not allowed:', req.method);
+    return res.status(405).json({
+      success: false,
+      error: `Method ${req.method} not allowed`
+    });
     
   } catch (error: any) {
-    // Maximum error logging
-    console.error('=== ERROR CAUGHT ===');
-    console.error('Error type:', typeof error);
-    console.error('Error message:', error?.message);
-    console.error('Error name:', error?.name);
-    console.error('Error stack:', error?.stack);
-    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
-    console.error('=== ERROR END ===');
+    console.error('❌ Tasks API Error:', error);
+    console.error('Error stack:', error.stack);
     
-    // ALWAYS return JSON for errors
     return res.status(500).json({
       success: false,
-      error: error?.message || 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      error: error.message || 'Internal server error'
     });
   }
 }

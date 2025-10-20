@@ -547,12 +547,43 @@ async function loadProjectDetails() {
 }
 
 async function loadProjectTasks() {
+    console.log('📋 Loading tasks for project:', projectId);
+    
     try {
-        const tasksData = await tasks.getByProject(projectId);
+        console.log('📡 Fetching tasks from API...');
+        const response = await fetch(`/api/tasks?projectId=${projectId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('📊 Response status:', response.status);
+        console.log('✅ Response OK?', response.ok);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Response error:', errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Tasks response:', result);
+        
+        const tasksData = result.data || result.tasks || [];
+        console.log('📦 Tasks data:', tasksData);
+        
         renderTasks(tasksData);
+        
     } catch (error) {
-        console.error('Failed to load tasks:', error);
-        document.getElementById('tasksList').innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-500 text-sm">Failed to load tasks</td></tr>';
+        console.error('💥 Error loading tasks:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        const tasksList = document.getElementById('tasksList');
+        if (tasksList) {
+            tasksList.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-500 text-sm">Failed to load tasks</td></tr>';
+        }
     }
 }
 
@@ -567,25 +598,69 @@ async function loadProjectDocuments() {
 }
 
 function renderTasks(tasksData) {
+    console.log('🎨 Rendering tasks:', tasksData);
+    
     const tbody = document.getElementById('tasksList');
     
-    if (tasksData.length === 0) {
+    if (!tbody) {
+        console.error('❌ Tasks list element not found!');
+        return;
+    }
+    
+    if (!tasksData || tasksData.length === 0) {
+        console.log('ℹ️ No tasks to display');
         tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-text-color/60 text-sm">No tasks yet. Create one above!</td></tr>';
         return;
     }
     
-    tbody.innerHTML = tasksData.map(task => `
-        <tr class="text-sm hover:bg-background-alt/50 cursor-pointer" onclick="window.location.href='/task-detail.html?id=${task.id}'">
-            <td class="px-6 py-4 font-medium text-text-color">${task.name}</td>
-            <td class="px-6 py-4 text-text-color/60">${task.assigned_to_name || 'Unassigned'}</td>
-            <td class="px-6 py-4 text-text-color/60">${task.due_date || 'Not set'}</td>
-            <td class="px-6 py-4">
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getTaskStatusColor(task.status)}">
-                    ${task.status.replace('_', ' ')}
-                </span>
-            </td>
-        </tr>
-    `).join('');
+    console.log('📝 Rendering', tasksData.length, 'tasks');
+    
+    tbody.innerHTML = tasksData.map(task => {
+        console.log('Rendering task:', task.title || task.name);
+        
+        // Handle both 'title' and 'name' fields for compatibility
+        const taskTitle = task.title || task.name || 'Untitled Task';
+        const assignee = task.assignee || task.assigned_to_name || 'Unassigned';
+        const dueDate = task.dueDate || task.due_date || 'Not set';
+        const status = task.status || 'To Do';
+        
+        return `
+            <tr class="text-sm hover:bg-background-alt/50 cursor-pointer" onclick="window.location.href='/task-detail.html?id=${task.id}'">
+                <td class="px-6 py-4 font-medium text-text-color">${escapeHtml(taskTitle)}</td>
+                <td class="px-6 py-4 text-text-color/60">${escapeHtml(assignee)}</td>
+                <td class="px-6 py-4 text-text-color/60">${formatDate(dueDate)}</td>
+                <td class="px-6 py-4">
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getTaskStatusColor(status)}">
+                        ${escapeHtml(status.replace('_', ' '))}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    console.log('✅ Tasks rendered successfully');
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString || dateString === 'Not set') return 'Not set';
+    try {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    } catch {
+        return dateString;
+    }
 }
 
 function renderDocuments(docsData) {
@@ -836,26 +911,90 @@ document.getElementById('cancelTaskBtn').addEventListener('click', () => {
 document.getElementById('addTaskForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    console.log('🚀 Creating task...');
+    console.log('Form element:', e.target);
+    
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creating...';
     
     try {
-        await tasks.create({
+        // Get form data with comprehensive logging
+        const taskName = document.getElementById('taskName').value;
+        const taskDescription = document.getElementById('taskDescription').value;
+        const taskAssignee = document.getElementById('taskAssignee').value;
+        const taskPriority = document.getElementById('taskPriority').value;
+        const taskDueDate = document.getElementById('taskDueDate').value;
+        
+        console.log('📝 Form data collected:');
+        console.log('  Name:', taskName);
+        console.log('  Description:', taskDescription);
+        console.log('  Assignee:', taskAssignee);
+        console.log('  Priority:', taskPriority);
+        console.log('  Due Date:', taskDueDate);
+        console.log('  Project ID:', projectId);
+        
+        // Validate required fields
+        if (!taskName || taskName.trim() === '') {
+            console.error('❌ Task name is empty');
+            alert('Task name is required');
+            return;
+        }
+        
+        if (!projectId) {
+            console.error('❌ No project ID');
+            alert('Project ID is missing');
+            return;
+        }
+        
+        const taskData = {
             project_id: projectId,
-            name: document.getElementById('taskName').value,
-            description: document.getElementById('taskDescription').value,
-            assigned_to: document.getElementById('taskAssignee').value || null,
-            priority: document.getElementById('taskPriority').value,
-            due_date: document.getElementById('taskDueDate').value || null
+            name: taskName,
+            description: taskDescription,
+            assigned_to: taskAssignee || null,
+            priority: taskPriority,
+            due_date: taskDueDate || null
+        };
+        
+        console.log('📦 Task data object:', taskData);
+        
+        console.log('📡 Sending task to API...');
+        const response = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(taskData)
         });
         
+        console.log('📊 Response status:', response.status);
+        console.log('✅ Response OK?', response.ok);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Response error:', errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Task created:', result);
+        
+        // Show success message
+        alert('Task created successfully!');
+        
+        // Close modal and reset form
         addTaskModal.classList.add('hidden');
         document.getElementById('addTaskForm').reset();
+        
+        // Reload tasks and project details
         await loadProjectTasks();
         await loadProjectDetails();
+        
     } catch (error) {
-        alert('Failed to create task: ' + error.message);
+        console.error('💥 Error creating task:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        alert(`Failed to create task: ${error.message}`);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create Task';
