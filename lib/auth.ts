@@ -33,21 +33,23 @@ export async function requireAuth(req: VercelRequest): Promise<AuthenticatedUser
   const token = authHeader.substring(7);
 
   try {
-    // Verify token with Clerk using the current API
-    const session = await clerkClient.sessions.verifySession(token);
+    // Verify JWT token with Clerk
+    const payload = await clerkClient.verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY!,
+    });
 
-    if (!session || !session.userId) {
+    if (!payload || !payload.sub) {
       throw new Error('Invalid or expired token');
     }
 
     // Get user details
-    const user = await clerkClient.users.getUser(session.userId);
+    const user = await clerkClient.users.getUser(payload.sub);
 
     return {
-      userId: session.userId,
+      userId: payload.sub,
       email: user.emailAddresses[0]?.emailAddress,
-      organizationId: session.organizationId,
-      role: session.role,
+      organizationId: payload.org_id || null,
+      role: payload.org_role || null,
     };
   } catch (error) {
     console.error('Authentication error:', error);
@@ -125,9 +127,11 @@ export async function getSessionFromCookie(req: VercelRequest): Promise<any> {
   }
 
   try {
-    const session = await clerkClient.sessions.verifySession(sessionCookie);
+    const payload = await clerkClient.verifyToken(sessionCookie, {
+      secretKey: process.env.CLERK_SECRET_KEY!,
+    });
 
-    return session;
+    return payload;
   } catch (error) {
     return null;
   }
