@@ -212,25 +212,70 @@ function setupProjectsEventListeners() {
 
 // Load projects
 async function loadProjects() {
+    console.log('🔍 Starting to load projects...');
     const projectsContainer = document.getElementById('projectsContainer');
     
     try {
-        const projectsData = await projects.getAll();
+        console.log('📡 Fetching from /api/projects...');
+        
+        const response = await fetch('/api/projects', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('📊 Response status:', response.status);
+        console.log('📋 Response headers:', response.headers);
+        console.log('✅ Response OK?', response.ok);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Response not OK:', errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const text = await response.text();
+        console.log('📄 Raw response:', text);
+        
+        const data = JSON.parse(text);
+        console.log('✅ Parsed data:', data);
+        console.log('📦 Projects array:', data.data || data.projects);
+        
+        // Display the projects
+        const projectsData = data.data || data.projects || [];
         renderProjects(projectsData);
+        
     } catch (error) {
-        console.error('Failed to load projects:', error);
+        console.error('💥 Error loading projects:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // Show error to user
         if (projectsContainer) {
-            projectsContainer.innerHTML = '<div class="col-span-full text-center py-12 text-red-500">Failed to load projects</div>';
+            projectsContainer.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <span class="material-symbols-outlined text-6xl text-red-500">error</span>
+                    <p class="text-red-500 mt-4">Failed to load projects: ${error.message}</p>
+                    <p class="text-text-color/60 mt-2">Check console for details</p>
+                </div>
+            `;
         }
     }
 }
 
 function renderProjects(projectsData) {
+    console.log('🎨 Displaying projects:', projectsData);
     const projectsContainer = document.getElementById('projectsContainer');
     
-    if (!projectsContainer) return;
+    if (!projectsContainer) {
+        console.error('❌ Projects container not found!');
+        return;
+    }
     
-    if (projectsData.length === 0) {
+    // Check if projects array is empty
+    if (!projectsData || projectsData.length === 0) {
+        console.log('ℹ️ No projects to display');
         projectsContainer.innerHTML = `
             <div class="col-span-full text-center py-12">
                 <span class="material-symbols-outlined text-6xl text-text-color/30">folder_open</span>
@@ -240,29 +285,62 @@ function renderProjects(projectsData) {
         return;
     }
     
-    projectsContainer.innerHTML = projectsData.map(project => `
-        <div class="bg-background rounded-xl shadow-sm p-6 border border-footer-border/10 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='/project-detail.html?id=${project.id}'">
-            <div class="flex items-start justify-between mb-4">
-                <h3 class="text-lg font-bold text-text-color">${project.name}</h3>
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(project.status)}">
-                    ${project.status.replace('_', ' ')}
-                </span>
-            </div>
-            <p class="text-sm text-text-color/60 mb-4 line-clamp-2">${project.description || 'No description'}</p>
-            <div class="flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-text-color/40 text-sm">group</span>
-                    <span class="text-text-color/60">${project.member_count || 0} members</span>
+    // Render each project
+    projectsContainer.innerHTML = projectsData.map(project => {
+        console.log('Rendering project:', project.name);
+        
+        // Format dates
+        const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            try {
+                return new Date(dateString).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch {
+                return dateString;
+            }
+        };
+        
+        // Format budget
+        const formatBudget = (budget) => {
+            if (!budget && budget !== 0) return '$0';
+            return '$' + Number(budget).toLocaleString('en-US');
+        };
+        
+        return `
+            <div class="bg-background rounded-xl shadow-sm p-6 border border-footer-border/10 hover:shadow-md transition-shadow cursor-pointer" onclick="window.location.href='/project-detail.html?id=${project.id}'">
+                <div class="flex items-start justify-between mb-4">
+                    <h3 class="text-lg font-bold text-text-color">${escapeHtml(project.name)}</h3>
+                    <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(project.status)}">
+                        ${escapeHtml(project.status || 'Unknown')}
+                    </span>
                 </div>
-                ${project.overdue_tasks > 0 ? `
-                    <div class="flex items-center gap-1 text-red-500">
-                        <span class="material-symbols-outlined text-sm">warning</span>
-                        <span>${project.overdue_tasks} overdue</span>
+                <p class="text-sm text-text-color/60 mb-4 line-clamp-2">${escapeHtml(project.description || 'No description')}</p>
+                <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-text-color/40 text-sm">calendar_today</span>
+                        <span class="text-text-color/60">${formatDate(project.startDate)} - ${formatDate(project.endDate)}</span>
                     </div>
-                ` : ''}
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-text-color/40 text-sm">attach_money</span>
+                        <span class="text-text-color/60">${formatBudget(project.budget)}</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+    
+    console.log('✅ Projects displayed successfully');
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function getStatusColor(status) {
