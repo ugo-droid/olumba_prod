@@ -22,8 +22,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@clerk/backend": "^2.17.0",
-    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@clerk/backend": "^2.18.3",
     "@supabase/auth-js": "^2.72.0",
     "@supabase/supabase-js": "^2.58.0",
     "@vercel/node": "^5.4.0",
