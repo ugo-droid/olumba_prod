@@ -203,33 +203,19 @@
         <form id="uploadDocForm">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-text-color mb-1">Document Name *</label>
-                    <input type="text" id="docName" required placeholder="e.g., Architectural_Plans_Main.pdf" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-text-color mb-1">Discipline *</label>
-                    <select id="docDiscipline" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
-                        <option value="">Select discipline</option>
-                        <option value="Architectural">Architectural</option>
-                        <option value="Structural">Structural</option>
-                        <option value="MEP">MEP</option>
-                        <option value="Civil">Civil</option>
-                        <option value="Landscape">Landscape</option>
-                        <option value="General">General</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-text-color mb-1">File Type *</label>
-                    <select id="docFileType" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
-                        <option value="">Select type</option>
-                        <option value="pdf">PDF</option>
-                        <option value="dwg">DWG (AutoCAD)</option>
-                        <option value="rvt">RVT (Revit)</option>
-                        <option value="other">Other</option>
-                    </select>
+                    <label class="block text-sm font-medium text-text-color mb-1">Select File *</label>
+                    <input 
+                        type="file" 
+                        id="document-file" 
+                        name="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.zip"
+                        required
+                        class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"
+                    >
+                    <small class="text-xs text-text-color/60">Accepted formats: PDF, Word, Excel, Images, ZIP (Max 10MB)</small>
                 </div>
                 <div class="bg-background-alt rounded-lg p-4">
-                    <p class="text-xs text-text-color/60"><strong>Note:</strong> File upload functionality requires file system integration. This demo simulates document creation.</p>
+                    <p class="text-xs text-text-color/60"><strong>Note:</strong> File upload currently stores metadata only. Actual file storage requires server integration.</p>
                 </div>
             </div>
             <div class="flex gap-2 mt-6">
@@ -240,8 +226,10 @@
     </div>
 </div>
 
+<script src="/config.js"></script>
 <script src="/js/api.js"></script>
 <script src="/js/nav.js"></script>
+<script src="/js/supabaseClient.js"></script>
 <script>
 true // Authentication removed;
 
@@ -354,14 +342,14 @@ mainContent.innerHTML = `
                         <table class="w-full text-left">
                             <thead class="border-b border-primary bg-primary">
                                 <tr>
-                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">File Name</th>
-                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Discipline</th>
-                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Version</th>
-                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Last Updated</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Name</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Size</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Uploaded By</th>
+                                    <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Upload Date</th>
                                     <th class="px-6 py-3 text-xs font-medium uppercase tracking-wider text-white">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="documentsList" class="divide-y divide-footer-border/10">
+                            <tbody id="documents-table-body" class="divide-y divide-footer-border/10">
                                 <tr>
                                     <td colspan="5" class="px-6 py-4 text-center text-text-color/60 text-sm">Loading documents...</td>
                                 </tr>
@@ -588,12 +576,39 @@ async function loadProjectTasks() {
 }
 
 async function loadProjectDocuments() {
+    console.log('📋 Loading documents for project:', projectId);
+    
     try {
-        const docsData = await documents.getByProject(projectId, false);
-        renderDocuments(docsData);
+        const response = await fetch(`/api/documents?projectId=${projectId}`);
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Documents result:', result);
+        
+        const documents = result.data || result.documents || [];
+        console.log('✅ Documents loaded:', documents.length);
+        
+        displayDocuments(documents);
+        
     } catch (error) {
-        console.error('Failed to load documents:', error);
-        document.getElementById('documentsList').innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-red-500 text-sm">Failed to load documents</td></tr>';
+        console.error('💥 Error loading documents:', error);
+        
+        const container = document.getElementById('documents-table-body');
+        
+        if (container) {
+            container.innerHTML = `
+                <tr>
+                    <td colspan="5" class="error">
+                        Failed to load documents: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
@@ -663,30 +678,44 @@ function formatDate(dateString) {
     }
 }
 
-function renderDocuments(docsData) {
-    const tbody = document.getElementById('documentsList');
+function displayDocuments(documents) {
+    console.log('🎨 Displaying documents:', documents);
     
-    if (docsData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-text-color/60 text-sm">No documents yet. Upload one above!</td></tr>';
+    const tableBody = document.getElementById('documents-table-body');
+    
+    if (!tableBody) {
+        console.error('❌ Documents table body not found');
         return;
     }
     
-    tbody.innerHTML = docsData.map(doc => `
-        <tr class="text-sm hover:bg-background-alt/50">
-            <td class="px-6 py-4 font-medium text-text-color flex items-center gap-2">
-                <span class="material-symbols-outlined text-lg ${getFileIcon(doc.file_type).color}">${getFileIcon(doc.file_type).icon}</span>
-                ${doc.name}
+    if (documents.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 20px;">
+                    No documents uploaded yet. Upload your first document!
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tableBody.innerHTML = documents.map(doc => `
+        <tr>
+            <td>
+                <span class="document-icon">${getFileIcon(doc.file_type)}</span>
+                ${escapeHtml(doc.name)}
             </td>
-            <td class="px-6 py-4 text-text-color/60">${doc.discipline || 'General'}</td>
-            <td class="px-6 py-4 text-text-color/60">
-                v${doc.version} ${doc.is_latest ? '<span class="text-accent-1 text-xs">(Latest)</span>' : ''}
-            </td>
-            <td class="px-6 py-4 text-text-color/60">${formatDate(doc.created_at)}</td>
-            <td class="px-6 py-4">
-                <a href="/document-history.html?id=${doc.id}" class="text-primary hover:underline">View History</a>
+            <td>${formatFileSize(doc.file_size)}</td>
+            <td>${escapeHtml(doc.uploaded_by || 'Unknown')}</td>
+            <td>${formatDateTime(doc.uploaded_at)}</td>
+            <td>
+                <button onclick="downloadDocument('${doc.id}', '${escapeHtml(doc.url)}', '${escapeHtml(doc.name)}')" class="btn-sm">Download</button>
+                <button onclick="deleteDocument('${doc.id}')" class="btn-sm btn-danger">Delete</button>
             </td>
         </tr>
     `).join('');
+    
+    console.log('✅ Documents displayed successfully');
 }
 
 function renderTeamMembers(members) {
@@ -732,13 +761,82 @@ function getTaskStatusColor(status) {
     return colors[status] || 'bg-gray-200 text-gray-600';
 }
 
-function getFileIcon(fileType) {
-    const icons = {
-        'pdf': { icon: 'picture_as_pdf', color: 'text-red-500' },
-        'dwg': { icon: 'architecture', color: 'text-blue-500' },
-        'rvt': { icon: 'domain', color: 'text-accent-1' }
-    };
-    return icons[fileType] || { icon: 'description', color: 'text-text-color/40' };
+// Helper functions for documents
+function getFileIcon(mimeType) {
+    if (mimeType.includes('pdf')) return '📄';
+    if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+    if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
+    if (mimeType.includes('image')) return '🖼️';
+    if (mimeType.includes('zip') || mimeType.includes('compressed')) return '📦';
+    return '📎';
+}
+
+function formatFileSize(bytes) {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+function formatDateTime(dateString) {
+    if (!dateString) return 'Unknown';
+    try {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch {
+        return dateString;
+    }
+}
+
+function downloadDocument(id, url, name) {
+    console.log('Downloading document:', name);
+    
+    if (!url || url === '#') {
+        alert('Download URL not available');
+        return;
+    }
+    
+    // Create temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+async function deleteDocument(id) {
+    if (!confirm('Are you sure you want to delete this document?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/documents?id=${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete document');
+        }
+        
+        alert('Document deleted successfully');
+        
+        // Reload documents
+        const projectId = getProjectIdFromUrl();
+        await loadProjectDocuments();
+        
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        alert('Failed to delete document: ' + error.message);
+    }
 }
 
 function formatDate(dateString) {
@@ -764,27 +862,105 @@ cancelUploadBtn.addEventListener('click', () => {
 uploadDocForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    console.log('📤 Uploading document...');
+    
+    const fileInput = document.getElementById('document-file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a file to upload');
+        return;
+    }
+    
+    console.log('File selected:', {
+        name: file.name,
+        type: file.type,
+        size: file.size
+    });
+    
+    const projectId = getProjectIdFromUrl();
+    
+    if (!projectId) {
+        alert('Project ID is missing');
+        return;
+    }
+    
     const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
     submitBtn.textContent = 'Uploading...';
     
     try {
-        await documents.create({
-            project_id: projectId,
-            name: document.getElementById('docName').value,
-            file_type: document.getElementById('docFileType').value,
-            discipline: document.getElementById('docDiscipline').value
+        // Wait for Supabase client to be ready
+        if (!window.supabaseClient) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+            if (!window.supabaseClient) {
+                throw new Error('Supabase client not initialized');
+            }
+        }
+        
+        // Generate unique file path
+        const timestamp = Date.now();
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `${projectId}/${timestamp}_${sanitizedFileName}`;
+        
+        console.log('Uploading to Supabase storage:', filePath);
+        
+        // Upload file to Supabase Storage
+        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+            .from('olumba-documents')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+        
+        if (uploadError) {
+            throw new Error(`Storage upload failed: ${uploadError.message}`);
+        }
+        
+        console.log('✅ File uploaded to storage:', uploadData);
+        
+        // Create database record
+        const response = await fetch('/api/documents', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                projectId: projectId,
+                name: file.name,
+                filePath: filePath,
+                fileType: file.type,
+                fileSize: file.size,
+                uploadedBy: 'Current User'
+            })
         });
         
-        uploadDocModal.classList.add('hidden');
-        uploadDocForm.reset();
-        await loadProjectDocuments();
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create document record');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Document record created:', result);
+        
         alert('Document uploaded successfully!');
+        
+        // Reset form
+        uploadDocForm.reset();
+        
+        // Close modal
+        uploadDocModal.classList.add('hidden');
+        
+        // Reload documents list
+        await loadProjectDocuments();
+        
     } catch (error) {
-        alert('Failed to upload document: ' + error.message);
+        console.error('Error uploading document:', error);
+        alert(`Failed to upload document: ${error.message}`);
     } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Upload Document';
+        submitBtn.textContent = originalText;
     }
 });
 

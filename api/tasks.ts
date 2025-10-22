@@ -1,182 +1,148 @@
 // =============================
-// Tasks API Endpoint
+// Tasks API Endpoint - WITH SUPABASE DATABASE
 // =============================
 
+import { getSupabaseAdmin } from '../lib/supabase';
+
 export default async function handler(req: any, res: any) {
-  console.log('📥 Tasks API called:', req.method);
+  console.log('📥 Olumba Tasks API:', req.method);
   
-  // Set headers
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
-  // Handle preflight
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS preflight');
     return res.status(200).end();
   }
   
+  const supabase = getSupabaseAdmin();
+  
   try {
-    // GET - Fetch tasks (optionally filtered by projectId)
+    // GET tasks
     if (req.method === 'GET') {
       const { projectId } = req.query;
-      console.log('📋 Fetching tasks for project:', projectId);
       
-      // TODO: Fetch from database
-      // For now, return mock tasks
-      const allTasks = [
-        {
-          id: '1',
-          projectId: '1',
-          title: 'Design floor plans',
-          description: 'Create detailed floor plans for all levels',
-          status: 'In Progress',
-          priority: 'High',
-          assignee: 'Alice Johnson',
-          dueDate: '2024-04-15',
-          createdAt: '2024-01-15T10:00:00Z'
-        },
-        {
-          id: '2',
-          projectId: '1',
-          title: 'Order materials',
-          description: 'Order construction materials from suppliers',
-          status: 'To Do',
-          priority: 'Medium',
-          assignee: 'Bob Wilson',
-          dueDate: '2024-04-20',
-          createdAt: '2024-01-16T11:00:00Z'
-        },
-        {
-          id: '3',
-          projectId: '1',
-          title: 'Schedule inspections',
-          description: 'Coordinate building inspections with authorities',
-          status: 'To Do',
-          priority: 'Critical',
-          assignee: 'Carol Davis',
-          dueDate: '2024-04-10',
-          createdAt: '2024-01-17T09:00:00Z'
-        },
-        {
-          id: '4',
-          projectId: '2',
-          title: 'Site preparation',
-          description: 'Prepare construction site for new building',
-          status: 'Planning',
-          priority: 'High',
-          assignee: 'David Brown',
-          dueDate: '2024-03-15',
-          createdAt: '2024-02-01T08:00:00Z'
-        },
-        {
-          id: '5',
-          projectId: '3',
-          title: 'Traffic management plan',
-          description: 'Develop traffic management plan for bridge repair',
-          status: 'In Progress',
-          priority: 'Critical',
-          assignee: 'Grace Taylor',
-          dueDate: '2024-03-01',
-          createdAt: '2024-01-25T14:00:00Z'
-        }
-      ];
+      let query = supabase.from('tasks').select('*');
       
-      // Filter by project if projectId provided
-      const tasks = projectId 
-        ? allTasks.filter(t => t.projectId === projectId)
-        : allTasks;
+      if (projectId) {
+        query = query.eq('project_id', projectId);
+      }
       
-      console.log('✅ Returning tasks:', tasks.length);
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
       
       return res.status(200).json({
         success: true,
-        data: tasks,
-        count: tasks.length
+        data: data,
+        count: data.length
       });
     }
     
-    // POST - Create new task
+    // POST - Create task
     if (req.method === 'POST') {
-      console.log('📝 Creating new task...');
-      console.log('Request body:', req.body);
-      
       const taskData = req.body;
       
-      // Validate required fields
-      console.log('Validating task data...');
-      console.log('Title:', taskData.title);
-      console.log('Name:', taskData.name);
-      console.log('Title type:', typeof taskData.title);
-      console.log('Name type:', typeof taskData.name);
-      
-      // Check both 'title' and 'name' fields (for compatibility)
-      const title = taskData.title || taskData.name;
-      
-      if (!title) {
-        console.error('❌ Missing title/name');
+      if (!taskData.title || taskData.title.trim() === '') {
         return res.status(400).json({
           success: false,
           error: 'Task title is required'
         });
       }
       
-      if (typeof title === 'string' && title.trim() === '') {
-        console.error('❌ Empty title');
-        return res.status(400).json({
-          success: false,
-          error: 'Task title cannot be empty'
-        });
-      }
-      
-      if (!taskData.project_id && !taskData.projectId) {
-        console.error('❌ Missing project ID');
+      if (!taskData.projectId) {
         return res.status(400).json({
           success: false,
           error: 'Project ID is required'
         });
       }
       
-      // Create new task
-      const newTask = {
-        id: `task_${Date.now()}`,
-        projectId: taskData.project_id || taskData.projectId,
-        title: title,
-        description: taskData.description || '',
-        status: taskData.status || 'To Do',
-        priority: taskData.priority || 'Medium',
-        assignee: taskData.assigned_to || taskData.assignee || null,
-        dueDate: taskData.due_date || taskData.dueDate || null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([{
+          project_id: taskData.projectId,
+          title: taskData.title,
+          description: taskData.description || '',
+          status: taskData.status || 'To Do',
+          priority: taskData.priority || 'Medium',
+          assignee: taskData.assignee || null,
+          due_date: taskData.dueDate || null,
+          completed: false
+        }])
+        .select()
+        .single();
       
-      console.log('✅ Task created:', newTask);
-      
-      // TODO: Save to database
+      if (error) throw error;
       
       return res.status(201).json({
         success: true,
-        data: newTask,
+        data: data,
         message: 'Task created successfully'
       });
     }
     
-    // Method not allowed
-    console.log('Method not allowed:', req.method);
+    // PUT - Update task
+    if (req.method === 'PUT') {
+      const { id } = req.query;
+      
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: 'Task ID is required'
+        });
+      }
+      
+      const { data, error } = await supabase
+        .from('tasks')
+        .update(req.body)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      return res.status(200).json({
+        success: true,
+        data: data,
+        message: 'Task updated successfully'
+      });
+    }
+    
+    // DELETE task
+    if (req.method === 'DELETE') {
+      const { id } = req.query;
+      
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: 'Task ID is required'
+        });
+      }
+      
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Task deleted successfully'
+      });
+    }
+    
     return res.status(405).json({
       success: false,
-      error: `Method ${req.method} not allowed`
+      error: 'Method not allowed'
     });
     
   } catch (error: any) {
-    console.error('❌ Tasks API Error:', error);
-    console.error('Error stack:', error.stack);
-    
+    console.error('❌ Olumba Tasks API Error:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'Internal server error'
+      error: error.message
     });
   }
 }

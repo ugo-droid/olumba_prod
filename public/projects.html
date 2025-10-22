@@ -184,7 +184,9 @@ function setupProjectsEventListeners() {
             if (result) {
                 newProjectModal.classList.add('hidden');
                 newProjectForm.reset();
-                loadProjects();
+                
+                // IMPORTANT: Reload the projects list
+                await loadProjects();
                 
                 // Show success message
                 showNotification('Project created successfully!', 'success');
