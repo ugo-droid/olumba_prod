@@ -570,6 +570,9 @@ async function loadProjectDetails() {
         // Load submittals
         await loadProjectSubmittals();
         
+        // Load team members
+        await loadProjectTeam();
+        
         // Render team members
         renderTeamMembers(currentProject.members || []);
         
@@ -1043,6 +1046,66 @@ async function loadProjectSubmittals() {
         console.error('Failed to load submittals:', error);
         document.getElementById('submittalsList').innerHTML = '<div class="p-6 text-center text-text-color/60 text-sm">No submittals found</div>';
     }
+}
+
+async function loadProjectTeam() {
+    console.log('👥 Loading project team...');
+    
+    try {
+        const response = await fetch(`/api/project-members?projectId=${projectId}`);
+        
+        if (!response.ok) {
+            console.error('Failed to load team:', response.status);
+            return;
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Team members loaded:', result.data);
+            displayTeamMembers(result.data || []);
+        } else {
+            console.error('Team API error:', result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error loading team:', error);
+    }
+}
+
+function displayTeamMembers(members) {
+    console.log('👥 Displaying team members:', members);
+    
+    const container = document.getElementById('team-members-list');
+    
+    if (!container) {
+        console.error('❌ Team members container not found');
+        return;
+    }
+    
+    if (members.length === 0) {
+        container.innerHTML = '<p class="text-text-color/60">No team members yet. Add members to collaborate.</p>';
+        return;
+    }
+    
+    container.innerHTML = members.map(member => `
+        <div class="team-member-card bg-background rounded-lg border border-footer-border/10 p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span class="text-primary font-bold text-sm">${escapeHtml(member.user?.full_name?.charAt(0) || 'U')}</span>
+                </div>
+                <div>
+                    <h4 class="font-medium text-text-color">${escapeHtml(member.user?.full_name || 'Unknown User')}</h4>
+                    <p class="text-sm text-text-color/60">${escapeHtml(member.role || 'Member')}</p>
+                    <p class="text-xs text-text-color/60">${escapeHtml(member.user?.email || '')}</p>
+                </div>
+            </div>
+            <button onclick="removeMember('${member.id}')" class="btn-sm btn-danger">
+                <span class="material-symbols-outlined">remove</span>
+                Remove
+            </button>
+        </div>
+    `).join('');
 }
 
 function renderSubmittals(submittalsData) {

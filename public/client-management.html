@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Management - Olumba</title>
+    <link rel="icon" type="image/png" href="/assets/faviconolumba.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+    
+    <script src="/js/config.js"></script>
+</head>
+<body class="bg-background-alt font-display text-text-color">
+    <div id="app"></div>
+
+    <!-- New Client Modal -->
+    <div id="newClientModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4">
+            <h2 class="text-2xl font-bold text-text-color mb-4">Add New Client</h2>
+            <form id="newClientForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Client Name *</label>
+                        <input type="text" id="clientName" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Email</label>
+                            <input type="email" id="clientEmail" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Phone</label>
+                            <input type="tel" id="clientPhone" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Address</label>
+                        <textarea id="clientAddress" rows="2" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Contact Person</label>
+                            <input type="text" id="contactPerson" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Contact Title</label>
+                            <input type="text" id="contactTitle" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Notes</label>
+                        <textarea id="clientNotes" rows="3" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-6">
+                    <button type="button" id="cancelClientBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Client Modal -->
+    <div id="editClientModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4">
+            <h2 class="text-2xl font-bold text-text-color mb-4">Edit Client</h2>
+            <form id="editClientForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Client Name *</label>
+                        <input type="text" id="editClientName" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Email</label>
+                            <input type="email" id="editClientEmail" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Phone</label>
+                            <input type="tel" id="editClientPhone" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Address</label>
+                        <textarea id="editClientAddress" rows="2" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Contact Person</label>
+                            <input type="text" id="editContactPerson" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Contact Title</label>
+                            <input type="text" id="editContactTitle" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Notes</label>
+                        <textarea id="editClientNotes" rows="3" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-6">
+                    <button type="button" id="cancelEditClientBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/nav.js"></script>
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage('clients', initializeClientManagementPage);
+        });
+
+        let allClients = [];
+        let currentEditingClient = null;
+
+        async function initializeClientManagementPage() {
+            console.log('🔧 Initializing Client Management Page...');
+            
+            try {
+                await loadClients();
+            } catch (error) {
+                console.error('💥 Client management initialization error:', error);
+                showError('Failed to load clients');
+            }
+        }
+
+        async function loadClients() {
+            console.log('📋 Loading clients...');
+            
+            try {
+                const response = await fetch('/api/clients', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📊 Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Response error:', errorText);
+                    throw new Error(`Failed to fetch clients: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                console.log('📄 Raw response:', text);
+                
+                const result = JSON.parse(text);
+                console.log('✅ Parsed result:', result);
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load clients');
+                }
+                
+                allClients = result.data || [];
+                console.log('📦 Clients data:', allClients);
+                
+                displayClients(allClients);
+                
+                console.log('✅ Clients loaded successfully');
+                
+            } catch (error) {
+                console.error('💥 Error loading clients:', error);
+                showError(`Failed to load clients: ${error.message}`);
+            }
+        }
+
+        function displayClients(clients) {
+            console.log('🎨 Displaying clients:', clients);
+            
+            const tableBody = document.getElementById('clients-table-body');
+            
+            if (!tableBody) {
+                console.error('❌ Clients table body not found');
+                return;
+            }
+            
+            if (clients.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px;">
+                            No clients found. Add your first client!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            clients.forEach(client => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <span class="text-primary font-bold text-sm">${escapeHtml(client.name?.charAt(0) || 'C')}</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-text-color">${escapeHtml(client.name)}</div>
+                                <div class="text-sm text-text-color/60">${escapeHtml(client.contact_person || 'No contact person')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-text-color">
+                        ${escapeHtml(client.email || 'N/A')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-text-color">
+                        ${escapeHtml(client.phone || 'N/A')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-text-color">
+                        ${escapeHtml(client.contact_title || 'N/A')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-text-color">
+                        ${formatDate(client.created_at)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="viewClient('${client.id}')" class="btn-sm btn-view">View</button>
+                        <button onclick="editClient('${client.id}')" class="btn-sm btn-edit">Edit</button>
+                        <button onclick="deleteClient('${client.id}')" class="btn-sm btn-danger">Delete</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function openNewClientModal() {
+            document.getElementById('newClientModal').classList.remove('hidden');
+        }
+
+        function editClient(clientId) {
+            const client = allClients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            currentEditingClient = client;
+            
+            // Populate form with current values
+            document.getElementById('editClientName').value = client.name || '';
+            document.getElementById('editClientEmail').value = client.email || '';
+            document.getElementById('editClientPhone').value = client.phone || '';
+            document.getElementById('editClientAddress').value = client.address || '';
+            document.getElementById('editContactPerson').value = client.contact_person || '';
+            document.getElementById('editContactTitle').value = client.contact_title || '';
+            document.getElementById('editClientNotes').value = client.notes || '';
+            
+            document.getElementById('editClientModal').classList.remove('hidden');
+        }
+
+        function viewClient(clientId) {
+            const client = allClients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            // For now, just show an alert with client details
+            // In a full implementation, this would open a detailed view page
+            alert(`Client: ${client.name}\nEmail: ${client.email || 'N/A'}\nPhone: ${client.phone || 'N/A'}\nContact: ${client.contact_person || 'N/A'}`);
+        }
+
+        async function deleteClient(clientId) {
+            const client = allClients.find(c => c.id === clientId);
+            if (!client) return;
+            
+            if (!confirm(`Are you sure you want to delete "${client.name}"? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/clients?id=${clientId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Delete failed: ${errorText}`);
+                }
+                
+                showSuccess('Client deleted successfully');
+                await loadClients();
+                
+            } catch (error) {
+                console.error('Error deleting client:', error);
+                showError('Failed to delete client');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('cancelClientBtn').addEventListener('click', () => {
+            document.getElementById('newClientModal').classList.add('hidden');
+            document.getElementById('newClientForm').reset();
+        });
+
+        document.getElementById('newClientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const formData = {
+                    name: document.getElementById('clientName').value,
+                    email: document.getElementById('clientEmail').value,
+                    phone: document.getElementById('clientPhone').value,
+                    address: document.getElementById('clientAddress').value,
+                    contact_person: document.getElementById('contactPerson').value,
+                    contact_title: document.getElementById('contactTitle').value,
+                    notes: document.getElementById('clientNotes').value
+                };
+                
+                const response = await fetch('/api/clients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Create failed: ${errorText}`);
+                }
+                
+                document.getElementById('newClientModal').classList.add('hidden');
+                document.getElementById('newClientForm').reset();
+                showSuccess('Client created successfully');
+                await loadClients();
+                
+            } catch (error) {
+                console.error('Error creating client:', error);
+                showError('Failed to create client');
+            }
+        });
+
+        document.getElementById('cancelEditClientBtn').addEventListener('click', () => {
+            document.getElementById('editClientModal').classList.add('hidden');
+            currentEditingClient = null;
+        });
+
+        document.getElementById('editClientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!currentEditingClient) return;
+            
+            try {
+                const formData = {
+                    name: document.getElementById('editClientName').value,
+                    email: document.getElementById('editClientEmail').value,
+                    phone: document.getElementById('editClientPhone').value,
+                    address: document.getElementById('editClientAddress').value,
+                    contact_person: document.getElementById('editContactPerson').value,
+                    contact_title: document.getElementById('editContactTitle').value,
+                    notes: document.getElementById('editClientNotes').value
+                };
+                
+                const response = await fetch(`/api/clients?id=${currentEditingClient.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Update failed: ${errorText}`);
+                }
+                
+                document.getElementById('editClientModal').classList.add('hidden');
+                currentEditingClient = null;
+                showSuccess('Client updated successfully');
+                await loadClients();
+                
+            } catch (error) {
+                console.error('Error updating client:', error);
+                showError('Failed to update client');
+            }
+        });
+
+        // Helper functions
+        function escapeHtml(text) {
+            if (!text && text !== 0) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid date';
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                console.error('Date formatting error:', error);
+                return dateString;
+            }
+        }
+
+        function showSuccess(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        function showError(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

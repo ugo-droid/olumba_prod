@@ -42,6 +42,10 @@ function createSidebar(activePage = 'dashboard') {
                 <span class="material-symbols-outlined">forum</span>
                 <span>Communication Hub</span>
             </a>
+            <a href="/client-management.html" class="nav-link ${activePage === 'clients' ? 'active' : ''}">
+                <span class="material-symbols-outlined">business</span>
+                <span>Client Management</span>
+            </a>
             ${userRole === 'admin' ? `
             <a href="/admin-overview.html" class="nav-link ${activePage === 'admin' ? 'active' : ''}">
                 <span class="material-symbols-outlined">monitoring</span>

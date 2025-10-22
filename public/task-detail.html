@@ -1,414 +1,547 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Task Details - Olumba</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Details - Olumba</title>
     <link rel="icon" type="image/png" href="/assets/faviconolumba.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>tailwind.config = {theme: {extend: {colors: {primary: "#2171f2", "accent-1": "#22C55E", "accent-2": "#FF8C42", background: "#FFFFFF", "background-alt": "#F3F4F6", "text-color": "#22223B", "footer-border": "#1E293B"}, fontFamily: {display: "Inter"}}}};</script>
+    
+    <script src="/js/config.js"></script>
 </head>
 <body class="bg-background-alt font-display text-text-color">
-<div id="app"></div>
+    <div id="app"></div>
 
-<script src="/js/api.js"></script>
-<script src="/js/nav.js"></script>
-<script>
-true // Authentication removed;
-
-// Initialize navigation
-initNav('tasks');
-
-// Get task ID from URL
-const urlParams = new URLSearchParams(window.location.search);
-const taskId = urlParams.get('id');
-
-if (!taskId) {
-    alert('No task specified');
-    window.location.href = '/tasks.html';
-}
-
-// Get main content area
-const mainContent = document.getElementById('mainContent');
-
-// Render task detail content
-mainContent.innerHTML = `
-<div class="p-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- Breadcrumb -->
-        <div class="mb-6">
-            <div class="flex items-center gap-2 text-sm text-text-color/60">
-                <a href="/projects.html" class="hover:text-primary">Projects</a>
-                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                <a href="/tasks.html" class="hover:text-primary">Tasks</a>
-                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                <span class="font-medium text-text-color" id="taskBreadcrumb">Task</span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Task Details -->
-                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
-                    <div class="flex items-start justify-between mb-4">
-                        <h1 class="text-3xl font-bold text-text-color" id="taskName">Loading...</h1>
-                        <span id="taskStatus" class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">Status</span>
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4">
+            <h2 class="text-2xl font-bold text-text-color mb-4">Edit Task</h2>
+            <form id="editTaskForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Task Title *</label>
+                        <input type="text" id="editTaskTitle" required class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
                     </div>
-                    
-                    <p class="text-text-color/70 mb-6" id="taskDescription">Loading description...</p>
-                    
-                    <!-- Task Form -->
-                    <form id="taskForm" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-text-color mb-1">Task Name</label>
-                                <input type="text" id="editTaskName" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-text-color mb-1">Status</label>
-                                <select id="editStatus" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
-                                    <option value="pending">Pending</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-text-color mb-1">Due Date</label>
-                                <input type="date" id="editDueDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-text-color mb-1">Priority</label>
-                                <select id="editPriority" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
-                                </select>
-                            </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Description</label>
+                        <textarea id="editTaskDescription" rows="3" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-color mb-1">Status</label>
+                            <select id="editTaskStatus" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="todo">To Do</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="review">Review</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-text-color mb-1">Description</label>
-                            <textarea id="editDescription" rows="4" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"></textarea>
-                        </div>
-                        <div class="flex justify-end gap-2">
-                            <button type="button" onclick="window.location.href='/tasks.html'" class="px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
-                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Save Changes</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Subtasks -->
-                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold text-text-color">Subtasks</h2>
-                        <button onclick="showAddSubtaskForm()" class="text-sm text-primary hover:text-primary/80 font-medium">
-                            + Add Subtask
-                        </button>
-                    </div>
-                    
-                    <div id="addSubtaskForm" class="hidden mb-4 p-4 bg-background-alt rounded-lg">
-                        <div class="flex gap-2">
-                            <input type="text" id="newSubtaskName" placeholder="Subtask name..." class="flex-1 px-3 py-2 text-sm border border-footer-border/20 rounded-lg"/>
-                            <input type="date" id="newSubtaskDate" class="px-3 py-2 text-sm border border-footer-border/20 rounded-lg"/>
-                            <button onclick="addSubtask()" class="px-4 py-2 text-sm bg-primary text-white rounded-lg hover:bg-primary/90">Add</button>
-                            <button onclick="hideAddSubtaskForm()" class="px-4 py-2 text-sm border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                            <label class="block text-sm font-medium text-text-color mb-1">Priority</label>
+                            <select id="editTaskPriority" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div id="subtasksList" class="space-y-2">
-                        <p class="text-sm text-text-color/60 text-center py-4">Loading subtasks...</p>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Assigned To</label>
+                        <select id="editTaskAssignee" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary">
+                            <option value="">Unassigned</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Due Date</label>
+                        <input type="datetime-local" id="editTaskDueDate" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary"/>
                     </div>
                 </div>
-
-                <!-- Dependencies -->
-                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
-                    <h2 class="text-xl font-semibold text-text-color mb-4">Dependencies</h2>
-                    <div id="dependenciesList" class="space-y-2">
-                        <p class="text-sm text-text-color/60 text-center py-4">Loading dependencies...</p>
-                    </div>
+                <div class="flex gap-2 mt-6">
+                    <button type="button" id="cancelEditTaskBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Save Changes</button>
                 </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Progress -->
-                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
-                    <h3 class="text-lg font-semibold text-text-color mb-4">Progress</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-text-color/60">Overall Progress</span>
-                            <span class="font-semibold text-text-color" id="progressPercent">0%</span>
-                        </div>
-                        <div class="w-full bg-background-alt rounded-full h-2">
-                            <div id="progressBar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Task Info -->
-                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
-                    <h3 class="text-lg font-semibold text-text-color mb-4">Task Information</h3>
-                    <div class="space-y-3 text-sm">
-                        <div>
-                            <p class="text-text-color/60">Project</p>
-                            <p class="font-medium text-text-color" id="taskProject">Loading...</p>
-                        </div>
-                        <div>
-                            <p class="text-text-color/60">Assigned To</p>
-                            <p class="font-medium text-text-color" id="taskAssignee">Loading...</p>
-                        </div>
-                        <div>
-                            <p class="text-text-color/60">Created By</p>
-                            <p class="font-medium text-text-color" id="taskCreator">Loading...</p>
-                        </div>
-                        <div>
-                            <p class="text-text-color/60">Created On</p>
-                            <p class="font-medium text-text-color" id="taskCreated">Loading...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
-                    <h3 class="text-lg font-semibold text-text-color mb-4">Quick Actions</h3>
-                    <div class="space-y-2">
-                        <button onclick="markAsComplete()" class="w-full flex items-center gap-2 px-4 py-2 bg-accent-1 text-white rounded-lg hover:bg-accent-1/90">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            <span>Mark Complete</span>
-                        </button>
-                        <button onclick="deleteTask()" class="w-full flex items-center gap-2 px-4 py-2 border border-red-500/20 bg-red-500/10 text-red-600 rounded-lg hover:bg-red-500/20">
-                            <span class="material-symbols-outlined">delete</span>
-                            <span>Delete Task</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
-</div>
-`;
 
-let currentTask = null;
-
-async function loadTaskDetails() {
-    try {
-        currentTask = await tasks.getById(taskId);
-        
-        // Populate header
-        document.getElementById('taskBreadcrumb').textContent = currentTask.name;
-        document.getElementById('taskName').textContent = currentTask.name;
-        document.getElementById('taskDescription').textContent = currentTask.description || 'No description';
-        document.getElementById('taskStatus').textContent = currentTask.status.replace('_', ' ');
-        document.getElementById('taskStatus').className = `inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getTaskStatusColor(currentTask.status)}`;
-        
-        // Populate form
-        document.getElementById('editTaskName').value = currentTask.name;
-        document.getElementById('editStatus').value = currentTask.status;
-        document.getElementById('editDueDate').value = currentTask.due_date || '';
-        document.getElementById('editPriority').value = currentTask.priority || 'medium';
-        document.getElementById('editDescription').value = currentTask.description || '';
-        
-        // Populate sidebar
-        document.getElementById('taskProject').textContent = currentTask.project_name;
-        document.getElementById('taskAssignee').textContent = currentTask.assigned_to_name || 'Unassigned';
-        document.getElementById('taskCreator').textContent = currentTask.created_by_name;
-        document.getElementById('taskCreated').textContent = formatDateTime(currentTask.created_at);
-        
-        // Render subtasks
-        renderSubtasks(currentTask.subtasks || []);
-        
-        // Render dependencies
-        renderDependencies(currentTask.dependencies || []);
-        
-        // Calculate progress
-        calculateProgress();
-    } catch (error) {
-        console.error('Failed to load task:', error);
-        alert('Failed to load task details');
-        window.location.href = '/tasks.html';
-    }
-}
-
-function renderSubtasks(subtasks) {
-    const subtasksList = document.getElementById('subtasksList');
-    
-    if (subtasks.length === 0) {
-        subtasksList.innerHTML = '<p class="text-sm text-text-color/60 text-center py-4">No subtasks yet. Add one above!</p>';
-        return;
-    }
-    
-    subtasksList.innerHTML = subtasks.map(subtask => `
-        <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-background-alt">
-            <input type="checkbox" ${subtask.completed ? 'checked' : ''} 
-                   onchange="toggleSubtask('${subtask.id}')" 
-                   class="w-5 h-5 rounded border-footer-border/30 text-primary focus:ring-primary"/>
-            <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm text-text-color ${subtask.completed ? 'line-through opacity-50' : ''}">${subtask.name}</p>
-                ${subtask.due_date ? `<p class="text-xs text-text-color/60">Due: ${subtask.due_date}</p>` : ''}
-            </div>
+    <!-- Add Comment Modal -->
+    <div id="addCommentModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-background rounded-xl shadow-xl p-6 max-w-2xl w-full mx-4">
+            <h2 class="text-2xl font-bold text-text-color mb-4">Add Comment</h2>
+            <form id="addCommentForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-color mb-1">Comment *</label>
+                        <textarea id="commentText" required rows="4" class="w-full px-4 py-2 border border-footer-border/20 rounded-lg focus:ring-2 focus:ring-primary" placeholder="Add your comment..."></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-6">
+                    <button type="button" id="cancelCommentBtn" class="flex-1 px-4 py-2 border border-footer-border/20 rounded-lg hover:bg-background-alt">Cancel</button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Add Comment</button>
+                </div>
+            </form>
         </div>
-    `).join('');
-}
+    </div>
 
-function renderDependencies(dependencies) {
-    const dependenciesList = document.getElementById('dependenciesList');
-    
-    if (dependencies.length === 0) {
-        dependenciesList.innerHTML = '<p class="text-sm text-text-color/60 text-center py-4">No dependencies</p>';
-        return;
-    }
-    
-    dependenciesList.innerHTML = dependencies.map(dep => `
-        <div class="flex items-center gap-3 p-3 rounded-lg bg-background-alt">
-            <span class="material-symbols-outlined text-text-color/40">link</span>
-            <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm text-text-color truncate">${dep.task_name}</p>
-            </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getTaskStatusColor(dep.status)}">
-                ${dep.status}
-            </span>
-        </div>
-    `).join('');
-}
-
-function calculateProgress() {
-    if (!currentTask) return;
-    
-    const subtasks = currentTask.subtasks || [];
-    if (subtasks.length === 0) {
-        // Base progress on task status
-        const progress = currentTask.status === 'completed' ? 100 : 
-                        currentTask.status === 'in_progress' ? 50 : 0;
-        updateProgress(progress);
-        return;
-    }
-    
-    const completed = subtasks.filter(s => s.completed).length;
-    const progress = Math.round((completed / subtasks.length) * 100);
-    updateProgress(progress);
-}
-
-function updateProgress(percent) {
-    document.getElementById('progressPercent').textContent = percent + '%';
-    document.getElementById('progressBar').style.width = percent + '%';
-}
-
-function getTaskStatusColor(status) {
-    const colors = {
-        'pending': 'bg-blue-100 text-blue-800',
-        'in_progress': 'bg-accent-2/20 text-accent-2',
-        'overdue': 'bg-red-100 text-red-800',
-        'completed': 'bg-accent-1/20 text-accent-1',
-        'cancelled': 'bg-gray-200 text-gray-600'
-    };
-    return colors[status] || 'bg-gray-200 text-gray-600';
-}
-
-function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-}
-
-// Task form handler
-document.getElementById('taskForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving...';
-    
-    try {
-        await tasks.update(taskId, {
-            name: document.getElementById('editTaskName').value,
-            description: document.getElementById('editDescription').value,
-            status: document.getElementById('editStatus').value,
-            due_date: document.getElementById('editDueDate').value || null,
-            priority: document.getElementById('editPriority').value
+    <script src="/js/api.js"></script>
+    <script src="/js/nav.js"></script>
+    <script>
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializePage('tasks', initializeTaskDetailPage);
         });
-        
-        alert('Task updated successfully!');
-        loadTaskDetails();
-    } catch (error) {
-        alert('Failed to update task: ' + error.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Save Changes';
-    }
-});
 
-// Subtask functions
-window.showAddSubtaskForm = function() {
-    document.getElementById('addSubtaskForm').classList.remove('hidden');
-    document.getElementById('newSubtaskName').focus();
-};
+        let currentTask = null;
+        let taskComments = [];
 
-window.hideAddSubtaskForm = function() {
-    document.getElementById('addSubtaskForm').classList.add('hidden');
-    document.getElementById('newSubtaskName').value = '';
-    document.getElementById('newSubtaskDate').value = '';
-};
+        async function initializeTaskDetailPage() {
+            console.log('🔧 Initializing Task Detail Page...');
+            
+            try {
+                await loadTaskDetails();
+            } catch (error) {
+                console.error('💥 Task detail initialization error:', error);
+                showError('Failed to load task details');
+            }
+        }
 
-window.addSubtask = async function() {
-    const name = document.getElementById('newSubtaskName').value;
-    const dueDate = document.getElementById('newSubtaskDate').value;
-    
-    if (!name) {
-        alert('Subtask name is required');
-        return;
-    }
-    
-    try {
-        await tasks.addSubtask(taskId, {
-            name,
-            due_date: dueDate || null
+        function getTaskIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            console.log('📋 Task ID from URL:', id);
+            return id;
+        }
+
+        async function loadTaskDetails() {
+            console.log('🔍 Loading task details...');
+            
+            const taskId = getTaskIdFromUrl();
+            
+            if (!taskId) {
+                showError('No task ID provided');
+                return;
+            }
+            
+            try {
+                console.log('📡 Fetching task:', taskId);
+                const response = await fetch(`/api/tasks?id=${taskId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('📊 Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Response error:', errorText);
+                    throw new Error(`Failed to fetch task: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                console.log('📄 Raw response:', text);
+                
+                const result = JSON.parse(text);
+                console.log('✅ Parsed result:', result);
+                
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to load task');
+                }
+                
+                currentTask = result.data;
+                console.log('📦 Task data:', currentTask);
+                
+                displayTaskDetails(currentTask);
+                await loadTaskComments(taskId);
+                
+                console.log('✅ Task details loaded successfully');
+                
+            } catch (error) {
+                console.error('💥 Error loading task details:', error);
+                showError(`Failed to load task: ${error.message}`);
+            }
+        }
+
+        function displayTaskDetails(task) {
+            console.log('🎨 Displaying task details:', task);
+            
+            const container = document.getElementById('task-details-container');
+            
+            if (!container) {
+                console.error('❌ Task details container not found');
+                return;
+            }
+            
+            if (!task) {
+                console.error('❌ No task data provided');
+                container.innerHTML = '<div class="error">No task data available</div>';
+                return;
+            }
+            
+            const html = `
+                <div class="task-header">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h1 class="text-3xl font-bold text-text-color">${escapeHtml(task.title || task.name || 'Untitled Task')}</h1>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="status-badge status-${(task.status || 'todo').toLowerCase().replace('_', '-')}">
+                                    ${escapeHtml(task.status || 'To Do')}
+                                </span>
+                                <span class="priority-badge priority-${(task.priority || 'medium').toLowerCase()}">
+                                    ${escapeHtml(task.priority || 'Medium')} Priority
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openEditTaskModal()" class="btn-primary">
+                                <span class="material-symbols-outlined">edit</span>
+                                Edit Task
+                            </button>
+                            <button onclick="toggleTaskStatus()" class="btn-secondary">
+                                <span class="material-symbols-outlined">${task.status === 'completed' ? 'undo' : 'check'}</span>
+                                ${task.status === 'completed' ? 'Reopen' : 'Complete'}
+                            </button>
+                            <button onclick="deleteTask()" class="btn-danger">
+                                <span class="material-symbols-outlined">delete</span>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="task-content grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6 mb-6">
+                            <h2 class="text-xl font-semibold text-text-color mb-4">Description</h2>
+                            <p class="text-text-color/80">${escapeHtml(task.description || 'No description provided')}</p>
+                        </div>
+                        
+                        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-xl font-semibold text-text-color">Comments</h2>
+                                <button onclick="openAddCommentModal()" class="btn-primary">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Add Comment
+                                </button>
+                            </div>
+                            <div id="comments-list">
+                                <div class="loading">Loading comments...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                            <h3 class="text-lg font-semibold text-text-color mb-4">Task Details</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Project</label>
+                                    <p class="text-text-color">
+                                        <a href="/project-detail.html?id=${task.project_id}" class="text-primary hover:underline">
+                                            ${escapeHtml(task.project?.name || 'Unknown Project')}
+                                        </a>
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Assigned To</label>
+                                    <p class="text-text-color">${escapeHtml(task.assigned_user?.full_name || 'Unassigned')}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Due Date</label>
+                                    <p class="text-text-color">${formatDateTime(task.due_date)}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Created</label>
+                                    <p class="text-text-color">${formatDateTime(task.created_at)}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Last Updated</label>
+                                    <p class="text-text-color">${formatDateTime(task.updated_at)}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-background rounded-xl shadow-sm border border-footer-border/10 p-6">
+                            <h3 class="text-lg font-semibold text-text-color mb-4">Time Tracking</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Estimated Hours</label>
+                                    <p class="text-text-color">${task.estimated_hours || 'Not set'}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Actual Hours</label>
+                                    <p class="text-text-color">${task.actual_hours || 'Not logged'}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-text-color/60">Progress</label>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-primary h-2 rounded-full" style="width: ${calculateProgress(task)}%"></div>
+                                    </div>
+                                    <p class="text-sm text-text-color/60 mt-1">${calculateProgress(task)}% Complete</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            console.log('✅ Task details displayed');
+        }
+
+        async function loadTaskComments(taskId) {
+            try {
+                // For now, we'll use mock comments since the API doesn't exist yet
+                const mockComments = [
+                    {
+                        id: '1',
+                        comment: 'Task created and assigned',
+                        user: { full_name: 'John Smith' },
+                        created_at: new Date().toISOString()
+                    },
+                    {
+                        id: '2',
+                        comment: 'Started working on this task',
+                        user: { full_name: 'Jane Doe' },
+                        created_at: new Date(Date.now() - 3600000).toISOString()
+                    }
+                ];
+                
+                taskComments = mockComments;
+                displayComments(taskComments);
+                
+            } catch (error) {
+                console.error('Error loading comments:', error);
+            }
+        }
+
+        function displayComments(comments) {
+            const container = document.getElementById('comments-list');
+            
+            if (!container) return;
+            
+            if (comments.length === 0) {
+                container.innerHTML = '<p class="text-text-color/60">No comments yet. Be the first to comment!</p>';
+                return;
+            }
+            
+            container.innerHTML = comments.map(comment => `
+                <div class="comment-item border-b border-footer-border/10 pb-4 mb-4 last:border-b-0">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <span class="text-primary font-bold text-sm">${comment.user?.full_name?.charAt(0) || 'U'}</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-medium text-text-color">${escapeHtml(comment.user?.full_name || 'Unknown User')}</span>
+                                <span class="text-xs text-text-color/60">${formatDateTime(comment.created_at)}</span>
+                            </div>
+                            <p class="text-text-color/80">${escapeHtml(comment.comment)}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openEditTaskModal() {
+            if (!currentTask) return;
+            
+            // Populate form with current values
+            document.getElementById('editTaskTitle').value = currentTask.title || currentTask.name || '';
+            document.getElementById('editTaskDescription').value = currentTask.description || '';
+            document.getElementById('editTaskStatus').value = currentTask.status || 'todo';
+            document.getElementById('editTaskPriority').value = currentTask.priority || 'medium';
+            document.getElementById('editTaskAssignee').value = currentTask.assigned_to || '';
+            document.getElementById('editTaskDueDate').value = currentTask.due_date ? new Date(currentTask.due_date).toISOString().slice(0, 16) : '';
+            
+            document.getElementById('editTaskModal').classList.remove('hidden');
+        }
+
+        function openAddCommentModal() {
+            document.getElementById('addCommentModal').classList.remove('hidden');
+        }
+
+        async function toggleTaskStatus() {
+            if (!currentTask) return;
+            
+            const newStatus = currentTask.status === 'completed' ? 'in_progress' : 'completed';
+            
+            try {
+                const response = await fetch(`/api/tasks?id=${currentTask.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                
+                if (!response.ok) throw new Error('Update failed');
+                
+                currentTask.status = newStatus;
+                displayTaskDetails(currentTask);
+                showSuccess('Task status updated');
+                
+            } catch (error) {
+                console.error('Error updating task status:', error);
+                showError('Failed to update task status');
+            }
+        }
+
+        async function deleteTask() {
+            if (!currentTask) return;
+            
+            if (!confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/tasks?id=${currentTask.id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Delete failed');
+                
+                showSuccess('Task deleted successfully');
+                setTimeout(() => {
+                    window.location.href = '/tasks.html';
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                showError('Failed to delete task');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('cancelEditTaskBtn').addEventListener('click', () => {
+            document.getElementById('editTaskModal').classList.add('hidden');
         });
-        hideAddSubtaskForm();
-        loadTaskDetails();
-    } catch (error) {
-        alert('Failed to add subtask: ' + error.message);
-    }
-};
 
-window.toggleSubtask = async function(subtaskId) {
-    try {
-        await tasks.toggleSubtask(subtaskId);
-        loadTaskDetails();
-        calculateProgress();
-    } catch (error) {
-        alert('Failed to toggle subtask: ' + error.message);
-    }
-};
+        document.getElementById('editTaskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const formData = {
+                    title: document.getElementById('editTaskTitle').value,
+                    description: document.getElementById('editTaskDescription').value,
+                    status: document.getElementById('editTaskStatus').value,
+                    priority: document.getElementById('editTaskPriority').value,
+                    assigned_to: document.getElementById('editTaskAssignee').value || null,
+                    due_date: document.getElementById('editTaskDueDate').value || null
+                };
+                
+                const response = await fetch(`/api/tasks?id=${currentTask.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) throw new Error('Update failed');
+                
+                const result = await response.json();
+                currentTask = result.data;
+                
+                document.getElementById('editTaskModal').classList.add('hidden');
+                displayTaskDetails(currentTask);
+                showSuccess('Task updated successfully');
+                
+            } catch (error) {
+                console.error('Error updating task:', error);
+                showError('Failed to update task');
+            }
+        });
 
-window.markAsComplete = async function() {
-    if (!confirm('Mark this task as completed?')) return;
-    
-    try {
-        await tasks.update(taskId, { status: 'completed' });
-        loadTaskDetails();
-    } catch (error) {
-        alert('Failed to complete task: ' + error.message);
-    }
-};
+        document.getElementById('cancelCommentBtn').addEventListener('click', () => {
+            document.getElementById('addCommentModal').classList.add('hidden');
+        });
 
-window.deleteTask = async function() {
-    if (!confirm('Are you sure you want to delete this task? This cannot be undone.')) return;
-    
-    try {
-        await tasks.delete(taskId);
-        alert('Task deleted successfully');
-        window.location.href = '/tasks.html';
-    } catch (error) {
-        alert('Failed to delete task: ' + error.message);
-    }
-};
+        document.getElementById('addCommentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            try {
+                const commentText = document.getElementById('commentText').value;
+                
+                // For now, add to local array since API doesn't exist
+                const newComment = {
+                    id: Date.now().toString(),
+                    comment: commentText,
+                    user: { full_name: 'Current User' },
+                    created_at: new Date().toISOString()
+                };
+                
+                taskComments.unshift(newComment);
+                displayComments(taskComments);
+                
+                document.getElementById('addCommentModal').classList.add('hidden');
+                document.getElementById('addCommentForm').reset();
+                showSuccess('Comment added successfully');
+                
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                showError('Failed to add comment');
+            }
+        });
 
-loadTaskDetails();
-</script>
+        // Helper functions
+        function escapeHtml(text) {
+            if (!text && text !== 0) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return 'Not set';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid date';
+                return date.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                console.error('Date formatting error:', error);
+                return dateString;
+            }
+        }
+
+        function calculateProgress(task) {
+            if (task.status === 'completed') return 100;
+            if (task.status === 'in_progress') return 50;
+            if (task.status === 'review') return 75;
+            return 0;
+        }
+
+        function showSuccess(message) {
+            // Simple success notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+
+        function showError(message) {
+            // Simple error notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 5000);
+        }
+    </script>
 </body>
 </html>
