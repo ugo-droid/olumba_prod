@@ -502,26 +502,62 @@ async function loadProjectDetails() {
         
         currentProject = result.data || result.project || result;
         console.log('📦 Project data:', currentProject);
+        console.log('=== DISPLAY PROJECT DETAILS START ===');
+        console.log('🎨 Displaying project data:', currentProject);
+        console.log('Project type:', typeof currentProject);
+        console.log('Project keys:', Object.keys(currentProject || {}));
+        
+        // Check if all required elements exist
+        const requiredElements = [
+            'projectBreadcrumb', 'projectName', 'projectDescription', 'projectStatus',
+            'totalTasks', 'completedTasks', 'documentCount', 'memberCount',
+            'projectAddress', 'projectDiscipline', 'projectStartDate', 'projectDeadline', 'projectBudget'
+        ];
+        
+        console.log('Checking required elements...');
+        requiredElements.forEach(id => {
+            const element = document.getElementById(id);
+            console.log(`Element ${id}:`, element ? 'FOUND' : 'NOT FOUND');
+            if (!element) {
+                console.error(`❌ Missing element: ${id}`);
+            }
+        });
+        
+        if (!currentProject) {
+            console.error('❌ No project data provided');
+            throw new Error('No project data available');
+        }
+        
+        console.log('Updating project details...');
         
         // Header
+        console.log('Setting project name:', currentProject.name);
         document.getElementById('projectBreadcrumb').textContent = currentProject.name;
         document.getElementById('projectName').textContent = currentProject.name;
         document.getElementById('projectDescription').textContent = currentProject.description || 'No description';
-        document.getElementById('projectStatus').textContent = currentProject.status.replace('_', ' ');
+        document.getElementById('projectStatus').textContent = currentProject.status?.replace('_', ' ') || 'Unknown';
         document.getElementById('projectStatus').className = `inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(currentProject.status)}`;
         
         // Stats
+        console.log('Setting stats...');
         document.getElementById('totalTasks').textContent = currentProject.total_tasks || 0;
         document.getElementById('completedTasks').textContent = currentProject.completed_tasks || 0;
         document.getElementById('documentCount').textContent = currentProject.document_count || 0;
         document.getElementById('memberCount').textContent = currentProject.members?.length || 0;
         
         // Project Info
+        console.log('Setting project info...');
         document.getElementById('projectAddress').textContent = currentProject.address || 'Not specified';
         document.getElementById('projectDiscipline').textContent = currentProject.discipline || 'Not specified';
         document.getElementById('projectStartDate').textContent = currentProject.start_date || 'Not set';
         document.getElementById('projectDeadline').textContent = currentProject.deadline || 'Not set';
         document.getElementById('projectBudget').textContent = currentProject.budget ? '$' + currentProject.budget.toLocaleString() : 'Not set';
+        
+        console.log('✅ Project details HTML updated');
+        console.log('=== DISPLAY PROJECT DETAILS END ===');
+        
+        // Add simple test display for debugging
+        displayProjectDetailsSimple(currentProject);
         
         console.log('✅ Project details loaded successfully');
         
@@ -1321,6 +1357,22 @@ inviteConsultantForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Add global error handling
+window.addEventListener('error', (event) => {
+  console.error('=== GLOBAL ERROR CAUGHT ===');
+  console.error('Message:', event.message);
+  console.error('Filename:', event.filename);
+  console.error('Line:', event.lineno);
+  console.error('Column:', event.colno);
+  console.error('Error object:', event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('=== UNHANDLED PROMISE REJECTION ===');
+  console.error('Reason:', event.reason);
+  console.error('Promise:', event.promise);
+});
+
 // Add page load debugging
 console.log('=== PROJECT DETAILS PAGE DEBUG ===');
 console.log('Page loaded, starting initialization...');
@@ -1345,6 +1397,130 @@ if (!projectId) {
 }
 
 console.log('=== END PAGE DEBUG ===');
+
+// Initialize page with error handling
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🚀 DOMContentLoaded event fired');
+  console.log('Current URL:', window.location.href);
+  
+  try {
+    // Check if container elements exist
+    const requiredElements = [
+      'projectBreadcrumb', 'projectName', 'projectDescription', 'projectStatus',
+      'totalTasks', 'completedTasks', 'documentCount', 'memberCount',
+      'projectAddress', 'projectDiscipline', 'projectStartDate', 'projectDeadline', 'projectBudget'
+    ];
+    
+    console.log('Checking required elements...');
+    const missingElements = [];
+    requiredElements.forEach(id => {
+      const element = document.getElementById(id);
+      if (!element) {
+        missingElements.push(id);
+        console.error(`❌ Missing element: ${id}`);
+      } else {
+        console.log(`✅ Found element: ${id}`);
+      }
+    });
+    
+    if (missingElements.length > 0) {
+      console.error('❌ CRITICAL: Missing required elements:', missingElements);
+      console.error('Available elements:', Array.from(document.querySelectorAll('[id]')).map(el => el.id));
+      return;
+    }
+    
+    console.log('✅ All required elements found');
+    
+    // Load project details
+    console.log('Loading project details...');
+    await loadProjectDetails();
+    
+    console.log('✅ Page initialization complete');
+    
+  } catch (error) {
+    console.error('💥 Page initialization error:', error);
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    // Show error to user
+    const projectName = document.getElementById('projectName');
+    if (projectName) {
+      projectName.textContent = 'Error Loading Project';
+    }
+    
+    const projectDescription = document.getElementById('projectDescription');
+    if (projectDescription) {
+      projectDescription.innerHTML = `
+        <div style="color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 6px;">
+          <strong>Failed to load project details</strong><br>
+          ${error.message}<br>
+          <button onclick="window.location.reload()" style="margin-top: 8px; padding: 4px 8px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Try Again
+          </button>
+          <button onclick="window.location.href='/projects.html'" style="margin-top: 8px; margin-left: 8px; padding: 4px 8px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Back to Projects
+          </button>
+        </div>
+      `;
+    }
+  }
+});
+
+// Simple test display function for debugging
+function displayProjectDetailsSimple(project) {
+  console.log('=== SIMPLE DISPLAY TEST ===');
+  console.log('Simple display test for project:', project);
+  
+  // Find a container to show the raw data
+  const container = document.querySelector('.container');
+  
+  if (!container) {
+    console.error('Container not found for simple display');
+    return;
+  }
+  
+  // Create a debug panel
+  const debugPanel = document.createElement('div');
+  debugPanel.id = 'debug-panel';
+  debugPanel.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 300px;
+    max-height: 400px;
+    background: #f0f0f0;
+    border: 2px solid #333;
+    padding: 10px;
+    z-index: 9999;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 12px;
+  `;
+  
+  debugPanel.innerHTML = `
+    <div style="background: #333; color: white; padding: 5px; margin: -10px -10px 10px -10px;">
+      <strong>DEBUG PANEL</strong>
+      <button onclick="document.getElementById('debug-panel').remove()" style="float: right; background: #666; color: white; border: none; padding: 2px 6px; cursor: pointer;">×</button>
+    </div>
+    <div><strong>Project Data Received:</strong></div>
+    <pre style="background: white; padding: 5px; margin: 5px 0; border: 1px solid #ccc; max-height: 200px; overflow-y: auto;">${JSON.stringify(project, null, 2)}</pre>
+    <div><strong>Available Elements:</strong></div>
+    <div style="max-height: 100px; overflow-y: auto;">
+      ${Array.from(document.querySelectorAll('[id]')).map(el => el.id).join(', ')}
+    </div>
+  `;
+  
+  // Remove existing debug panel if any
+  const existing = document.getElementById('debug-panel');
+  if (existing) {
+    existing.remove();
+  }
+  
+  document.body.appendChild(debugPanel);
+  console.log('✅ Debug panel added');
+  console.log('=== END SIMPLE DISPLAY TEST ===');
+}
 
 loadProjectDetails();
 </script>

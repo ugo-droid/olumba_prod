@@ -9,30 +9,78 @@ const mockProjects = [
     name: 'Office Renovation',
     description: 'Complete office renovation project',
     status: 'In Progress',
-    startDate: '2024-01-15',
-    endDate: '2024-06-30',
+    start_date: '2024-01-15',
+    end_date: '2024-06-30',
+    deadline: '2024-06-30',
     budget: 150000,
-    createdAt: '2024-01-10T10:00:00Z'
+    address: '123 Main Street, City, State',
+    discipline: 'Architecture',
+    project_manager: 'John Smith',
+    client: 'ABC Corporation',
+    location: 'Downtown',
+    notes: 'High priority project with tight deadline',
+    progress: 45,
+    total_tasks: 12,
+    completed_tasks: 5,
+    document_count: 8,
+    members: [
+      { user_id: 'user1', full_name: 'John Smith', role: 'Project Manager' },
+      { user_id: 'user2', full_name: 'Jane Doe', role: 'Architect' }
+    ],
+    created_at: '2024-01-10T10:00:00Z',
+    updated_at: '2024-01-15T14:30:00Z'
   },
   {
     id: '2',
     name: 'New Building Construction',
     description: 'Construction of new commercial building',
     status: 'Planning',
-    startDate: '2024-03-01',
-    endDate: '2024-12-31',
+    start_date: '2024-03-01',
+    end_date: '2024-12-31',
+    deadline: '2024-12-31',
     budget: 2500000,
-    createdAt: '2024-02-01T10:00:00Z'
+    address: '456 Business Ave, City, State',
+    discipline: 'Construction',
+    project_manager: 'Mike Johnson',
+    client: 'XYZ Development',
+    location: 'Business District',
+    notes: 'Large scale construction project',
+    progress: 15,
+    total_tasks: 25,
+    completed_tasks: 3,
+    document_count: 15,
+    members: [
+      { user_id: 'user3', full_name: 'Mike Johnson', role: 'Project Manager' },
+      { user_id: 'user4', full_name: 'Sarah Wilson', role: 'Engineer' }
+    ],
+    created_at: '2024-02-01T10:00:00Z',
+    updated_at: '2024-02-05T09:15:00Z'
   },
   {
     id: '3',
     name: 'Bridge Repair',
     description: 'Structural repairs to main bridge',
     status: 'Active',
-    startDate: '2024-02-01',
-    endDate: '2024-05-15',
+    start_date: '2024-02-01',
+    end_date: '2024-05-15',
+    deadline: '2024-05-15',
     budget: 500000,
-    createdAt: '2024-01-20T10:00:00Z'
+    address: '789 River Road, City, State',
+    discipline: 'Civil Engineering',
+    project_manager: 'Lisa Brown',
+    client: 'City Government',
+    location: 'River District',
+    notes: 'Critical infrastructure repair',
+    progress: 60,
+    total_tasks: 18,
+    completed_tasks: 11,
+    document_count: 22,
+    members: [
+      { user_id: 'user5', full_name: 'Lisa Brown', role: 'Project Manager' },
+      { user_id: 'user6', full_name: 'Tom Davis', role: 'Civil Engineer' }
+    ],
+    created_at: '2024-01-20T10:00:00Z',
+    updated_at: '2024-01-25T16:45:00Z'
   }
 ];
 
