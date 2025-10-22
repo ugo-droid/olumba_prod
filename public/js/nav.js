@@ -468,8 +468,11 @@ function renderSearchResults(results) {
 
 async function loadNotificationCount() {
     try {
+        console.log('🔔 Loading notification count...');
         const result = await notifications.getUnreadCount();
-        const count = result.count || 0;
+        const count = result.count || result.unreadCount || 0;
+        
+        console.log('📊 Notification count:', count);
         
         const badge = document.getElementById('notificationBadge');
         const headerBadge = document.getElementById('headerNotificationBadge');
@@ -493,8 +496,22 @@ async function loadNotificationCount() {
             if (headerBadge) headerBadge.classList.add('hidden');
             if (mobileBadge) mobileBadge.classList.add('hidden');
         }
+        
+        console.log('✅ Notification count loaded successfully');
     } catch (error) {
-        console.error('Failed to load notification count:', error);
+        console.log('⚠️ Notifications feature not ready:', error.message);
+        
+        // Hide all notification badges on error
+        const badge = document.getElementById('notificationBadge');
+        const headerBadge = document.getElementById('headerNotificationBadge');
+        const mobileBadge = document.getElementById('mobileNotificationBadge');
+        
+        if (badge) badge.classList.add('hidden');
+        if (headerBadge) headerBadge.classList.add('hidden');
+        if (mobileBadge) mobileBadge.classList.add('hidden');
+        
+        // Don't throw the error - just log it and continue
+        console.log('📭 Notifications disabled - continuing without notifications');
     }
 }
 

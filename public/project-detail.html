@@ -238,9 +238,29 @@ initNav('projects');
 
 // Get project ID from URL
 function getProjectIdFromUrl() {
+  console.log('=== GET PROJECT ID FROM URL DEBUG ===');
+  console.log('Full URL:', window.location.href);
+  console.log('Search params:', window.location.search);
+  
   const urlParams = new URLSearchParams(window.location.search);
+  console.log('URL params object:', urlParams);
+  
   const projectId = urlParams.get('id');
   console.log('📋 Project ID from URL:', projectId);
+  console.log('Project ID type:', typeof projectId);
+  console.log('Project ID length:', projectId?.length);
+  
+  if (!projectId) {
+    console.error('❌ No project ID found in URL!');
+    console.log('Available URL params:');
+    for (let [key, value] of urlParams.entries()) {
+      console.log(`  ${key}: ${value}`);
+    }
+  } else {
+    console.log('✅ Project ID found, will attempt to load');
+  }
+  
+  console.log('=== END PROJECT ID DEBUG ===');
   return projectId;
 }
 
@@ -442,9 +462,22 @@ const cancelUploadBtn = document.getElementById('cancelUploadBtn');
 
 async function loadProjectDetails() {
     console.log('🔍 Starting to load project details...');
+    console.log('=== PROJECT DETAILS DEBUG ===');
+    console.log('Full URL:', window.location.href);
+    console.log('Search params:', window.location.search);
+    console.log('Project ID from URL:', projectId);
+    console.log('Project ID type:', typeof projectId);
+    console.log('Project ID length:', projectId?.length);
+    
+    if (!projectId) {
+        console.error('❌ No project ID found in URL!');
+        throw new Error('No project ID provided');
+    }
     
     try {
-        console.log('📡 Fetching project:', projectId);
+        console.log('📡 Fetching project with path parameter:', projectId);
+        console.log('API URL:', `/api/projects/${projectId}`);
+        
         const response = await fetch(`/api/projects/${projectId}`, {
             method: 'GET',
             headers: {
@@ -1287,6 +1320,31 @@ inviteConsultantForm.addEventListener('submit', async (e) => {
         submitBtn.innerHTML = originalHTML;
     }
 });
+
+// Add page load debugging
+console.log('=== PROJECT DETAILS PAGE DEBUG ===');
+console.log('Page loaded, starting initialization...');
+console.log('Full URL:', window.location.href);
+console.log('Search params:', window.location.search);
+
+const urlParams = new URLSearchParams(window.location.search);
+console.log('All URL params:');
+for (let [key, value] of urlParams.entries()) {
+  console.log(`  ${key}: ${value}`);
+}
+
+const projectId = urlParams.get('id');
+console.log('Project ID:', projectId);
+console.log('Project ID type:', typeof projectId);
+console.log('Project ID length:', projectId?.length);
+
+if (!projectId) {
+  console.error('❌ No project ID found in URL!');
+} else {
+  console.log('✅ Project ID found, will attempt to load');
+}
+
+console.log('=== END PAGE DEBUG ===');
 
 loadProjectDetails();
 </script>

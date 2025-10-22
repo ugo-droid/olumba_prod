@@ -354,7 +354,13 @@ const notifications = {
     },
     
     async getUnreadCount() {
-        return await apiRequest('/notifications/unread-count');
+        try {
+            const response = await apiRequest('/notifications/unread-count');
+            return response;
+        } catch (error) {
+            console.log('Notifications endpoint not available, returning 0');
+            return { count: 0, unreadCount: 0 };
+        }
     },
     
     async markAsRead(id) {

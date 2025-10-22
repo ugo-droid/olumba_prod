@@ -37,7 +37,9 @@ const mockProjects = [
 ];
 
 export default async function handler(req: any, res: any) {
-  console.log('📥 Olumba Projects API:', req.method);
+  console.log('📥 Olumba Projects API:', req.method, req.url);
+  console.log('Query params:', req.query);
+  console.log('Request URL:', req.url);
   
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,8 +51,77 @@ export default async function handler(req: any, res: any) {
   }
   
   try {
+    // GET single project by ID (query parameter or path parameter)
+    if (req.method === 'GET' && (req.query.id || req.url.includes('/api/projects/') && req.url !== '/api/projects')) {
+      let projectId = req.query.id;
+      
+      // If no query param, try to extract from URL path
+      if (!projectId && req.url.includes('/api/projects/')) {
+        const urlParts = req.url.split('/');
+        projectId = urlParts[urlParts.length - 1];
+        console.log('📋 Extracted project ID from URL path:', projectId);
+      }
+      
+      console.log('📋 Fetching single project by ID:', projectId);
+      
+      if (!projectId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Project ID is required'
+        });
+      }
+      
+      try {
+        const { getSupabaseAdmin } = await import('../lib/supabase');
+        const supabase = getSupabaseAdmin();
+        
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', projectId)
+          .single();
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          
+          if (error.code === 'PGRST116') {
+            console.log('❌ Project not found');
+            return res.status(404).json({
+              success: false,
+              error: 'Project not found'
+            });
+          }
+          throw error;
+        }
+        
+        console.log('✅ Project found:', data.name);
+        
+        return res.status(200).json({
+          success: true,
+          data: data
+        });
+        
+      } catch (supabaseError) {
+        console.log('⚠️ Supabase not available, using mock data:', supabaseError.message);
+        
+        // Fallback to mock data
+        const project = mockProjects.find(p => p.id === projectId);
+        if (!project) {
+          return res.status(404).json({
+            success: false,
+            error: 'Project not found'
+          });
+        }
+        
+        return res.status(200).json({
+          success: true,
+          data: project
+        });
+      }
+    }
+    
     // GET all projects
-    if (req.method === 'GET' && !req.query.id) {
+    if (req.method === 'GET') {
       console.log('📋 Fetching projects list...');
       
       // Try Supabase first, fallback to mock data
@@ -80,50 +151,6 @@ export default async function handler(req: any, res: any) {
           success: true,
           data: mockProjects,
           count: mockProjects.length
-        });
-      }
-    }
-    
-    // GET single project by ID
-    if (req.method === 'GET' && req.query.id) {
-      try {
-        const { getSupabaseAdmin } = await import('../lib/supabase');
-        const supabase = getSupabaseAdmin();
-        
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', req.query.id)
-          .single();
-        
-        if (error) {
-          if (error.code === 'PGRST116') {
-            return res.status(404).json({
-              success: false,
-              error: 'Project not found'
-            });
-          }
-          throw error;
-        }
-        
-        return res.status(200).json({
-          success: true,
-          data: data
-        });
-        
-      } catch (supabaseError) {
-        // Fallback to mock data
-        const project = mockProjects.find(p => p.id === req.query.id);
-        if (!project) {
-          return res.status(404).json({
-            success: false,
-            error: 'Project not found'
-          });
-        }
-        
-        return res.status(200).json({
-          success: true,
-          data: project
         });
       }
     }
