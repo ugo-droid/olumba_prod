@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
@@ -91,6 +91,12 @@ let currentFilter = 'all';
 
 // Load tasks function
 async function loadTasks() {
+    const tasksContainer = document.getElementById('tasksContainer');
+    if (!tasksContainer) {
+        console.error('Tasks container not found');
+        return;
+    }
+    
     try {
         allTasks = await tasks.getMyTasks();
         renderTasks();
@@ -101,6 +107,12 @@ async function loadTasks() {
 }
 
 function renderTasks() {
+    const tasksContainer = document.getElementById('tasksContainer');
+    if (!tasksContainer) {
+        console.error('Tasks container not found');
+        return;
+    }
+    
     const filteredTasks = currentFilter === 'all' 
         ? allTasks 
         : allTasks.filter(t => t.status === currentFilter);
@@ -201,8 +213,6 @@ function setupTasksEventListeners() {
         });
     });
 }
-
-loadTasks();
 </script>
 </body>
 </html>
