@@ -10,7 +10,9 @@
     "deploy:preview": "vercel",
     "test-emails": "node scripts/testEmails.js",
     "test:email-service": "node scripts/validateEmailService.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check-conflicts": "node scripts/check-file-conflicts.js",
+    "prebuild": "npm run check-conflicts"
   },
   "keywords": [
     "aec",
