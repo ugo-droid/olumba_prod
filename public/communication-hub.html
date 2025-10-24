@@ -199,12 +199,95 @@ function setupCommunicationHubEventListeners() {
 
 // Load messages
 async function loadMessages() {
+    console.log('📋 Loading messages for project:', currentProjectId);
+    
     try {
-        const messagesData = await messages.getByProject(currentProjectId);
-        renderMessages(messagesData);
+        const response = await fetch(`/api/messages?projectId=${currentProjectId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            renderMessages(result.data || []);
+            console.log('✅ Messages loaded:', result.data?.length || 0);
+        } else {
+            console.error('❌ Messages API error:', result.error);
+            showError('Failed to load messages');
+        }
     } catch (error) {
-        console.error('Failed to load messages:', error);
+        console.error('❌ Load messages error:', error);
+        showError('Failed to load messages');
     }
+}
+
+async function sendMessage(content) {
+    console.log('📝 Sending message...');
+    
+    try {
+        const response = await fetch('/api/messages', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                content: content,
+                project_id: currentProjectId,
+                sender_id: null, // Will be set by backend if needed
+                recipient_id: null // General project message
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Message sent successfully');
+            await loadMessages(); // Refresh messages
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('❌ Send message error:', error);
+        showError('Failed to send message');
+    }
+}
+
+async function markMessageAsRead(messageId) {
+    console.log('📝 Marking message as read:', messageId);
+    
+    try {
+        const response = await fetch(`/api/messages?id=${messageId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Message marked as read');
+        } else {
+            console.error('❌ Mark as read error:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Mark as read error:', error);
+    }
+}
+
+function showError(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 5000);
+}
+
+function showSuccess(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 3000);
 }
 
 function renderMessages(messagesData) {

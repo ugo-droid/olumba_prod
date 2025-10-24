@@ -165,6 +165,189 @@ document.addEventListener('DOMContentLoaded', async () => {
 function initializeCityApprovalsPage() {
     // Get main content area
     const mainContent = document.getElementById('mainContent');
+    
+    // Load city approvals
+    loadCityApprovals();
+}
+
+async function loadCityApprovals() {
+    console.log('📋 Loading city approvals...');
+    
+    try {
+        const response = await fetch('/api/city-approvals');
+        const result = await response.json();
+        
+        if (result.success) {
+            displayCityApprovals(result.data || []);
+            console.log('✅ City approvals loaded:', result.data?.length || 0);
+        } else {
+            console.error('❌ City approvals API error:', result.error);
+            showError('Failed to load city approvals');
+        }
+    } catch (error) {
+        console.error('❌ Load city approvals error:', error);
+        showError('Failed to load city approvals');
+    }
+}
+
+async function createCityApproval(approvalData) {
+    console.log('📝 Creating city approval...');
+    
+    try {
+        const response = await fetch('/api/city-approvals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(approvalData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccess('Approval submitted successfully');
+            closeSubmittalModal();
+            await loadCityApprovals();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('❌ Create approval error:', error);
+        showError('Failed to submit approval');
+    }
+}
+
+async function updateApprovalStatus(approvalId, status, comments) {
+    console.log('📝 Updating approval status...');
+    
+    try {
+        const response = await fetch(`/api/city-approvals?id=${approvalId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status, comments })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccess('Status updated successfully');
+            await loadCityApprovals();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('❌ Update status error:', error);
+        showError('Failed to update status');
+    }
+}
+
+function displayCityApprovals(approvals) {
+    const container = document.getElementById('submittalsList');
+    if (!container) return;
+    
+    if (approvals.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-text-color/60 text-sm">No city submittals yet</div>';
+        return;
+    }
+    
+    container.innerHTML = approvals.map(approval => `
+        <div class="bg-background rounded-lg border border-footer-border/10 p-4 mb-4">
+            <div class="flex items-center justify-between mb-2">
+                <div>
+                    <h4 class="font-medium text-text-color">${escapeHtml(approval.submittal_name || 'Untitled Submittal')}</h4>
+                    <p class="text-sm text-text-color/60">${escapeHtml(approval.city_jurisdiction || 'Unknown City')}</p>
+                </div>
+                <span class="status-badge status-${(approval.status || 'submitted').toLowerCase().replace('_', '-')}">
+                    ${escapeHtml(approval.status || 'Submitted')}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="text-text-color/60">Project:</span>
+                    <span class="text-text-color">${escapeHtml(approval.project?.name || 'Unknown Project')}</span>
+                </div>
+                <div>
+                    <span class="text-text-color/60">Reference:</span>
+                    <span class="text-text-color">${escapeHtml(approval.plan_check_number || 'N/A')}</span>
+                </div>
+                <div>
+                    <span class="text-text-color/60">Submitted:</span>
+                    <span class="text-text-color">${formatDate(approval.submission_date)}</span>
+                </div>
+                <div>
+                    <span class="text-text-color/60">Review Date:</span>
+                    <span class="text-text-color">${formatDate(approval.review_date)}</span>
+                </div>
+            </div>
+            
+            ${approval.comments ? `
+                <div class="mt-3 p-3 bg-background-alt rounded-lg">
+                    <span class="text-sm font-medium text-text-color/60">Comments:</span>
+                    <p class="text-sm text-text-color mt-1">${escapeHtml(approval.comments)}</p>
+                </div>
+            ` : ''}
+            
+            <div class="flex gap-2 mt-4">
+                <button onclick="viewApprovalDetails('${approval.id}')" class="btn-sm btn-view">
+                    <span class="material-symbols-outlined">visibility</span>
+                    View Details
+                </button>
+                <button onclick="updateApprovalStatus('${approval.id}', 'approved', '')" class="btn-sm btn-success">
+                    <span class="material-symbols-outlined">check</span>
+                    Approve
+                </button>
+                <button onclick="updateApprovalStatus('${approval.id}', 'rejected', '')" class="btn-sm btn-danger">
+                    <span class="material-symbols-outlined">close</span>
+                    Reject
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showSuccess(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 3000);
+}
+
+function showError(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 5000);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'Invalid date';
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    } catch (error) {
+        console.error('Date formatting error:', error);
+        return dateString;
+    }
+}
+
+function escapeHtml(text) {
+    if (!text && text !== 0) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
 
 // Render city approvals content
 mainContent.innerHTML = `

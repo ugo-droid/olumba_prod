@@ -33,6 +33,111 @@ function initializeSettingsPage() {
     const mainContent = document.getElementById('mainContent');
 
     const currentUser = getCurrentUser();
+    
+    // Load user settings
+    loadUserSettings();
+}
+
+async function loadUserSettings() {
+    console.log('📋 Loading user settings...');
+    
+    try {
+        const response = await fetch('/api/user/settings');
+        const result = await response.json();
+        
+        if (result.success) {
+            populateSettingsForm(result.data);
+            console.log('✅ User settings loaded');
+        } else {
+            console.error('❌ Settings API error:', result.error);
+            showError('Failed to load settings');
+        }
+    } catch (error) {
+        console.error('❌ Load settings error:', error);
+        showError('Failed to load settings');
+    }
+}
+
+async function saveSettings(settingsData) {
+    console.log('💾 Saving user settings...');
+    
+    try {
+        const response = await fetch('/api/user/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settingsData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccess('Settings saved successfully');
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('❌ Save settings error:', error);
+        showError('Failed to save settings');
+    }
+}
+
+async function changePassword(passwordData) {
+    console.log('🔐 Changing password...');
+    
+    try {
+        const response = await fetch('/api/user/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(passwordData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccess('Password changed successfully');
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('❌ Change password error:', error);
+        showError('Failed to change password');
+    }
+}
+
+function populateSettingsForm(settings) {
+    // Populate form fields with user settings
+    if (settings) {
+        const nameField = document.getElementById('userName');
+        const emailField = document.getElementById('userEmail');
+        const phoneField = document.getElementById('userPhone');
+        
+        if (nameField) nameField.value = settings.full_name || '';
+        if (emailField) emailField.value = settings.email || '';
+        if (phoneField) phoneField.value = settings.phone || '';
+    }
+}
+
+function showSuccess(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 3000);
+}
+
+function showError(message) {
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        document.body.removeChild(notification);
+    }, 5000);
+}
 
 // Render settings content
 mainContent.innerHTML = `

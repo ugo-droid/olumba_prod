@@ -31,7 +31,7 @@
 <script src="/js/nav.js"></script>
 <script>
 // Initialize dashboard page - NO AUTHENTICATION REQUIRED
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Dashboard initializing...');
     
     try {
@@ -41,12 +41,335 @@ document.addEventListener('DOMContentLoaded', () => {
         initNav('dashboard');
         
         // Then load dashboard content
-        initializeDashboard();
+        await initializeDashboard();
         
     } catch (error) {
         console.error('❌ Failed to initialize dashboard:', error);
     }
 });
+
+async function initializeDashboard() {
+    console.log('📊 Initializing dashboard content...');
+    
+    try {
+        // Load all dashboard data in parallel
+        await Promise.all([
+            loadProjectStats(),
+            loadTaskStats(),
+            loadRecentProjects(),
+            loadRecentTasks(),
+            loadNotificationCount()
+        ]);
+        
+        console.log('✅ Dashboard initialization complete');
+        
+    } catch (error) {
+        console.error('❌ Dashboard initialization error:', error);
+        showError('Failed to load dashboard data');
+    }
+}
+
+async function loadProjectStats() {
+    console.log('📈 Loading project statistics...');
+    
+    try {
+        const response = await fetch('/api/projects');
+        const result = await response.json();
+        
+        if (result.success) {
+            const projects = result.data || [];
+            const stats = {
+                total: projects.length,
+                active: projects.filter(p => p.status === 'active' || p.status === 'in_progress').length,
+                completed: projects.filter(p => p.status === 'completed').length,
+                planning: projects.filter(p => p.status === 'planning').length
+            };
+            
+            displayProjectStats(stats);
+            console.log('✅ Project stats loaded:', stats);
+        } else {
+            console.error('❌ Project stats API error:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Load project stats error:', error);
+        // Show fallback stats
+        displayProjectStats({ total: 0, active: 0, completed: 0, planning: 0 });
+    }
+}
+
+async function loadTaskStats() {
+    console.log('📋 Loading task statistics...');
+    
+    try {
+        const response = await fetch('/api/tasks');
+        const result = await response.json();
+        
+        if (result.success) {
+            const tasks = result.data || [];
+            const stats = {
+                total: tasks.length,
+                pending: tasks.filter(t => t.status === 'todo' || t.status === 'pending').length,
+                inProgress: tasks.filter(t => t.status === 'in_progress').length,
+                completed: tasks.filter(t => t.status === 'completed').length
+            };
+            
+            displayTaskStats(stats);
+            console.log('✅ Task stats loaded:', stats);
+        } else {
+            console.error('❌ Task stats API error:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Load task stats error:', error);
+        // Show fallback stats
+        displayTaskStats({ total: 0, pending: 0, inProgress: 0, completed: 0 });
+    }
+}
+
+async function loadRecentProjects() {
+    console.log('📁 Loading recent projects...');
+    
+    try {
+        const response = await fetch('/api/projects');
+        const result = await response.json();
+        
+        if (result.success) {
+            const projects = (result.data || []).slice(0, 5); // Get latest 5
+            displayRecentProjects(projects);
+            console.log('✅ Recent projects loaded:', projects.length);
+        } else {
+            console.error('❌ Recent projects API error:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Load recent projects error:', error);
+        displayRecentProjects([]);
+    }
+}
+
+async function loadRecentTasks() {
+    console.log('📝 Loading recent tasks...');
+    
+    try {
+        const response = await fetch('/api/tasks');
+        const result = await response.json();
+        
+        if (result.success) {
+            const tasks = (result.data || []).slice(0, 5); // Get latest 5
+            displayRecentTasks(tasks);
+            console.log('✅ Recent tasks loaded:', tasks.length);
+        } else {
+            console.error('❌ Recent tasks API error:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Load recent tasks error:', error);
+        displayRecentTasks([]);
+    }
+}
+
+async function loadNotificationCount() {
+    console.log('🔔 Loading notification count...');
+    
+    try {
+        const response = await fetch('/api/notifications');
+        const result = await response.json();
+        
+        if (result.success) {
+            const unreadCount = (result.data || []).filter(n => !n.read).length;
+            updateNotificationBadge(unreadCount);
+            console.log('✅ Notification count loaded:', unreadCount);
+        } else {
+            console.error('❌ Notifications API error:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ Load notification count error:', error);
+        updateNotificationBadge(0);
+    }
+}
+
+function displayProjectStats(stats) {
+    const container = document.getElementById('project-stats');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Total Projects</p>
+                        <p class="text-2xl font-bold text-text-color">${stats.total}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">folder</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Active</p>
+                        <p class="text-2xl font-bold text-accent-1">${stats.active}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-accent-1/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-1">play_circle</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Completed</p>
+                        <p class="text-2xl font-bold text-green-500">${stats.completed}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-500">check_circle</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Planning</p>
+                        <p class="text-2xl font-bold text-accent-2">${stats.planning}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-accent-2/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-accent-2">schedule</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayTaskStats(stats) {
+    const container = document.getElementById('task-stats');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Total Tasks</p>
+                        <p class="text-2xl font-bold text-text-color">${stats.total}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-primary">task_alt</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Pending</p>
+                        <p class="text-2xl font-bold text-yellow-500">${stats.pending}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-yellow-500">pending</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">In Progress</p>
+                        <p class="text-2xl font-bold text-blue-500">${stats.inProgress}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-blue-500">play_circle</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-background rounded-xl p-6 border border-footer-border/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-text-color/60">Completed</p>
+                        <p class="text-2xl font-bold text-green-500">${stats.completed}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <span class="material-symbols-outlined text-green-500">check_circle</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function displayRecentProjects(projects) {
+    const container = document.getElementById('recent-projects');
+    if (!container) return;
+    
+    if (projects.length === 0) {
+        container.innerHTML = '<p class="text-text-color/60">No recent projects</p>';
+        return;
+    }
+    
+    container.innerHTML = projects.map(project => `
+        <div class="bg-background rounded-lg border border-footer-border/10 p-4 hover:shadow-sm transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-text-color">${escapeHtml(project.name)}</h4>
+                    <p class="text-sm text-text-color/60">${escapeHtml(project.status || 'Unknown')}</p>
+                </div>
+                <a href="/project-detail.html?id=${project.id}" class="text-primary hover:underline text-sm">
+                    View →
+                </a>
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayRecentTasks(tasks) {
+    const container = document.getElementById('recent-tasks');
+    if (!container) return;
+    
+    if (tasks.length === 0) {
+        container.innerHTML = '<p class="text-text-color/60">No recent tasks</p>';
+        return;
+    }
+    
+    container.innerHTML = tasks.map(task => `
+        <div class="bg-background rounded-lg border border-footer-border/10 p-4 hover:shadow-sm transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-text-color">${escapeHtml(task.title || task.name)}</h4>
+                    <p class="text-sm text-text-color/60">${escapeHtml(task.status || 'Unknown')}</p>
+                </div>
+                <a href="/task-detail.html?id=${task.id}" class="text-primary hover:underline text-sm">
+                    View →
+                </a>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateNotificationBadge(count) {
+    const badge = document.getElementById('notification-badge');
+    if (!badge) return;
+    
+    if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function showError(message) {
+    console.error('Dashboard Error:', message);
+    // Could show a toast notification here
+}
+
+function escapeHtml(text) {
+    if (!text && text !== 0) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
 
 function initializeDashboard() {
     // Render dashboard content

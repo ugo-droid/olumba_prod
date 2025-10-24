@@ -1,6 +1,8 @@
 // =============================
-// Notifications API Endpoint - PLACEHOLDER IMPLEMENTATION
+// Notifications API Endpoint - WITH SUPABASE DATABASE
 // =============================
+
+import { getSupabaseAdmin } from '../../lib/supabase';
 
 export default async function handler(req: any, res: any) {
   console.log('📥 Olumba Notifications API:', req.method);
@@ -14,30 +16,63 @@ export default async function handler(req: any, res: any) {
     return res.status(200).end();
   }
   
+  const supabase = getSupabaseAdmin();
+  
   try {
     // GET unread count
     if (req.method === 'GET' && req.url.includes('/unread-count')) {
-      console.log('📊 Returning unread count: 0');
+      console.log('📊 Getting unread count...');
       
-      // For now, return zero unread notifications
-      // Later you can implement actual notification tracking
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('read', false);
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        // Return 0 if table doesn't exist
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          unreadCount: 0
+        });
+      }
+      
+      const unreadCount = data?.length || 0;
+      console.log(`✅ Unread count: ${unreadCount}`);
+      
       return res.status(200).json({
         success: true,
-        count: 0,
-        unreadCount: 0
+        count: unreadCount,
+        unreadCount: unreadCount
       });
     }
     
     // GET all notifications
     if (req.method === 'GET') {
-      console.log('📋 Returning empty notifications list');
+      console.log('📋 Getting all notifications...');
       
-      // Return empty array for now
-      // Later you can implement actual notifications
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        // Return empty array if table doesn't exist
+        return res.status(200).json({
+          success: true,
+          data: [],
+          count: 0
+        });
+      }
+      
+      console.log(`✅ Found ${data?.length || 0} notifications`);
+      
       return res.status(200).json({
         success: true,
-        data: [],
-        count: 0
+        data: data || [],
+        count: data?.length || 0
       });
     }
     
