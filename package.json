@@ -7,10 +7,7 @@
     "dev": "vercel dev",
     "build": "echo 'Build complete - static site with serverless functions'",
     "deploy": "vercel --prod",
-    "deploy:preview": "vercel",
-    "test-emails": "node scripts/testEmails.js",
-    "test:email-service": "node scripts/validateEmailService.js",
-    "typecheck": "tsc --noEmit"
+    "deploy:preview": "vercel"
   },
   "keywords": [
     "aec",
@@ -37,8 +34,7 @@
     "uuid": "^9.0.1",
     "zod": "^3.24.1"
   },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.2"
+  "engines": {
+    "node": "20.x"
   }
 }

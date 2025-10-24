@@ -1,17 +1,13 @@
-// =============================
-// Tasks API Endpoint - WITH SUPABASE DATABASE
-// =============================
+import { getSupabaseAdmin } from '../lib/supabase.js';
 
-import { getSupabaseAdmin } from '../lib/supabase';
-
-export default async function handler(req: any, res: any) {
-  console.log('📥 Olumba Tasks API:', req.method);
-  
+export default async function handler(req, res) {
+  // ALWAYS set these headers
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
+  // ALWAYS handle OPTIONS for CORS
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -19,39 +15,54 @@ export default async function handler(req: any, res: any) {
   const supabase = getSupabaseAdmin();
   
   try {
-    // GET tasks
+    // Method handling with proper validation
     if (req.method === 'GET') {
-      const { projectId } = req.query;
+      const { id, project_id } = req.query;
       
-      let query = supabase.from('tasks').select('*');
+      let query = supabase.from('tasks').select(`
+        *,
+        project:projects(*),
+        assigned_to:users(*),
+        created_by:users(*)
+      `);
       
-      if (projectId) {
-        query = query.eq('project_id', projectId);
+      if (id) {
+        query = query.eq('id', id).single();
+      } else if (project_id) {
+        query = query.eq('project_id', project_id);
       }
       
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query;
       
-      if (error) throw error;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({
+            success: false,
+            error: 'Task not found'
+          });
+        }
+        throw error;
+      }
       
       return res.status(200).json({
         success: true,
         data: data,
-        count: data.length
+        count: Array.isArray(data) ? data.length : 1
       });
     }
     
-    // POST - Create task
     if (req.method === 'POST') {
-      const taskData = req.body;
+      const bodyData = req.body;
       
-      if (!taskData.title || taskData.title.trim() === '') {
+      // ALWAYS validate required fields
+      if (!bodyData.title) {
         return res.status(400).json({
           success: false,
           error: 'Task title is required'
         });
       }
       
-      if (!taskData.projectId) {
+      if (!bodyData.project_id) {
         return res.status(400).json({
           success: false,
           error: 'Project ID is required'
@@ -61,14 +72,14 @@ export default async function handler(req: any, res: any) {
       const { data, error } = await supabase
         .from('tasks')
         .insert([{
-          project_id: taskData.projectId,
-          title: taskData.title,
-          description: taskData.description || '',
-          status: taskData.status || 'To Do',
-          priority: taskData.priority || 'Medium',
-          assignee: taskData.assignee || null,
-          due_date: taskData.dueDate || null,
-          completed: false
+          title: bodyData.title,
+          description: bodyData.description || '',
+          status: bodyData.status || 'pending',
+          priority: bodyData.priority || 'medium',
+          due_date: bodyData.due_date || null,
+          project_id: bodyData.project_id,
+          assigned_to: bodyData.assigned_to || null,
+          created_by: bodyData.created_by || null
         }])
         .select()
         .single();
@@ -82,14 +93,13 @@ export default async function handler(req: any, res: any) {
       });
     }
     
-    // PUT - Update task
     if (req.method === 'PUT') {
       const { id } = req.query;
       
       if (!id) {
         return res.status(400).json({
           success: false,
-          error: 'Task ID is required'
+          error: 'Task ID required for update'
         });
       }
       
@@ -109,14 +119,13 @@ export default async function handler(req: any, res: any) {
       });
     }
     
-    // DELETE task
     if (req.method === 'DELETE') {
       const { id } = req.query;
       
       if (!id) {
         return res.status(400).json({
           success: false,
-          error: 'Task ID is required'
+          error: 'Task ID required for deletion'
         });
       }
       
@@ -133,16 +142,20 @@ export default async function handler(req: any, res: any) {
       });
     }
     
+    // ALWAYS return 405 for unsupported methods
     return res.status(405).json({
       success: false,
       error: 'Method not allowed'
     });
     
-  } catch (error: any) {
-    console.error('❌ Olumba Tasks API Error:', error);
+  } catch (error) {
+    // ALWAYS log server errors
+    console.error('Tasks API Error:', error);
+    
+    // ALWAYS return JSON for errors
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || 'Internal server error'
     });
   }
 }
